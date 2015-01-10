@@ -1,5 +1,8 @@
 \documentclass[12pt,a4paper]{article}
 
+\usepackage{hyperref}
+
+
 \author{Cindy Lamm}
 \title{Solution Abstract Problem 1: SmartFly}
 
@@ -7,6 +10,14 @@
 \maketitle
 
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
+
+\subsection{Approach}
+
+\subsubsection{Get to know the data}
+
+As first step I do an exploratory data analysis on the historic as well as the prediction data set. I analyse both sets to avoid potential issues arising when the prediction data is largely different in structure or content from the historic data that will be used for training a model. 
+
+I use the open source statistics software R\footnote{\url{http://www.r-project.org/}} the exploratory data analysis since it has all necessary analysis functions and plotting tools already implemented.
 
 
 \end{document}
