@@ -1,0 +1,9 @@
+problem1_SmartFly/data/*.csv
+problem1_SmartFly/data/*.zip
+problem2_Almost_Famous/data/*.csv
+problem2_Almost_Famous/data/*.zip
+problem3_WINKLR/data/*.csv
+problem3_WINKLR/data/*.zip
+.Rhistory
+
+# LaTeX files are handled in separate .gitignore in docs folder
