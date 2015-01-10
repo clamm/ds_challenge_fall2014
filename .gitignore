@@ -6,4 +6,8 @@ problem3_winklr/data/*.csv
 problem3_winklr/data/*.zip
 .Rhistory
 
-# LaTeX files are handled in separate .gitignore in docs folder
+# LaTeX files
+*.aux
+*.log
+*.out
+*.synctex.gz

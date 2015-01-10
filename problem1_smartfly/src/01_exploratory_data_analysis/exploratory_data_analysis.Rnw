@@ -1,0 +1,76 @@
+%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+
+\title{SmartFly: Exploratory Data Analysis}
+
+
+\author{Cindy Lamm}
+
+\maketitle
+First load variable names and types of historic data (prepared in an additional csv file).
+
+<<load-meta-data>>=
+nameTypeDataFile  <- "resources/raw_variables.csv"
+variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
+variableNames
+@
+
+Then load historic data into R.
+% this takes about 2 minutes 
+<<load-historic-data>>=
+historicDataFile <- "../../data/smartfly_historic.csv"
+#historicDataFile <- "../../data/tmp.csv"
+trainDataTyped <- read.csv(historicDataFile, header=FALSE, stringsAsFactors=FALSE, 
+                           col.names=variableNames$name, colClasses=variableNames$type)
+# convert integer to logical
+trainDataTyped$cancelled <- as.logical(trainDataTyped$cancelled)  
+@
+
+Checkout first 10 historic data rows
+<<head-historic-data>>=
+head(trainDataTyped)
+@
+
+and a summary of the historic data 
+%this takes about 12 seconds
+<<summary-historic-data>>=
+summary(trainDataTyped)
+@
+
+
+% To evaluate variable \texttt{x} in current paragraph use \Sexpr{x}. 
+% To include plots recorded by the PDF device:
+% 
+% <<boring-plots, fig.width=4, fig.height=4, out.width='.4\\linewidth'>>=
+% ## two plots side by side (option fig.show='hold')
+% par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3,las=1)
+% boxplot(x)
+% hist(x,main='')
+% @
+
+\end{document}
+
+% create the exploratory_data_analysis.tex with (takes about 2 minutes!)
+% knit('exploratory_data_analysis.Rnw') 

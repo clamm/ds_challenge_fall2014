@@ -1,0 +1,232 @@
+%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+
+\title{SmartFly: Exploratory Data Analysis}
+
+
+\author{Cindy Lamm}
+
+\maketitle
+First load variable names and types of historic data (prepared in an additional csv file).
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{nameTypeDataFile}  \hlkwb{<-} \hlstr{"resources/raw_variables.csv"}
+\hlstd{variableNames} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(nameTypeDataFile,} \hlkwc{header}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\hlstd{variableNames}
+\end{alltt}
+\begin{verbatim}
+##                        name      type
+## 1                        id character
+## 2                      year    factor
+## 3                     month    factor
+## 4              day_of_month    factor
+## 5               day_of_week    factor
+## 6  scheduled_departure_time    factor
+## 7    scheduled_arrival_time    factor
+## 8                   airline    factor
+## 9             flight_number    factor
+## 10              tail_number    factor
+## 11              plane_model    factor
+## 12       seat_configuration    factor
+## 13          departure_delay   numeric
+## 14           origin_airport    factor
+## 15      destination_airport    factor
+## 16       distance_travelled   numeric
+## 17             taxi_time_in   numeric
+## 18            taxi_time_out   numeric
+## 19                cancelled   integer
+## 20        cancellation_code    factor
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Then load historic data into R.
+% this takes about 2 minutes 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{historicDataFile} \hlkwb{<-} \hlstr{"../../data/smartfly_historic.csv"}
+\hlcom{#historicDataFile <- "../../data/tmp.csv"}
+\hlstd{trainDataTyped} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(historicDataFile,} \hlkwc{header}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,}
+                           \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,} \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type)}
+\hlcom{# convert integer to logical}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{cancelled} \hlkwb{<-} \hlkwd{as.logical}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{cancelled)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Checkout first 10 historic data rows
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{head}\hlstd{(trainDataTyped)}
+\end{alltt}
+\begin{verbatim}
+##                    id year month day_of_month day_of_week scheduled_departure_time
+## 1 4982598272866526024 2013     8           11           7                     1015
+## 2 5074130684343212714 2013     8           17           6                     1015
+## 3 8872634703988349126 2013     8           18           7                     1015
+## 4 1147433994031419585 2013     8           24           6                     1015
+## 5  739211944918463275 2013     8           25           7                     1015
+## 6 7526342364355579297 2013     8           31           6                     1015
+##   scheduled_arrival_time airline flight_number tail_number plane_model seat_configuration
+## 1                   1132      US           923      N728UW         757        Three Class
+## 2                   1132      US           923      N746UW         757           Standard
+## 3                   1132      US           923      N706UW         787                 V1
+## 4                   1132      US           923      N707UW         747                 V2
+## 5                   1132      US           923      N758UW         787                 V1
+## 6                   1132      US           923      N702UW         747                 V2
+##   departure_delay origin_airport destination_airport distance_travelled taxi_time_in
+## 1              -5            BWI                 CLT                361            9
+## 2               5            BWI                 CLT                361            7
+## 3              -4            BWI                 CLT                361            6
+## 4              -6            BWI                 CLT                361           15
+## 5              -3            BWI                 CLT                361            7
+## 6              -8            BWI                 CLT                361            5
+##   taxi_time_out cancelled cancellation_code
+## 1            11     FALSE              <NA>
+## 2             7     FALSE              <NA>
+## 3             9     FALSE              <NA>
+## 4            11     FALSE              <NA>
+## 5            12     FALSE              <NA>
+## 6            15     FALSE              <NA>
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+and a summary of the historic data 
+%this takes about 12 seconds
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(trainDataTyped)}
+\end{alltt}
+\begin{verbatim}
+##       id              year             month          day_of_month     day_of_week
+##  Length:7374365     2013:2185499   8      :1023748   13     : 252615   1:1079862  
+##  Class :character   2014:5188866   9      : 957710   6      : 252560   2:1063516  
+##  Mode  :character                  10     : 782952   3      : 252160   3:1069847  
+##                                    3      : 559342   17     : 251944   4:1096825  
+##                                    7      : 558568   16     : 250869   5:1096417  
+##                                    1      : 552109   2      : 250647   6: 935465  
+##                                    (Other):2939936   (Other):5863570   7:1032433  
+##  scheduled_departure_time scheduled_arrival_time    airline        flight_number    
+##  700    : 105996          1810   :  21315        WN     :1171236   192    :   5702  
+##  800    :  74502          1715   :  21191        AA     : 960866   64     :   5639  
+##  600    :  66567          1215   :  21074        DL     : 825543   706    :   5409  
+##  900    :  65778          1615   :  21048        UA     : 686409   186    :   5373  
+##  630    :  60479          1605   :  20639        NW     : 619091   751    :   5209  
+##  1700   :  56619          1630   :  20359        US     : 529032   340    :   5060  
+##  (Other):6944424          (Other):7248739        (Other):2582188   (Other):7341973  
+##   tail_number      plane_model      seat_configuration  departure_delay   
+##         :  42213   737 :2317735   Standard   :2130560   Min.   :-1410.00  
+##  0      :  17138   747 :1579936   Three Class: 779700   1st Qu.:   -4.00  
+##  000000 :  10157   757 : 999512   Two Class  : 779964   Median :    0.00  
+##  N183UW :   4694   777 : 634170   V1         :1430984   Mean   :    4.87  
+##  N80    :   4290   787 : 633182   V2         :1105044   3rd Qu.:    2.00  
+##  N96    :   4269   A320:1209830   V3         :1148113   Max.   : 2119.00  
+##  (Other):7291604                                        NA's   :104127    
+##  origin_airport    destination_airport distance_travelled  taxi_time_in     
+##  ORD    : 431004   ORD    : 431004     Min.   :  11       Min.   :   0.000  
+##  ATL    : 389963   ATL    : 389886     1st Qu.: 308       1st Qu.:   4.000  
+##  DFW    : 382123   DFW    : 382349     Median : 569       Median :   5.000  
+##  LAX    : 255642   LAX    : 255786     Mean   : 726       Mean   :   6.808  
+##  PHX    : 209831   PHX    : 209839     3rd Qu.: 964       3rd Qu.:   7.000  
+##  IAH    : 195923   IAH    : 195926     Max.   :4962       Max.   :1495.000  
+##  (Other):5509879   (Other):5509575                                          
+##  taxi_time_out     cancelled       cancellation_code
+##  Min.   :   0.00   Mode :logical       :2484977     
+##  1st Qu.:  10.00   FALSE:7270238   A   :  14587     
+##  Median :  13.00   TRUE :104127    B   :   8072     
+##  Mean   :  15.05   NA's :0         C   :   8309     
+##  3rd Qu.:  18.00                   D   :    179     
+##  Max.   :1439.00                   NA's:4858241     
+## 
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+% To evaluate variable \texttt{x} in current paragraph use x. 
+% To include plots recorded by the PDF device:
+% 
+% <<boring-plots, fig.width=4, fig.height=4, out.width='.4\\linewidth'>>=
+% ## two plots side by side (option fig.show='hold')
+% par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3,las=1)
+% boxplot(x)
+% hist(x,main='')
+% @
+
+\end{document}
+
+% create the exploratory_data_analysis.tex with (takes about 2 minutes!)
+% knit('exploratory_data_analysis.Rnw') 
