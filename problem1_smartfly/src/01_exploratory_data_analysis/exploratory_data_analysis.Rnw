@@ -1,5 +1,3 @@
-%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
 \documentclass{article}
 \usepackage[sc]{mathpazo}
 \usepackage[T1]{fontenc}
@@ -29,7 +27,11 @@ options(formatR.arrow=TRUE,width=90)
 \author{Cindy Lamm}
 
 \maketitle
-First load variable names and types of historic data (prepared in an additional csv file).
+First load variable names and types of historic data (prepared in an additional csv file):
+<<setup-defaults, include=FALSE>>==
+rm(list=ls())   #clear memory
+ALPHA <- 0.001
+@
 
 <<load-meta-data>>=
 nameTypeDataFile  <- "resources/raw_variables.csv"
@@ -37,11 +39,11 @@ variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE)
 variableNames
 @
 
-Then load historic data into R.
+Then load historic data into R:
 % this takes about 2 minutes 
 <<load-historic-data>>=
 historicDataFile <- "../../data/smartfly_historic.csv"
-#historicDataFile <- "../../data/tmp.csv"
+#historicDataFile <- "../../data/mod4000.csv"
 trainDataTyped <- read.csv(historicDataFile, header=FALSE, stringsAsFactors=FALSE, 
                            col.names=variableNames$name, colClasses=variableNames$type)
 # convert integer to logical
@@ -53,12 +55,68 @@ Checkout first 10 historic data rows
 head(trainDataTyped)
 @
 
-and a summary of the historic data 
+and a summary of the historic data: 
 %this takes about 12 seconds
 <<summary-historic-data>>=
 summary(trainDataTyped)
 @
 
+What are the factor levels for the different variables:
+<<factor-levels>>=
+all_levels <- sapply(1:20, FUN=function(x) {levels(trainDataTyped[,x])})
+names(all_levels) <- variableNames$name
+number_of_levels <- unlist(lapply(all_levels, FUN=length))
+number_of_levels
+lapply(all_levels, FUN=head, n=10)
+@
+(Note: The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.)
+
+
+Conclusions:
+\begin{itemize}
+\item \verb+tail_number+ and \verb+cancellation_code+ contain spaces that need to be converted to \verb+NA+
+\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the 3-character strings (assuming "900" means "0900" and thus a time of 09h00)
+\item \verb+departure_delay+ needs to be converted to a binary factor (based on definition that only positive delay counts as "delayed")
+\end{itemize}
+
+
+Create binary target variable \verb+is_delayed+:
+<<create-target-variable>>=
+trainDataTyped$is_delayed <- factor(trainDataTyped$departure_delay > 0 
+                                    & trainDataTyped$cancelled==FALSE, 
+                                    labels= c("delayed", "on_time")) 
+summary(trainDataTyped$is_delayed)
+@
+
+
+Look at correlations between continuous variables:
+<<example-variable-correlation>>=
+cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_in, use="pairwise.complete.obs")
+cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_out, use="pairwise.complete.obs")
+cor(trainDataTyped$departure_delay, trainDataTyped$distance_travelled, use="pairwise.complete.obs")
+@
+
+
+Look at some dependency between the binary target variable and other factor variables using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA} (chosen so small due to large sample size)$:
+<<example-chisqare-independence>>=
+suitable <- intersect(which(variableNames$type=="factor"), 
+                      which(number_of_levels < 20))
+test_independence <- function(col, alpha){
+  result <- suppressWarnings(
+      chisq.test(table(trainDataTyped$is_delayed, trainDataTyped[,col]))
+      )
+  return(result$p.value < alpha)
+}
+dependent_with_target <- sapply(suitable, FUN=test_independence, alpha=ALPHA)
+names(dependent_with_target) <- variableNames$name[suitable]
+dependent_with_target
+@
+
+
+Save data frame for next step:
+<<save-df>>==
+save(trainDataTyped, file="trainDataTyped.Rdata")
+@
 
 % To evaluate variable \texttt{x} in current paragraph use \Sexpr{x}. 
 % To include plots recorded by the PDF device:
@@ -72,5 +130,5 @@ summary(trainDataTyped)
 
 \end{document}
 
-% create the exploratory_data_analysis.tex with (takes about 2 minutes!)
-% knit('exploratory_data_analysis.Rnw') 
+% create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")

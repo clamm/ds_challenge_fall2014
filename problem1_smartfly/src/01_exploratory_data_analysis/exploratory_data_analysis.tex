@@ -1,5 +1,3 @@
-%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
 \documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
 %% maxwidth is the original width if it is less than linewidth
 %% otherwise use linewidth (to make sure the graphics do not exceed the margin)
@@ -74,7 +72,8 @@
 \author{Cindy Lamm}
 
 \maketitle
-First load variable names and types of historic data (prepared in an additional csv file).
+First load variable names and types of historic data (prepared in an additional csv file):
+
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -109,13 +108,13 @@ First load variable names and types of historic data (prepared in an additional 
 \end{kframe}
 \end{knitrout}
 
-Then load historic data into R.
+Then load historic data into R:
 % this takes about 2 minutes 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{historicDataFile} \hlkwb{<-} \hlstr{"../../data/smartfly_historic.csv"}
-\hlcom{#historicDataFile <- "../../data/tmp.csv"}
+\hlcom{#historicDataFile <- "../../data/mod4000.csv"}
 \hlstd{trainDataTyped} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(historicDataFile,} \hlkwc{header}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,}
                            \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,} \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type)}
 \hlcom{# convert integer to logical}
@@ -163,7 +162,7 @@ Checkout first 10 historic data rows
 \end{kframe}
 \end{knitrout}
 
-and a summary of the historic data 
+and a summary of the historic data: 
 %this takes about 12 seconds
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -215,6 +214,185 @@ and a summary of the historic data
 \end{kframe}
 \end{knitrout}
 
+What are the factor levels for the different variables:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{all_levels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{20}\hlstd{,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}\hlkwd{levels}\hlstd{(trainDataTyped[,x])\})}
+\hlkwd{names}\hlstd{(all_levels)} \hlkwb{<-} \hlstd{variableNames}\hlopt{$}\hlstd{name}
+\hlstd{number_of_levels} \hlkwb{<-} \hlkwd{unlist}\hlstd{(}\hlkwd{lapply}\hlstd{(all_levels,} \hlkwc{FUN}\hlstd{=length))}
+\hlstd{number_of_levels}
+\end{alltt}
+\begin{verbatim}
+##                       id                     year                    month 
+##                        0                        2                       12 
+##             day_of_month              day_of_week scheduled_departure_time 
+##                       31                        7                     1190 
+##   scheduled_arrival_time                  airline            flight_number 
+##                     1323                       17                     6889 
+##              tail_number              plane_model       seat_configuration 
+##                     5036                        6                        6 
+##          departure_delay           origin_airport      destination_airport 
+##                        0                      279                      279 
+##       distance_travelled             taxi_time_in            taxi_time_out 
+##                        0                        0                        0 
+##                cancelled        cancellation_code 
+##                        0                        5
+\end{verbatim}
+\begin{alltt}
+\hlkwd{lapply}\hlstd{(all_levels,} \hlkwc{FUN}\hlstd{=head,} \hlkwc{n}\hlstd{=}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## $id
+## NULL
+## 
+## $year
+## [1] "2013" "2014"
+## 
+## $month
+##  [1] "1"  "10" "11" "12" "2"  "3"  "4"  "5"  "6"  "7" 
+## 
+## $day_of_month
+##  [1] "1"  "10" "11" "12" "13" "14" "15" "16" "17" "18"
+## 
+## $day_of_week
+## [1] "1" "2" "3" "4" "5" "6" "7"
+## 
+## $scheduled_departure_time
+##  [1] "0"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005" "1006"
+## 
+## $scheduled_arrival_time
+##  [1] "0"    "1"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005"
+## 
+## $airline
+##  [1] "AA" "AS" "B6" "CO" "DH" "DL" "EV" "FL" "HP" "MQ"
+## 
+## $flight_number
+##  [1] "1"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005" "1006"
+## 
+## $tail_number
+##  [1] ""       "0"      "000000" "N050AA" "N051AA" "N052AA" "N054AA" "N055AA" "N056AA"
+## [10] "N057AA"
+## 
+## $plane_model
+## [1] "737"  "747"  "757"  "777"  "787"  "A320"
+## 
+## $seat_configuration
+## [1] "Standard"    "Three Class" "Two Class"   "V1"          "V2"          "V3"         
+## 
+## $departure_delay
+## NULL
+## 
+## $origin_airport
+##  [1] "ABE" "ABI" "ABQ" "ABY" "ACK" "ACT" "ACV" "ACY" "ADK" "ADQ"
+## 
+## $destination_airport
+##  [1] "ABE" "ABI" "ABQ" "ABY" "ACK" "ACT" "ACV" "ACY" "ADK" "ADQ"
+## 
+## $distance_travelled
+## NULL
+## 
+## $taxi_time_in
+## NULL
+## 
+## $taxi_time_out
+## NULL
+## 
+## $cancelled
+## NULL
+## 
+## $cancellation_code
+## [1] ""  "A" "B" "C" "D"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+(Note: The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.)
+
+
+Conclusions:
+\begin{itemize}
+\item \verb+tail_number+ and \verb+cancellation_code+ contain spaces that need to be converted to \verb+NA+
+\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the 3-character strings (assuming "900" means "0900" and thus a time of 09h00)
+\item \verb+departure_delay+ needs to be converted to a binary factor (based on definition that only positive delay counts as "delayed")
+\end{itemize}
+
+
+Create binary target variable \verb+is_delayed+:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{is_delayed} \hlkwb{<-} \hlkwd{factor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay} \hlopt{>} \hlnum{0}
+                                    \hlopt{&} \hlstd{trainDataTyped}\hlopt{$}\hlstd{cancelled}\hlopt{==}\hlnum{FALSE}\hlstd{,}
+                                    \hlkwc{labels}\hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"delayed"}\hlstd{,} \hlstr{"on_time"}\hlstd{))}
+\hlkwd{summary}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed)}
+\end{alltt}
+\begin{verbatim}
+## delayed on_time 
+## 5263866 2110499
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Look at correlations between continuous variables:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{taxi_time_in,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.03345877
+\end{verbatim}
+\begin{alltt}
+\hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{taxi_time_out,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.06387488
+\end{verbatim}
+\begin{alltt}
+\hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{distance_travelled,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] -0.0007718446
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Look at some dependency between the binary target variable and other factor variables using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=0.001 (chosen so small due to large sample size)$:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{suitable} \hlkwb{<-} \hlkwd{intersect}\hlstd{(}\hlkwd{which}\hlstd{(variableNames}\hlopt{$}\hlstd{type}\hlopt{==}\hlstr{"factor"}\hlstd{),}
+                      \hlkwd{which}\hlstd{(number_of_levels} \hlopt{<} \hlnum{20}\hlstd{))}
+\hlstd{test_independence} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{col}\hlstd{,} \hlkwc{alpha}\hlstd{)\{}
+  \hlstd{result} \hlkwb{<-} \hlkwd{suppressWarnings}\hlstd{(}
+      \hlkwd{chisq.test}\hlstd{(}\hlkwd{table}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed, trainDataTyped[,col]))}
+      \hlstd{)}
+  \hlkwd{return}\hlstd{(result}\hlopt{$}\hlstd{p.value} \hlopt{<} \hlstd{alpha)}
+\hlstd{\}}
+\hlstd{dependent_with_target} \hlkwb{<-} \hlkwd{sapply}\hlstd{(suitable,} \hlkwc{FUN}\hlstd{=test_independence,} \hlkwc{alpha}\hlstd{=ALPHA)}
+\hlkwd{names}\hlstd{(dependent_with_target)} \hlkwb{<-} \hlstd{variableNames}\hlopt{$}\hlstd{name[suitable]}
+\hlstd{dependent_with_target}
+\end{alltt}
+\begin{verbatim}
+##               year              month        day_of_week            airline 
+##               TRUE               TRUE               TRUE               TRUE 
+##        plane_model seat_configuration  cancellation_code 
+##               TRUE               TRUE               TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Save data frame for next step:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{save}\hlstd{(trainDataTyped,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 % To evaluate variable \texttt{x} in current paragraph use x. 
 % To include plots recorded by the PDF device:
@@ -228,5 +406,5 @@ and a summary of the historic data
 
 \end{document}
 
-% create the exploratory_data_analysis.tex with (takes about 2 minutes!)
-% knit('exploratory_data_analysis.Rnw') 
+% create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")

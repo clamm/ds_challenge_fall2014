@@ -12,4 +12,6 @@ To generate the [exploratory_data_analysis.pdf](exploratory_data_analysis.pdf) w
 
 	This creates the file `exploratory_data_analysis.tex`. This might take a few minutes since it loads the 7.3 million data points into R.
 
-1. Open the file `exploratory_data_analysis.tex` in TeXShop and click on Typeset to generate the pdf. On Mac OSX Yosemite I had problems compiling the pdf directly in RStudio since the knitr options were ignored.
+1. Open the file `exploratory_data_analysis.tex` in TeXShop and click on Typeset to generate the pdf. Or open it in Sublime Text (with the installed and configured [LaTeXTools plugin](https://github.com/SublimeText/LaTeXTools)) and run Build (Cmd+B).
+
+Note: Steps 3 and 4 are necessary since I had problems compiling the pdf directly in RStudio on Mac OSX Yosemite since the knitr options were ignored.

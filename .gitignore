@@ -4,10 +4,14 @@ problem2_famous/data/*.csv
 problem2_famous/data/*.zip
 problem3_winklr/data/*.csv
 problem3_winklr/data/*.zip
+
+# R files
 .Rhistory
+*.RData
 
 # LaTeX files
 *.aux
 *.log
 *.out
 *.synctex.gz
+*.fdb_latexmk

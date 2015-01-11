@@ -50,5 +50,8 @@ Solution requirements / Used software
 * RStudio 
 * R packages
 	* knitr
-* TeXShop
+	* polycor
+	* caret
+	* glmnet
+* TeXShop (or SublimeText with LaTexTools plugin and Skim)
 

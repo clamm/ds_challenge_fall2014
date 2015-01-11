@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+
+\title{SmartFly: Prepare Data For Modeling}
+
+
+\author{Cindy Lamm}
+
+\maketitle
+
+Load preprocessed data from the previous step "Exploratory Data Analysis"
+<<load-typed-data>>=
+rm(list=ls())   #clear memory
+load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
+@
+
+Split the train data based on simple bootstrap resampling into a series of train and test sets
+<<split-train-data>>=
+library(caret)
+set.seed(998)
+#use simple bootstrap resampling to split data into a series of train and test set
+inTraining <- createDataPartition(trainDataTyped$is_delayed, p = .5, list = FALSE) 
+training <- trainDataTyped[ inTraining,]
+testing  <- trainDataTyped[-inTraining,]
+@
+
+Create custom function to specifiy the type of resampling and a grid for tuning parameters\footnote{both taken from \url{https://github.com/topepo/caret/blob/master/RegressionTests/Code/glmnet.R}}
+<<define-fitcontrol>>==
+cctrl4 <- trainControl(method = "cv", number = 3, classProbs = TRUE)
+eGrid <- expand.grid(.alpha = seq(.05, 1, length = 15), .lambda = c((1:5)/10))
+@
+
+Save R environment 
+<<save-env>>==
+save.image(file="prepared_data.Rdata")
+@
+
+\end{document}
+
+% create the prepare_data.tex with (takes about 2 minutes!)
+% knit("../02_prepare_data_for_modeling/prepare_data.Rnw", output="../02_prepare_data_for_modeling/prepare_data.tex")
