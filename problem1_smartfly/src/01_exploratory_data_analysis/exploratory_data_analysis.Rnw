@@ -15,6 +15,8 @@
 \hypersetup{
  pdfstartview={XYZ null null 1}}
 \begin{document}
+\flushbottom
+
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
 library(ggplot2)
@@ -40,13 +42,14 @@ rm(list=ls())   #clear memory
 nameTypeDataFile  <- "resources/raw_variables.csv"
 variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
 variableNames
+factor_idx <- which(variableNames$type=="factor")
 @
 
 Then load historic data into R. I set empty strings to \verb+NA+ (because of variables \verb+tail_number+ and \verb+cancellation_code+).
 % this takes about 2 minutes 
 <<load-historic-data>>=
-# historicDataFile <- "../../data/smartfly_historic.csv"
-historicDataFile <- "../../data/mod4000.csv"
+historicDataFile <- "../../data/smartfly_historic.csv"
+# historicDataFile <- "../../data/mod4000.csv"
 trainDataTyped <- read.csv(historicDataFile, header=FALSE, stringsAsFactors=FALSE, 
                            col.names=variableNames$name, colClasses=variableNames$type,
                            na.strings=c("NA",""))
@@ -66,6 +69,14 @@ trainDataTyped$scheduled_departure_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_departure_time)))
 trainDataTyped$scheduled_arrival_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_arrival_time)))
+@
+
+In addition we truncate the scheduled times to the hour:
+<<group-scheduled-times>>=
+trainDataTyped$scheduled_departure_time <- as.factor(
+  substr(as.character(trainDataTyped$scheduled_departure_time),1,2))
+trainDataTyped$scheduled_arrival_time <- as.factor(
+  substr(as.character(trainDataTyped$scheduled_arrival_time),1,2))
 @
 
 We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
@@ -94,7 +105,6 @@ save(trainDataTyped, file="trainDataTyped.Rdata")
 %-------  PART THAT CANNOT BE APPLIED TO SCHEDULED DATA
 %-------------------------------------------------------------------------------
 
-
 Since I want to predict whether a flight is delayed or not I create a specific variable \verb+is_delayed+ based on \verb+departure_delay+ using the definition that only positive delay and non-cancelled flights count as "delayed":
 <<create-target-variable>>=
 trainDataTyped$is_delayed <- factor(trainDataTyped$departure_delay > 0 
@@ -105,8 +115,16 @@ summary(trainDataTyped$is_delayed)
 summary(trainDataTyped$is_delayed) / length(trainDataTyped$is_delayed)
 @
 
-
 Plot the data:
+<<calculate-delayed-proportions-per-group, echo=FALSE>>=
+delayed_proportion_per_group <- function(variable_idx) {
+  apply(table(trainDataTyped$is_delayed, trainDataTyped[,variable_idx]), 
+        MARGIN=2, FUN=function(x){x/sum(x)})[2,]
+}
+delayed_props <- lapply(factor_idx, FUN=delayed_proportion_per_group)
+names(delayed_props) <- variableNames$name[factor_idx]
+@
+
 <<define-themes, include=FALSE>>=
 th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
 th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
@@ -115,46 +133,54 @@ th_extra_large <- theme(text=element_text(size=76),
                         axis.title=element_text(face="bold"))
 @
 
+<<plot-delayed-proportion, include=FALSE>>=
+plot_delayed_proportion <- function(delayed_props_list, variable_name, cex) { 
+  opar <- par(mar=c(5,4,4,12))
+  plot(delayed_props_list[[variable_name]], xlab=variable_name, ylab="% delayed",
+       t="o", xaxt="n", bty="n", ylim=c(0,1), cex.lab=cex, cex.axis=cex, lwd=3)
+  labels=names(delayed_props_list[[variable_name]])
+  axis(1, at=1:length(labels), labels=labels, las=2, cex.axis=cex)
+  par(opar)
+} 
+@
 
-<<plot-data-date, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+<<plot-year-month, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+plot_delayed_proportion(delayed_props, "year", 2)
+plot_delayed_proportion(delayed_props, "month", 2)
 ggplot(data=trainDataTyped, aes(x=year, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_small
 ggplot(data=trainDataTyped, aes(x=month, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_small
+@
+
+<<plot-day, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+plot_delayed_proportion(delayed_props, "day_of_week", 2)
+plot_delayed_proportion(delayed_props, "day_of_month", 2)
 ggplot(data=trainDataTyped, aes(x=day_of_week, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_small
 ggplot(data=trainDataTyped, aes(x=day_of_month, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_small
 @
 
-<<other-group-options, include=FALSE>>=
-# truncate to 10 minutes (reduces to 116 levels)
-as.factor(paste(substr(as.character(trainDataTyped$scheduled_departure_time),1,3),"0",sep=""))
-@
-
-
-<<group-scheduled-data>>=
-# truncate to hour (reduces to 21 levels)
-trainDataTyped$scheduled_departure_time_grouped <- as.factor(
-  substr(as.character(trainDataTyped$scheduled_departure_time),1,2))
-trainDataTyped$scheduled_arrival_time_grouped <- as.factor(
-  substr(as.character(trainDataTyped$scheduled_arrival_time),1,2))
-@
 
 <<plot-data-time, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
-ggplot(data=trainDataTyped, aes(x=scheduled_departure_time_grouped, fill=is_delayed)) + 
+plot_delayed_proportion(delayed_props, "scheduled_departure_time", 2)
+ggplot(data=trainDataTyped, aes(x=scheduled_departure_time, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_large
-ggplot(data=trainDataTyped, aes(x=scheduled_arrival_time_grouped, fill=is_delayed)) + 
+plot_delayed_proportion(delayed_props, "scheduled_arrival_time", 2)
+ggplot(data=trainDataTyped, aes(x=scheduled_arrival_time, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_large
 @
 
-
 <<plot-data-airline, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+plot_delayed_proportion(delayed_props, "airline", 2)
 ggplot(data=trainDataTyped, aes(x=airline, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_large
 @
 
 <<plot-data-plane, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+plot_delayed_proportion(delayed_props, "plane_model", 2)
+plot_delayed_proportion(delayed_props, "seat_configuration", 2)
 ggplot(data=trainDataTyped, aes(x=plane_model, fill=is_delayed)) + 
   geom_bar(stat="bin", position=position_dodge()) + th_small
 ggplot(data=trainDataTyped, aes(x=seat_configuration, fill=is_delayed)) + 
@@ -166,8 +192,10 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 
 \begin{landscape}
 <<plot-data-airports, echo=FALSE, fig.width=80, fig.height=12, out.width='1.0\\linewidth', warning=FALSE>>=
+plot_delayed_proportion(delayed_props, "origin_airport", 2)
 ggplot(data=trainDataTyped, aes(x=origin_airport, fill=is_delayed)) + 
   geom_bar(stat="bin") + th_extra_large
+plot_delayed_proportion(delayed_props, "destination_airport", 2)
 ggplot(data=trainDataTyped, aes(x=destination_airport, fill=is_delayed)) + 
   geom_bar(stat="bin") + th_extra_large
 @
@@ -231,8 +259,7 @@ Look at some dependency between the binary target variable and other factor vari
 <<prepare-chisqare-independence, include=FALSE>>=
 all_levels <- sapply(1:20, FUN=function(x) {levels(trainDataTyped[,x])})
 number_of_levels <- unlist(lapply(all_levels, FUN=length))
-suitable <- intersect(which(variableNames$type=="factor"), 
-                      which(number_of_levels < 20))
+suitable <- intersect(factor_idx, which(number_of_levels < 20))
 test_independence <- function(col, alpha){
   result <- chisq.test(table(trainDataTyped$is_delayed, trainDataTyped[,col]))
   return(result$p.value < alpha)

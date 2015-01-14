@@ -65,6 +65,8 @@
  pdfstartview={XYZ null null 1}}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
+\flushbottom
+
 
 
 
@@ -107,6 +109,9 @@ First load variable names and types of historic data (prepared in an additional 
 ## 19                cancelled   integer
 ## 20        cancellation_code    factor
 \end{verbatim}
+\begin{alltt}
+\hlstd{factor_idx} \hlkwb{<-} \hlkwd{which}\hlstd{(variableNames}\hlopt{$}\hlstd{type}\hlopt{==}\hlstr{"factor"}\hlstd{)}
+\end{alltt}
 \end{kframe}
 \end{knitrout}
 
@@ -171,6 +176,18 @@ We see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ ne
 \end{kframe}
 \end{knitrout}
 
+In addition we truncate the scheduled times to the hour:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
+  \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
+  \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
 We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -182,6 +199,8 @@ We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that the
 \end{alltt}
 \end{kframe}
 \end{knitrout}
+
+\pagebreak
 
 See summary of descriptive statistics of the historic data: 
 %this takes about 12 seconds
@@ -200,13 +219,13 @@ See summary of descriptive statistics of the historic data:
 ##                                    01     : 552109   02     : 250647   6: 935465  
 ##                                    (Other):2939936   (Other):5863570   7:1032433  
 ##  scheduled_departure_time scheduled_arrival_time    airline        flight_number    
-##  0700   : 105996          1810   :  21315        WN     :1171236   192    :   5702  
-##  0800   :  74502          1715   :  21191        AA     : 960866   64     :   5639  
-##  0600   :  66567          1215   :  21074        DL     : 825543   706    :   5409  
-##  0900   :  65778          1615   :  21048        UA     : 686409   186    :   5373  
-##  0630   :  60479          1605   :  20639        NW     : 619091   751    :   5209  
-##  1700   :  56619          1630   :  20359        US     : 529032   340    :   5060  
-##  (Other):6944424          (Other):7248739        (Other):2582188   (Other):7341973  
+##  17     : 539987          16     : 534524        WN     :1171236   192    :   5702  
+##  08     : 511491          17     : 492008        AA     : 960866   64     :   5639  
+##  09     : 500448          19     : 490631        DL     : 825543   706    :   5409  
+##  07     : 499763          18     : 488335        UA     : 686409   186    :   5373  
+##  13     : 490531          20     : 484248        NW     : 619091   751    :   5209  
+##  12     : 487784          11     : 482204        US     : 529032   340    :   5060  
+##  (Other):4344361          (Other):4402415        (Other):2582188   (Other):7341973  
 ##   tail_number      plane_model      seat_configuration  departure_delay   
 ##  0      :  17138   737 :2317735   Standard   :2130560   Min.   :-1410.00  
 ##  000000 :  10157   747 :1579936   Three Class: 779700   1st Qu.:   -4.00  
@@ -249,7 +268,6 @@ Save data frame for next step:
 %-------  PART THAT CANNOT BE APPLIED TO SCHEDULED DATA
 %-------------------------------------------------------------------------------
 
-
 Since I want to predict whether a flight is delayed or not I create a specific variable \verb+is_delayed+ based on \verb+departure_delay+ using the definition that only positive delay and non-cancelled flights count as "delayed":
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -273,18 +291,20 @@ Since I want to predict whether a flight is delayed or not I create a specific v
 \end{kframe}
 \end{knitrout}
 
-
 Plot the data:
+
+
+
 
 
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/plot-data-date-1} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-date-2} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-date-3} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-date-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/plot-year-month-1} 
+\includegraphics[width=.4\linewidth]{figure/plot-year-month-2} 
+\includegraphics[width=.4\linewidth]{figure/plot-year-month-3} 
+\includegraphics[width=.4\linewidth]{figure/plot-year-month-4} 
 
 }
 
@@ -292,26 +312,28 @@ Plot the data:
 
 \end{knitrout}
 
-
-
-
 \begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlcom{# truncate to hour (reduces to 21 levels)}
-\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time_grouped} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
-\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time_grouped} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
-\end{alltt}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/plot-day-1} 
+\includegraphics[width=.4\linewidth]{figure/plot-day-2} 
+\includegraphics[width=.4\linewidth]{figure/plot-day-3} 
+\includegraphics[width=.4\linewidth]{figure/plot-day-4} 
+
+}
+
+
+
 \end{knitrout}
+
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=.9\linewidth]{figure/plot-data-time-1} 
 \includegraphics[width=.9\linewidth]{figure/plot-data-time-2} 
+\includegraphics[width=.9\linewidth]{figure/plot-data-time-3} 
+\includegraphics[width=.9\linewidth]{figure/plot-data-time-4} 
 
 }
 
@@ -319,11 +341,11 @@ Plot the data:
 
 \end{knitrout}
 
-
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=.9\linewidth]{figure/plot-data-airline-1} 
+\includegraphics[width=.9\linewidth]{figure/plot-data-airline-2} 
 
 }
 
@@ -336,6 +358,8 @@ Plot the data:
 
 {\centering \includegraphics[width=.4\linewidth]{figure/plot-data-plane-1} 
 \includegraphics[width=.4\linewidth]{figure/plot-data-plane-2} 
+\includegraphics[width=.4\linewidth]{figure/plot-data-plane-3} 
+\includegraphics[width=.4\linewidth]{figure/plot-data-plane-4} 
 
 }
 
@@ -352,6 +376,8 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 
 {\centering \includegraphics[width=1.0\linewidth]{figure/plot-data-airports-1} 
 \includegraphics[width=1.0\linewidth]{figure/plot-data-airports-2} 
+\includegraphics[width=1.0\linewidth]{figure/plot-data-airports-3} 
+\includegraphics[width=1.0\linewidth]{figure/plot-data-airports-4} 
 
 }
 
