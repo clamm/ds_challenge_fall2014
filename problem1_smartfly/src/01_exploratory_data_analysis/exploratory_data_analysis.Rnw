@@ -3,6 +3,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
 \usepackage{url}
@@ -15,8 +17,10 @@
 \begin{document}
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
+library(ggplot2)
+library(plyr)
 # set global chunk options
-opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
@@ -30,7 +34,6 @@ options(formatR.arrow=TRUE,width=90)
 First load variable names and types of historic data (prepared in an additional csv file):
 <<setup-defaults, include=FALSE>>==
 rm(list=ls())   #clear memory
-ALPHA <- 0.001
 @
 
 <<load-meta-data>>=
@@ -39,7 +42,7 @@ variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE)
 variableNames
 @
 
-Then load historic data into R. I set empty strings to \verb+NA+ (because I found them when I looked at a first summary of the data fo r the variables \verb+tail_number+ and \verb+cancellation_code+).
+Then load historic data into R. I set empty strings to \verb+NA+ (because of variables \verb+tail_number+ and \verb+cancellation_code+).
 % this takes about 2 minutes 
 <<load-historic-data>>=
 # historicDataFile <- "../../data/smartfly_historic.csv"
@@ -51,35 +54,13 @@ trainDataTyped <- read.csv(historicDataFile, header=FALSE, stringsAsFactors=FALS
 trainDataTyped$cancelled <- as.logical(trainDataTyped$cancelled)  
 @
 
-Checkout first 10 historic data rows
-<<head-historic-data>>=
-head(trainDataTyped)
+Checkout data content:
+<<str-historic-data>>=
+str(trainDataTyped)
 @
 
-and a summary of the historic data: 
-%this takes about 12 seconds
-<<summary-historic-data>>=
-summary(trainDataTyped)
-@
-
-What are the factor levels for the different variables:
-<<factor-levels>>=
-all_levels <- sapply(1:20, FUN=function(x) {levels(trainDataTyped[,x])})
-names(all_levels) <- variableNames$name
-number_of_levels <- unlist(lapply(all_levels, FUN=length))
-number_of_levels
-lapply(all_levels, FUN=head, n=10)
-@
-(Note: The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.)
-
-
-Conclusions:
-\begin{itemize}
-\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the all strings with less than 4 characters (assuming "900" means "0900" and thus a time of 09h00)
-\item \verb+departure_delay+ needs to be converted to a binary factor (based on definition that only positive delay counts as "delayed")
-\end{itemize}
-
-Reformat \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ to have all values 4 characters long:
+Specifically note the factor levels for the different variables\footnote{The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
+We see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
 <<reformat-scheduled-times>>=
 trainDataTyped$scheduled_departure_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_departure_time)))
@@ -87,27 +68,169 @@ trainDataTyped$scheduled_arrival_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_arrival_time)))
 @
 
-Create binary target variable \verb+is_delayed+:
+We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
+<<reformat-dates>>=
+trainDataTyped$month <- as.factor(
+  sprintf("%02s", as.character(trainDataTyped$month)))
+trainDataTyped$day_of_month <- as.factor(
+  sprintf("%02s", as.character(trainDataTyped$day_of_month)))
+@
+
+\pagebreak
+
+See summary of descriptive statistics of the historic data: 
+%this takes about 12 seconds
+<<summary-historic-data>>=
+summary(trainDataTyped)
+@
+
+Save data frame for next step:
+<<save-df>>==
+save(trainDataTyped, file="trainDataTyped.Rdata")
+@
+
+
+%-------------------------------------------------------------------------------
+%-------  PART THAT CANNOT BE APPLIED TO SCHEDULED DATA
+%-------------------------------------------------------------------------------
+
+
+Since I want to predict whether a flight is delayed or not I create a specific variable \verb+is_delayed+ based on \verb+departure_delay+ using the definition that only positive delay and non-cancelled flights count as "delayed":
 <<create-target-variable>>=
 trainDataTyped$is_delayed <- factor(trainDataTyped$departure_delay > 0 
                                     & trainDataTyped$cancelled==FALSE, 
-                                    labels= c("delayed", "on_time")) 
+                                    labels= c("on_time", "delayed")) 
 summary(trainDataTyped$is_delayed)
 
 summary(trainDataTyped$is_delayed) / length(trainDataTyped$is_delayed)
 @
 
 
-Look at correlations between continuous variables:
-<<example-variable-correlation>>=
-cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_in, use="pairwise.complete.obs")
-cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_out, use="pairwise.complete.obs")
-cor(trainDataTyped$departure_delay, trainDataTyped$distance_travelled, use="pairwise.complete.obs")
+Plot the data:
+<<define-themes, include=FALSE>>=
+th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
+th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
+th_extra_large <- theme(text=element_text(size=76), 
+                        axis.text=element_blank(),
+                        axis.title=element_text(face="bold"))
 @
 
 
+<<plot-data-date, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=trainDataTyped, aes(x=year, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=trainDataTyped, aes(x=month, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=trainDataTyped, aes(x=day_of_week, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=trainDataTyped, aes(x=day_of_month, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+@
+
+<<other-group-options, include=FALSE>>=
+# truncate to 10 minutes (reduces to 116 levels)
+as.factor(paste(substr(as.character(trainDataTyped$scheduled_departure_time),1,3),"0",sep=""))
+@
+
+
+<<group-scheduled-data>>=
+# truncate to hour (reduces to 21 levels)
+trainDataTyped$scheduled_departure_time_grouped <- as.factor(
+  substr(as.character(trainDataTyped$scheduled_departure_time),1,2))
+trainDataTyped$scheduled_arrival_time_grouped <- as.factor(
+  substr(as.character(trainDataTyped$scheduled_arrival_time),1,2))
+@
+
+<<plot-data-time, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=trainDataTyped, aes(x=scheduled_departure_time_grouped, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+ggplot(data=trainDataTyped, aes(x=scheduled_arrival_time_grouped, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+
+
+<<plot-data-airline, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=trainDataTyped, aes(x=airline, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+
+<<plot-data-plane, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=trainDataTyped, aes(x=plane_model, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=trainDataTyped, aes(x=seat_configuration, fill=is_delayed)) + 
+  geom_bar(stat="bin", position=position_dodge()) + scale_x_discrete(labels=abbreviate)+ th_small
+@
+
+The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
+
+
+\begin{landscape}
+<<plot-data-airports, echo=FALSE, fig.width=80, fig.height=12, out.width='1.0\\linewidth', warning=FALSE>>=
+ggplot(data=trainDataTyped, aes(x=origin_airport, fill=is_delayed)) + 
+  geom_bar(stat="bin") + th_extra_large
+ggplot(data=trainDataTyped, aes(x=destination_airport, fill=is_delayed)) + 
+  geom_bar(stat="bin") + th_extra_large
+@
+\vspace{3 mm}
+
+% not included since hard to compress the info
+<<analyse-airports, include=FALSE>>=
+contingency_orig <- table(trainDataTyped$origin_airport, trainDataTyped$is_delayed)
+total_per_airport_orig <- table(trainDataTyped$origin_airport)
+propotions_orig <- apply(contingency_orig, MARGIN=2, FUN=function(x){x/total_per_airport_orig})
+
+contingency_dest <- table(trainDataTyped$destination_airport, trainDataTyped$is_delayed)
+total_per_airport_dest <- table(trainDataTyped$destination_airport)
+propotions_dest <- apply(contingency_dest, MARGIN=2, FUN=function(x){x/total_per_airport_dest})
+@
+
+<<continous-hist, echo=FALSE, fig.width=12, fig.height=8, out.width='.32\\linewidth'>>=
+ggplot(trainDataTyped, aes(distance_travelled, fill = is_delayed)) + 
+  geom_density(alpha=0.2) + th_small
+ggplot(trainDataTyped, aes(taxi_time_in, fill = is_delayed)) + 
+  geom_density(alpha=0.2) + th_small
+ggplot(trainDataTyped, aes(taxi_time_out, fill = is_delayed)) + 
+  geom_density(alpha=0.2) + th_small
+@
+\vspace{2 mm}
+
+<<continous-median, echo=FALSE, fig.width=12, fig.height=8, out.width='.32\\linewidth'>>=
+stats <- ddply(trainDataTyped, .(is_delayed), summarize,  
+      median_distance_travelled=median(distance_travelled),
+      median_taxi_time_in=median(taxi_time_in),
+      median_taxi_time_out=median(taxi_time_out))
+
+ggplot(stats, aes(x=is_delayed, y=median_distance_travelled, fill=is_delayed)) +
+  geom_bar(colour="black", stat="identity", width=0.5) + th_small +
+  guides(fill=FALSE) # disable legend since redundant info
+
+ggplot(stats, aes(x=is_delayed, y=median_taxi_time_in, fill=is_delayed)) +
+  geom_bar(colour="black", stat="identity", width=0.5) + th_small +
+  guides(fill=FALSE) # disable legend since redundant info
+
+ggplot(stats, aes(x=is_delayed, y=median_taxi_time_out, fill=is_delayed)) +
+  geom_bar(colour="black", stat="identity", width=0.5) + th_small +
+  guides(fill=FALSE) # disable legend since redundant info
+@
+\end{landscape}
+
+
+Look at correlations between continuous variables:
+<<example-variable-correlation>>=
+cor(trainDataTyped$departure_delay, trainDataTyped$distance_travelled, use="pairwise.complete.obs")
+cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_in, use="pairwise.complete.obs")
+cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_out, use="pairwise.complete.obs")
+@
+
+
+<<set-alpha, include=FALSE>>=
+ALPHA <- 0.001
+@
+
 Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
-<<example-chisqare-independence, warning=FALSE>>=
+<<prepare-chisqare-independence, include=FALSE>>=
+all_levels <- sapply(1:20, FUN=function(x) {levels(trainDataTyped[,x])})
+number_of_levels <- unlist(lapply(all_levels, FUN=length))
 suitable <- intersect(which(variableNames$type=="factor"), 
                       which(number_of_levels < 20))
 test_independence <- function(col, alpha){
@@ -116,23 +239,11 @@ test_independence <- function(col, alpha){
 }
 dependent_with_target <- sapply(suitable, FUN=test_independence, alpha=ALPHA)
 names(dependent_with_target) <- variableNames$name[suitable]
+@
+
+<<result-chisqare-independence>>=
 dependent_with_target
 @
-
-Save data frame for next step:
-<<save-df>>==
-save(trainDataTyped, file="trainDataTyped.Rdata")
-@
-
-% To evaluate variable \texttt{x} in current paragraph use \Sexpr{x}. 
-% To include plots recorded by the PDF device:
-% 
-% <<boring-plots, fig.width=4, fig.height=4, out.width='.4\\linewidth'>>=
-% ## two plots side by side (option fig.show='hold')
-% par(mar=c(4,4,.1,.1),cex.lab=.95,cex.axis=.9,mgp=c(2,.7,0),tcl=-.3,las=1)
-% boxplot(x)
-% hist(x,main='')
-% @
 
 \end{document}
 

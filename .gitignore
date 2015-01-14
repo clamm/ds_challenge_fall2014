@@ -15,3 +15,7 @@ problem3_winklr/data/*.zip
 *.out
 *.synctex.gz
 *.fdb_latexmk
+
+# plot pdfs
+*/src/*/figure/*.pdf
+
