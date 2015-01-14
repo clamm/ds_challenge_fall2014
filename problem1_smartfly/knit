@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+# Usage:   ./knit <file.Rnw>
+# Example: ./knit src/01_exploratory_data_analysis/exploratory_data_analysis.Rnw
+
+path="$1"
+file=$(basename "$path")
+name="${file%.*}"
+dir=$(dirname "$path")
+
+Rscript -e "library(knitr); knit('$path','${dir}/${name}.tex')"
+
+mv -f figure/* ${dir}/figure/
+rm -rf figure
+
+#pdflatex -output-directory=${dir} -interaction=nonstopmode ${path}
