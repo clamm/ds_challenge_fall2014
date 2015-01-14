@@ -44,6 +44,17 @@ Solution abstract: [docs/solution_abstract_smartfly.pdf](docs/solution_abstract_
 <!-- Solution file: [out/problem1.csv](out/problem1.csv) -->
 Source code: [src](src)
 
+
+Generate Deliverables
+-------
+To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](knit):
+
+  	./knit src/01_exploratory_data_analysis/exploratory_data_analysis.Rnw
+  	./knit src/02_prepare_data_for_modeling/prepare_data.Rnw
+  	./knit src/03_train_model/train_model.Rnw 
+
+
+
 Solution requirements / Used software
 -------
 
@@ -55,4 +66,5 @@ Solution requirements / Used software
 	* caret
 	* glmnet
 * TeXShop (or SublimeText with LaTexTools plugin and Skim)
+
 

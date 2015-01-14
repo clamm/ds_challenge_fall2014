@@ -10,7 +10,10 @@ dir=$(dirname "$path")
 
 Rscript -e "library(knitr); knit('$path','${dir}/${name}.tex')"
 
-mv -f figure/* ${dir}/figure/
-rm -rf figure
+if [ -d figure ]
+then
+  mv -f figure/* ${dir}/figure/
+  rm -rf figure
+fi
 
 #pdflatex -output-directory=${dir} -interaction=nonstopmode ${path}
