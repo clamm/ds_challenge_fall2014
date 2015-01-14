@@ -108,15 +108,16 @@ First load variable names and types of historic data (prepared in an additional 
 \end{kframe}
 \end{knitrout}
 
-Then load historic data into R:
+Then load historic data into R. I set empty strings to \verb+NA+ (because I found them when I looked at a first summary of the data fo r the variables \verb+tail_number+ and \verb+cancellation_code+).
 % this takes about 2 minutes 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{historicDataFile} \hlkwb{<-} \hlstr{"../../data/smartfly_historic.csv"}
-\hlcom{#historicDataFile <- "../../data/mod4000.csv"}
+\hlcom{# historicDataFile <- "../../data/smartfly_historic.csv"}
+\hlstd{historicDataFile} \hlkwb{<-} \hlstr{"../../data/mod4000.csv"}
 \hlstd{trainDataTyped} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(historicDataFile,} \hlkwc{header}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,}
-                           \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,} \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type)}
+                           \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,} \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,}
+                           \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
 \hlcom{# convert integer to logical}
 \hlstd{trainDataTyped}\hlopt{$}\hlstd{cancelled} \hlkwb{<-} \hlkwd{as.logical}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{cancelled)}
 \end{alltt}
@@ -132,32 +133,32 @@ Checkout first 10 historic data rows
 \begin{verbatim}
 ##                    id year month day_of_month day_of_week scheduled_departure_time
 ## 1 4982598272866526024 2013     8           11           7                     1015
-## 2 5074130684343212714 2013     8           17           6                     1015
-## 3 8872634703988349126 2013     8           18           7                     1015
-## 4 1147433994031419585 2013     8           24           6                     1015
-## 5  739211944918463275 2013     8           25           7                     1015
-## 6 7526342364355579297 2013     8           31           6                     1015
+## 2 2750191253294897205 2013     8           23           5                     2045
+## 3  321052625414029507 2013     8           26           1                     2050
+## 4 2029746680434862717 2013     8           28           3                     1415
+## 5 6428004126947779877 2013     8            7           3                     1700
+## 6 6342667027143393159 2013     8           31           6                      905
 ##   scheduled_arrival_time airline flight_number tail_number plane_model seat_configuration
 ## 1                   1132      US           923      N728UW         757        Three Class
-## 2                   1132      US           923      N746UW         757           Standard
-## 3                   1132      US           923      N706UW         787                 V1
-## 4                   1132      US           923      N707UW         747                 V2
-## 5                   1132      US           923      N758UW         787                 V1
-## 6                   1132      US           923      N702UW         747                 V2
+## 2                   2201      US          2523      N511AU         787          Two Class
+## 3                   2137      US           455      N376US         737           Standard
+## 4                   1524      US           498      N704UW         757                 V3
+## 5                   1848      US            84      N413US         737                 V3
+## 6                   1017      US          1071      N743UW         747                 V2
 ##   departure_delay origin_airport destination_airport distance_travelled taxi_time_in
 ## 1              -5            BWI                 CLT                361            9
-## 2               5            BWI                 CLT                361            7
-## 3              -4            BWI                 CLT                361            6
-## 4              -6            BWI                 CLT                361           15
-## 5              -3            BWI                 CLT                361            7
-## 6              -8            BWI                 CLT                361            5
+## 2              -1            CLT                 CMH                346            3
+## 3              -2            CLT                 GSO                 83            4
+## 4              -6            PIT                 MCI                773            5
+## 5              20            CLT                 PBI                590            5
+## 6              -7            PIT                 PHL                267           21
 ##   taxi_time_out cancelled cancellation_code
 ## 1            11     FALSE              <NA>
-## 2             7     FALSE              <NA>
-## 3             9     FALSE              <NA>
-## 4            11     FALSE              <NA>
-## 5            12     FALSE              <NA>
-## 6            15     FALSE              <NA>
+## 2            12     FALSE              <NA>
+## 3            10     FALSE              <NA>
+## 4             9     FALSE              <NA>
+## 5            17     FALSE              <NA>
+## 6            14     FALSE              <NA>
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -170,45 +171,45 @@ and a summary of the historic data:
 \hlkwd{summary}\hlstd{(trainDataTyped)}
 \end{alltt}
 \begin{verbatim}
-##       id              year             month          day_of_month     day_of_week
-##  Length:7374365     2013:2185499   8      :1023748   13     : 252615   1:1079862  
-##  Class :character   2014:5188866   9      : 957710   6      : 252560   2:1063516  
-##  Mode  :character                  10     : 782952   3      : 252160   3:1069847  
-##                                    3      : 559342   17     : 251944   4:1096825  
-##                                    7      : 558568   16     : 250869   5:1096417  
-##                                    1      : 552109   2      : 250647   6: 935465  
-##                                    (Other):2939936   (Other):5863570   7:1032433  
-##  scheduled_departure_time scheduled_arrival_time    airline        flight_number    
-##  700    : 105996          1810   :  21315        WN     :1171236   192    :   5702  
-##  800    :  74502          1715   :  21191        AA     : 960866   64     :   5639  
-##  600    :  66567          1215   :  21074        DL     : 825543   706    :   5409  
-##  900    :  65778          1615   :  21048        UA     : 686409   186    :   5373  
-##  630    :  60479          1605   :  20639        NW     : 619091   751    :   5209  
-##  1700   :  56619          1630   :  20359        US     : 529032   340    :   5060  
-##  (Other):6944424          (Other):7248739        (Other):2582188   (Other):7341973  
-##   tail_number      plane_model      seat_configuration  departure_delay   
-##         :  42213   737 :2317735   Standard   :2130560   Min.   :-1410.00  
-##  0      :  17138   747 :1579936   Three Class: 779700   1st Qu.:   -4.00  
-##  000000 :  10157   757 : 999512   Two Class  : 779964   Median :    0.00  
-##  N183UW :   4694   777 : 634170   V1         :1430984   Mean   :    4.87  
-##  N80    :   4290   787 : 633182   V2         :1105044   3rd Qu.:    2.00  
-##  N96    :   4269   A320:1209830   V3         :1148113   Max.   : 2119.00  
-##  (Other):7291604                                        NA's   :104127    
-##  origin_airport    destination_airport distance_travelled  taxi_time_in     
-##  ORD    : 431004   ORD    : 431004     Min.   :  11       Min.   :   0.000  
-##  ATL    : 389963   ATL    : 389886     1st Qu.: 308       1st Qu.:   4.000  
-##  DFW    : 382123   DFW    : 382349     Median : 569       Median :   5.000  
-##  LAX    : 255642   LAX    : 255786     Mean   : 726       Mean   :   6.808  
-##  PHX    : 209831   PHX    : 209839     3rd Qu.: 964       3rd Qu.:   7.000  
-##  IAH    : 195923   IAH    : 195926     Max.   :4962       Max.   :1495.000  
-##  (Other):5509879   (Other):5509575                                          
-##  taxi_time_out     cancelled       cancellation_code
-##  Min.   :   0.00   Mode :logical       :2484977     
-##  1st Qu.:  10.00   FALSE:7270238   A   :  14587     
-##  Median :  13.00   TRUE :104127    B   :   8072     
-##  Mean   :  15.05   NA's :0         C   :   8309     
-##  3rd Qu.:  18.00                   D   :    179     
-##  Max.   :1439.00                   NA's:4858241     
+##       id              year          month      day_of_month  day_of_week
+##  Length:1844        2013: 547   8      :256   16     :  77   1:282      
+##  Class :character   2014:1297   9      :240   12     :  73   2:279      
+##  Mode  :character               10     :195   23     :  73   3:252      
+##                                 3      :140   21     :  71   4:282      
+##                                 7      :140   15     :  68   5:269      
+##                                 1      :138   7      :  67   6:229      
+##                                 (Other):735   (Other):1415   7:251      
+##  scheduled_departure_time scheduled_arrival_time    airline    flight_number 
+##  800    :  28             1350   :  12           WN     :292   1270   :   5  
+##  700    :  27             1715   :  11           AA     :238   1071   :   4  
+##  630    :  21             1145   :  10           DL     :207   108    :   4  
+##  600    :  19             1025   :   8           UA     :172   1130   :   4  
+##  1600   :  18             1050   :   8           NW     :155   1219   :   4  
+##  900    :  18             1135   :   8           MQ     :134   1484   :   4  
+##  (Other):1713             (Other):1787           (Other):646   (Other):1819  
+##   tail_number   plane_model   seat_configuration departure_delay   origin_airport
+##  0      :   6   737 :592    Standard   :531      Min.   :-20.000   DFW    : 109  
+##  N345   :   5   747 :409    Three Class:213      1st Qu.: -5.000   ORD    : 109  
+##  N426UA :   5   757 :228    Two Class  :184      Median :  0.000   ATL    :  99  
+##  N366   :   4   777 :180    V1         :357      Mean   :  5.718   LAX    :  67  
+##  N421UA :   4   787 :147    V2         :266      3rd Qu.:  3.000   IAH    :  53  
+##  (Other):1806   A320:288    V3         :293      Max.   :478.000   LAS    :  49  
+##  NA's   :  14                                    NA's   :34        (Other):1358  
+##  destination_airport distance_travelled  taxi_time_in    taxi_time_out   cancelled      
+##  DFW    :  97        Min.   :  28.0     Min.   : 0.000   Min.   :  0.0   Mode :logical  
+##  ORD    :  93        1st Qu.: 308.0     1st Qu.: 4.000   1st Qu.: 10.0   FALSE:1810     
+##  ATL    :  85        Median : 569.0     Median : 5.000   Median : 13.0   TRUE :34       
+##  LAX    :  73        Mean   : 730.5     Mean   : 6.286   Mean   : 15.1   NA's :0        
+##  PHX    :  51        3rd Qu.: 978.5     3rd Qu.: 7.000   3rd Qu.: 18.0                  
+##  DTW    :  50        Max.   :3904.0     Max.   :53.000   Max.   :123.0                  
+##  (Other):1395                                                                           
+##  cancellation_code
+##  A   :   6        
+##  B   :   3        
+##  C   :   3        
+##  NA's:1832        
+##                   
+##                   
 ## 
 \end{verbatim}
 \end{kframe}
@@ -227,17 +228,17 @@ What are the factor levels for the different variables:
 ##                       id                     year                    month 
 ##                        0                        2                       12 
 ##             day_of_month              day_of_week scheduled_departure_time 
-##                       31                        7                     1190 
+##                       31                        7                      487 
 ##   scheduled_arrival_time                  airline            flight_number 
-##                     1323                       17                     6889 
+##                      799                       17                     1426 
 ##              tail_number              plane_model       seat_configuration 
-##                     5036                        6                        6 
+##                     1489                        6                        6 
 ##          departure_delay           origin_airport      destination_airport 
-##                        0                      279                      279 
+##                        0                      172                      170 
 ##       distance_travelled             taxi_time_in            taxi_time_out 
 ##                        0                        0                        0 
 ##                cancelled        cancellation_code 
-##                        0                        5
+##                        0                        3
 \end{verbatim}
 \begin{alltt}
 \hlkwd{lapply}\hlstd{(all_levels,} \hlkwc{FUN}\hlstd{=head,} \hlkwc{n}\hlstd{=}\hlnum{10}\hlstd{)}
@@ -259,20 +260,20 @@ What are the factor levels for the different variables:
 ## [1] "1" "2" "3" "4" "5" "6" "7"
 ## 
 ## $scheduled_departure_time
-##  [1] "0"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005" "1006"
+##  [1] "100"  "1000" "1005" "1010" "1011" "1013" "1014" "1015" "1018" "1019"
 ## 
 ## $scheduled_arrival_time
-##  [1] "0"    "1"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005"
+##  [1] "1000" "1001" "1002" "1003" "1004" "1005" "1007" "1008" "1009" "1010"
 ## 
 ## $airline
 ##  [1] "AA" "AS" "B6" "CO" "DH" "DL" "EV" "FL" "HP" "MQ"
 ## 
 ## $flight_number
-##  [1] "1"    "10"   "100"  "1000" "1001" "1002" "1003" "1004" "1005" "1006"
+##  [1] "1"    "10"   "100"  "1000" "1006" "1007" "1010" "1018" "102"  "1020"
 ## 
 ## $tail_number
-##  [1] ""       "0"      "000000" "N050AA" "N051AA" "N052AA" "N054AA" "N055AA" "N056AA"
-## [10] "N057AA"
+##  [1] "0"      "000000" "N050AA" "N055AA" "N056AA" "N063AA" "N069AA" "N077AA" "N082AA"
+## [10] "N101DA"
 ## 
 ## $plane_model
 ## [1] "737"  "747"  "757"  "777"  "787"  "A320"
@@ -284,10 +285,10 @@ What are the factor levels for the different variables:
 ## NULL
 ## 
 ## $origin_airport
-##  [1] "ABE" "ABI" "ABQ" "ABY" "ACK" "ACT" "ACV" "ACY" "ADK" "ADQ"
+##  [1] "ABQ" "ABY" "ACT" "ACV" "ALB" "AMA" "ANC" "ATL" "AUS" "AZO"
 ## 
 ## $destination_airport
-##  [1] "ABE" "ABI" "ABQ" "ABY" "ACK" "ACT" "ACV" "ACY" "ADK" "ADQ"
+##  [1] "ABE" "ABQ" "ACV" "ADQ" "AGS" "ALB" "AMA" "ANC" "ATL" "AUS"
 ## 
 ## $distance_travelled
 ## NULL
@@ -302,7 +303,7 @@ What are the factor levels for the different variables:
 ## NULL
 ## 
 ## $cancellation_code
-## [1] ""  "A" "B" "C" "D"
+## [1] "A" "B" "C"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -311,11 +312,21 @@ What are the factor levels for the different variables:
 
 Conclusions:
 \begin{itemize}
-\item \verb+tail_number+ and \verb+cancellation_code+ contain spaces that need to be converted to \verb+NA+
-\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the 3-character strings (assuming "900" means "0900" and thus a time of 09h00)
+\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the all strings with less than 4 characters (assuming "900" means "0900" and thus a time of 09h00)
 \item \verb+departure_delay+ needs to be converted to a binary factor (based on definition that only positive delay counts as "delayed")
 \end{itemize}
 
+Reformat \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ to have all values 4 characters long:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time)))}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time)))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Create binary target variable \verb+is_delayed+:
 \begin{knitrout}
@@ -328,7 +339,14 @@ Create binary target variable \verb+is_delayed+:
 \end{alltt}
 \begin{verbatim}
 ## delayed on_time 
-## 5263866 2110499
+##    1315     529
+\end{verbatim}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed)} \hlopt{/} \hlkwd{length}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed)}
+\end{alltt}
+\begin{verbatim}
+##   delayed   on_time 
+## 0.7131236 0.2868764
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -341,25 +359,25 @@ Look at correlations between continuous variables:
 \hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{taxi_time_in,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.03345877
+## [1] -0.01443199
 \end{verbatim}
 \begin{alltt}
 \hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{taxi_time_out,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.06387488
+## [1] 0.04835774
 \end{verbatim}
 \begin{alltt}
 \hlkwd{cor}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{departure_delay, trainDataTyped}\hlopt{$}\hlstd{distance_travelled,} \hlkwc{use}\hlstd{=}\hlstr{"pairwise.complete.obs"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-## [1] -0.0007718446
+## [1] 0.01826093
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
 
-Look at some dependency between the binary target variable and other factor variables using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=0.001 (chosen so small due to large sample size)$:
+Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=0.001$ (chosen so small due to large sample size):
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -377,9 +395,9 @@ Look at some dependency between the binary target variable and other factor vari
 \end{alltt}
 \begin{verbatim}
 ##               year              month        day_of_week            airline 
-##               TRUE               TRUE               TRUE               TRUE 
+##              FALSE              FALSE              FALSE               TRUE 
 ##        plane_model seat_configuration  cancellation_code 
-##               TRUE               TRUE               TRUE
+##               TRUE              FALSE                 NA
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -407,4 +425,5 @@ Save data frame for next step:
 \end{document}
 
 % create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% library(knitr)
 % knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")

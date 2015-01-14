@@ -39,13 +39,14 @@ variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE)
 variableNames
 @
 
-Then load historic data into R:
+Then load historic data into R. I set empty strings to \verb+NA+ (because I found them when I looked at a first summary of the data fo r the variables \verb+tail_number+ and \verb+cancellation_code+).
 % this takes about 2 minutes 
 <<load-historic-data>>=
-historicDataFile <- "../../data/smartfly_historic.csv"
-#historicDataFile <- "../../data/mod4000.csv"
+# historicDataFile <- "../../data/smartfly_historic.csv"
+historicDataFile <- "../../data/mod4000.csv"
 trainDataTyped <- read.csv(historicDataFile, header=FALSE, stringsAsFactors=FALSE, 
-                           col.names=variableNames$name, colClasses=variableNames$type)
+                           col.names=variableNames$name, colClasses=variableNames$type,
+                           na.strings=c("NA",""))
 # convert integer to logical
 trainDataTyped$cancelled <- as.logical(trainDataTyped$cancelled)  
 @
@@ -74,11 +75,17 @@ lapply(all_levels, FUN=head, n=10)
 
 Conclusions:
 \begin{itemize}
-\item \verb+tail_number+ and \verb+cancellation_code+ contain spaces that need to be converted to \verb+NA+
-\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the 3-character strings (assuming "900" means "0900" and thus a time of 09h00)
+\item \verb+scheduled_departure_time+ (and probably \verb+scheduled_arrival_time+ as well) need to be prefixed with 0 for the all strings with less than 4 characters (assuming "900" means "0900" and thus a time of 09h00)
 \item \verb+departure_delay+ needs to be converted to a binary factor (based on definition that only positive delay counts as "delayed")
 \end{itemize}
 
+Reformat \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ to have all values 4 characters long:
+<<reformat-scheduled-times>>=
+trainDataTyped$scheduled_departure_time <- as.factor(
+  sprintf("%04s", as.character(trainDataTyped$scheduled_departure_time)))
+trainDataTyped$scheduled_arrival_time <- as.factor(
+  sprintf("%04s", as.character(trainDataTyped$scheduled_arrival_time)))
+@
 
 Create binary target variable \verb+is_delayed+:
 <<create-target-variable>>=
@@ -86,6 +93,8 @@ trainDataTyped$is_delayed <- factor(trainDataTyped$departure_delay > 0
                                     & trainDataTyped$cancelled==FALSE, 
                                     labels= c("delayed", "on_time")) 
 summary(trainDataTyped$is_delayed)
+
+summary(trainDataTyped$is_delayed) / length(trainDataTyped$is_delayed)
 @
 
 
@@ -97,7 +106,7 @@ cor(trainDataTyped$departure_delay, trainDataTyped$distance_travelled, use="pair
 @
 
 
-Look at some dependency between the binary target variable and other factor variables using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA} (chosen so small due to large sample size)$:
+Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
 <<example-chisqare-independence>>=
 suitable <- intersect(which(variableNames$type=="factor"), 
                       which(number_of_levels < 20))
@@ -111,7 +120,6 @@ dependent_with_target <- sapply(suitable, FUN=test_independence, alpha=ALPHA)
 names(dependent_with_target) <- variableNames$name[suitable]
 dependent_with_target
 @
-
 
 Save data frame for next step:
 <<save-df>>==
@@ -131,4 +139,5 @@ save(trainDataTyped, file="trainDataTyped.Rdata")
 \end{document}
 
 % create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% library(knitr)
 % knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")
