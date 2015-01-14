@@ -17,5 +17,6 @@ problem3_winklr/data/*.zip
 *.fdb_latexmk
 
 # plot pdfs
+*/src/*/all.pdf
 */src/*/figure/*.pdf
 
