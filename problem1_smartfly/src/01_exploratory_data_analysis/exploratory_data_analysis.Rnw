@@ -107,13 +107,11 @@ cor(trainDataTyped$departure_delay, trainDataTyped$distance_travelled, use="pair
 
 
 Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
-<<example-chisqare-independence>>=
+<<example-chisqare-independence, warning=FALSE>>=
 suitable <- intersect(which(variableNames$type=="factor"), 
                       which(number_of_levels < 20))
 test_independence <- function(col, alpha){
-  result <- suppressWarnings(
-      chisq.test(table(trainDataTyped$is_delayed, trainDataTyped[,col]))
-      )
+  result <- chisq.test(table(trainDataTyped$is_delayed, trainDataTyped[,col]))
   return(result$p.value < alpha)
 }
 dependent_with_target <- sapply(suitable, FUN=test_independence, alpha=ALPHA)

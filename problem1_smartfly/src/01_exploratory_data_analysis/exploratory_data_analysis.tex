@@ -384,9 +384,7 @@ Look at some dependency between the binary target variable and other factor vari
 \hlstd{suitable} \hlkwb{<-} \hlkwd{intersect}\hlstd{(}\hlkwd{which}\hlstd{(variableNames}\hlopt{$}\hlstd{type}\hlopt{==}\hlstr{"factor"}\hlstd{),}
                       \hlkwd{which}\hlstd{(number_of_levels} \hlopt{<} \hlnum{20}\hlstd{))}
 \hlstd{test_independence} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{col}\hlstd{,} \hlkwc{alpha}\hlstd{)\{}
-  \hlstd{result} \hlkwb{<-} \hlkwd{suppressWarnings}\hlstd{(}
-      \hlkwd{chisq.test}\hlstd{(}\hlkwd{table}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed, trainDataTyped[,col]))}
-      \hlstd{)}
+  \hlstd{result} \hlkwb{<-} \hlkwd{chisq.test}\hlstd{(}\hlkwd{table}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed, trainDataTyped[,col]))}
   \hlkwd{return}\hlstd{(result}\hlopt{$}\hlstd{p.value} \hlopt{<} \hlstd{alpha)}
 \hlstd{\}}
 \hlstd{dependent_with_target} \hlkwb{<-} \hlkwd{sapply}\hlstd{(suitable,} \hlkwc{FUN}\hlstd{=test_independence,} \hlkwc{alpha}\hlstd{=ALPHA)}
@@ -401,7 +399,6 @@ Look at some dependency between the binary target variable and other factor vari
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
-
 
 Save data frame for next step:
 \begin{knitrout}
