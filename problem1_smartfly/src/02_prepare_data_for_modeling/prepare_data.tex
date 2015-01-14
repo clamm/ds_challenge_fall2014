@@ -83,18 +83,59 @@ Load preprocessed data from the previous step "Exploratory Data Analysis"
 \end{kframe}
 \end{knitrout}
 
+\subsection{Analyse \& deal with missing values}
+
+
+
+The variable \verb+cancellation_code+ has the most missing values since it is only filled if the flight was not cancelled - which is the case for most flights.
+I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found 168 non-cancelled flights that do have an entry as \verb+cancellation_code+, I'll exclude those observations from the data set in the following.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{weird_idx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlopt{!}\hlstd{trainDataTyped}\hlopt{$}\hlstd{cancelled} \hlopt{& !}\hlkwd{is.na}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{cancellation_code))}
+\hlstd{trainDataTyped} \hlkwb{<-} \hlstd{trainDataTyped[}\hlopt{-}\hlstd{weird_idx,]}
+\hlstd{n_obs} \hlkwb{<-} \hlkwd{dim}\hlstd{(trainDataTyped)[}\hlnum{1}\hlstd{]}
+\hlstd{n_obs}
+\end{alltt}
+\begin{verbatim}
+## [1] 7374197
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+Often observations with any missing value are excluded from the modeling stage. 
+There would by 7270012 observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
+I do not remove the 104185 rows with \verb+NA+s yet since I don't know which variables I will use for the modeling.
+
 Split the train data based on simple bootstrap resampling into a series of train and test sets
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{library}\hlstd{(caret)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: lattice\\\#\# Loading required package: ggplot2\\\#\# Loading required package: methods}}\begin{alltt}
 \hlkwd{set.seed}\hlstd{(}\hlnum{998}\hlstd{)}
 \hlcom{#use simple bootstrap resampling to split data into a series of train and test set}
 \hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed,} \hlkwc{p} \hlstd{=} \hlnum{.5}\hlstd{,} \hlkwc{list} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in createDataPartition(trainDataTyped\$is\_delayed, p = 0.5, list = FALSE): y must have at least 2 data points}}\begin{alltt}
 \hlstd{training} \hlkwb{<-} \hlstd{trainDataTyped[ inTraining,]}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in `[.data.frame`(trainDataTyped, inTraining, ): object 'inTraining' not found}}\begin{alltt}
 \hlstd{testing}  \hlkwb{<-} \hlstd{trainDataTyped[}\hlopt{-}\hlstd{inTraining,]}
 \end{alltt}
-\end{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in `[.data.frame`(trainDataTyped, -inTraining, ): object 'inTraining' not found}}\end{kframe}
 \end{knitrout}
 
 Create custom function to specifiy the type of resampling and a grid for tuning parameters\footnote{both taken from \url{https://github.com/topepo/caret/blob/master/RegressionTests/Code/glmnet.R}}

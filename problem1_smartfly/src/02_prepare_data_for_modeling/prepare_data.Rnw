@@ -34,6 +34,36 @@ rm(list=ls())   #clear memory
 load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
 @
 
+\subsection{Analyse \& deal with missing values}
+
+<<analyse-cancellations, include=FALSE>>=
+unclear_status <- sum(!trainDataTyped$cancelled & !is.na(trainDataTyped$cancellation_code))
+@
+
+The variable \verb+cancellation_code+ has the most missing values since it is only filled if the flight was not cancelled - which is the case for most flights.
+I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found \Sexpr{unclear_status} non-cancelled flights that do have an entry as \verb+cancellation_code+, I'll exclude those observations from the data set in the following.
+
+<<remove-weird-obs>>=
+weird_idx <- which(!trainDataTyped$cancelled & !is.na(trainDataTyped$cancellation_code))
+trainDataTyped <- trainDataTyped[-weird_idx,]
+n_obs <- dim(trainDataTyped)[1]
+n_obs
+@
+
+<<check-na-removal, include=FALSE>>=
+any.na <- function(row){
+  any(is.na(row))
+} 
+# exclude cancellation_code which has NA for more than 50% of the observations
+exclude_idx <- which(names(trainDataTyped)=="cancellation_code")
+n_rows_with_na <- sum(apply(trainDataTyped[,-exclude_idx], MARGIN=1, FUN=any.na) )
+n_rows_left <- n_obs - n_rows_with_na
+@
+
+Often observations with any missing value are excluded from the modeling stage. 
+There would by \Sexpr{n_rows_left} observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
+I do not remove the \Sexpr{n_rows_with_na} rows with \verb+NA+s yet since I don't know which variables I will use for the modeling.
+
 Split the train data based on simple bootstrap resampling into a series of train and test sets
 <<split-train-data>>=
 library(caret)
