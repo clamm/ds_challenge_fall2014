@@ -70,7 +70,7 @@
 
 
 
-\title{SmartFly: Exploratory Data Analysis}
+\title{SmartFly: Exploratory Analysis For Historic Flight Data}
 
 
 \author{Cindy Lamm}
@@ -115,7 +115,7 @@ First load variable names and types of historic data (prepared in an additional 
 \end{kframe}
 \end{knitrout}
 
-Then load historic data into R. I set empty strings to \verb+NA+ (because of variables \verb+tail_number+ and \verb+cancellation_code+).
+Then load historic data into R. I set empty strings to \verb+NA+ (since I saw in the first rough analysis of the data on the command line that at least \verb+cancellation_code+ contains empty spaces).
 % this takes about 2 minutes 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -163,8 +163,8 @@ Checkout data content:
 \end{kframe}
 \end{knitrout}
 
-Specifically note the factor levels for the different variables\footnote{The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
-We see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
+Specifically note the factor levels for the different variables\footnote{The number of levels matters if I would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
+I see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -176,7 +176,7 @@ We see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ ne
 \end{kframe}
 \end{knitrout}
 
-In addition we truncate the scheduled times to the hour:
+In addition I truncate the scheduled times to the hour:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -188,7 +188,7 @@ In addition we truncate the scheduled times to the hour:
 \end{kframe}
 \end{knitrout}
 
-We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
+I also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -301,10 +301,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/plot-year-month-1} 
-\includegraphics[width=.4\linewidth]{figure/plot-year-month-2} 
-\includegraphics[width=.4\linewidth]{figure/plot-year-month-3} 
-\includegraphics[width=.4\linewidth]{figure/plot-year-month-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-4} 
 
 }
 
@@ -315,10 +315,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/plot-day-1} 
-\includegraphics[width=.4\linewidth]{figure/plot-day-2} 
-\includegraphics[width=.4\linewidth]{figure/plot-day-3} 
-\includegraphics[width=.4\linewidth]{figure/plot-day-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-day-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-4} 
 
 }
 
@@ -330,10 +330,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.9\linewidth]{figure/plot-data-time-1} 
-\includegraphics[width=.9\linewidth]{figure/plot-data-time-2} 
-\includegraphics[width=.9\linewidth]{figure/plot-data-time-3} 
-\includegraphics[width=.9\linewidth]{figure/plot-data-time-4} 
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-1} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-2} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-3} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-4} 
 
 }
 
@@ -344,8 +344,8 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.9\linewidth]{figure/plot-data-airline-1} 
-\includegraphics[width=.9\linewidth]{figure/plot-data-airline-2} 
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-1} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-2} 
 
 }
 
@@ -356,10 +356,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/plot-data-plane-1} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-plane-2} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-plane-3} 
-\includegraphics[width=.4\linewidth]{figure/plot-data-plane-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-4} 
 
 }
 
@@ -374,10 +374,10 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=1.0\linewidth]{figure/plot-data-airports-1} 
-\includegraphics[width=1.0\linewidth]{figure/plot-data-airports-2} 
-\includegraphics[width=1.0\linewidth]{figure/plot-data-airports-3} 
-\includegraphics[width=1.0\linewidth]{figure/plot-data-airports-4} 
+{\centering \includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-1} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-2} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-3} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-4} 
 
 }
 
@@ -392,9 +392,9 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.32\linewidth]{figure/continous-hist-1} 
-\includegraphics[width=.32\linewidth]{figure/continous-hist-2} 
-\includegraphics[width=.32\linewidth]{figure/continous-hist-3} 
+{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-hist-1} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-2} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-3} 
 
 }
 
@@ -406,9 +406,9 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.32\linewidth]{figure/continous-median-1} 
-\includegraphics[width=.32\linewidth]{figure/continous-median-2} 
-\includegraphics[width=.32\linewidth]{figure/continous-median-3} 
+{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-median-1} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-median-2} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-median-3} 
 
 }
 
@@ -445,7 +445,7 @@ Look at correlations between continuous variables:
 
 
 
-Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=0.001$ (chosen so small due to large sample size):
+Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which I reject if the p-value is smaller than $\alpha=0.001$ (chosen so small due to large sample size):
 
 
 \begin{knitrout}
@@ -464,6 +464,6 @@ Look at some dependency between the binary target variable and other factor vari
 
 \end{document}
 
-% create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% create the exploratory_data_analysis_historic.tex with (takes about 4 minutes!)
 % library(knitr)
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis_historic.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_historic.tex")

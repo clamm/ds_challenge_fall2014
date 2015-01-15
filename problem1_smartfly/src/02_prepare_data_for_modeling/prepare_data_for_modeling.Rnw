@@ -28,7 +28,7 @@ options(formatR.arrow=TRUE,width=90)
 
 \maketitle
 
-Load preprocessed data from the previous step "Exploratory Data Analysis"
+Load preprocessed data from the previous step "Exploratory Analysis For Historic Flight Data"
 <<load-typed-data>>=
 rm(list=ls())   #clear memory
 load("../01_exploratory_data_analysis/trainDataTyped.Rdata")

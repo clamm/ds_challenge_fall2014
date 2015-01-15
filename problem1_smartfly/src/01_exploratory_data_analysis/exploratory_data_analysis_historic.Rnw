@@ -22,7 +22,7 @@ library(knitr)
 library(ggplot2)
 library(plyr)
 # set global chunk options
-opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+opts_chunk$set(fig.path='figure/historic-', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
@@ -62,8 +62,8 @@ Checkout data content:
 str(trainDataTyped)
 @
 
-Specifically note the factor levels for the different variables\footnote{The number of levels matters if we would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
-We see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
+Specifically note the factor levels for the different variables\footnote{The number of levels matters if I would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
+I see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
 <<reformat-scheduled-times>>=
 trainDataTyped$scheduled_departure_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_departure_time)))
@@ -71,7 +71,7 @@ trainDataTyped$scheduled_arrival_time <- as.factor(
   sprintf("%04s", as.character(trainDataTyped$scheduled_arrival_time)))
 @
 
-In addition we truncate the scheduled times to the hour:
+In addition I truncate the scheduled times to the hour:
 <<group-scheduled-times>>=
 trainDataTyped$scheduled_departure_time <- as.factor(
   substr(as.character(trainDataTyped$scheduled_departure_time),1,2))
@@ -79,7 +79,7 @@ trainDataTyped$scheduled_arrival_time <- as.factor(
   substr(as.character(trainDataTyped$scheduled_arrival_time),1,2))
 @
 
-We also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
+I also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
 <<reformat-dates>>=
 trainDataTyped$month <- as.factor(
   sprintf("%02s", as.character(trainDataTyped$month)))
@@ -255,7 +255,7 @@ cor(trainDataTyped$departure_delay, trainDataTyped$taxi_time_out, use="pairwise.
 ALPHA <- 0.001
 @
 
-Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which we reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
+Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which I reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
 <<prepare-chisqare-independence, include=FALSE>>=
 all_levels <- sapply(1:20, FUN=function(x) {levels(trainDataTyped[,x])})
 number_of_levels <- unlist(lapply(all_levels, FUN=length))
@@ -274,6 +274,6 @@ dependent_with_target
 
 \end{document}
 
-% create the exploratory_data_analysis.tex with (takes about 4 minutes!)
+% create the exploratory_data_analysis_historic.tex with (takes about 4 minutes!)
 % library(knitr)
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis_historic.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_historic.tex")

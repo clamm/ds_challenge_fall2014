@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+\flushbottom
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+library(ggplot2)
+library(plyr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/scheduled-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+
+\title{SmartFly: Exploratory Analysis For Scheduled Flight Data}
+
+
+\author{Cindy Lamm}
+
+\maketitle
+Assuming that scheduled flight data and historic flight data have the same variables, I 
+load these variable names and types of historic data (prepared in an additional csv file):
+<<setup-defaults, include=FALSE>>==
+rm(list=ls())   #clear memory
+@
+
+<<load-meta-data>>=
+nameTypeDataFile  <- "resources/raw_variables.csv"
+variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
+variableNames
+factor_idx <- which(variableNames$type=="factor")
+@
+
+Then load scheduled data into R. As I did for the historic data I set empty strings to \verb+NA+ (here because of variable \verb+tail_number+).
+% this takes about 2 minutes 
+<<load-scheduled-data>>=
+scheduledDataFile <- "../../data/smartfly_scheduled.csv"
+predictDataTyped <- read.csv(scheduledDataFile, header=FALSE, stringsAsFactors=FALSE, 
+                           col.names=variableNames$name, colClasses=variableNames$type,
+                           na.strings=c("NA",""))
+# convert integer to logical
+predictDataTyped$cancelled <- as.logical(predictDataTyped$cancelled)  
+@
+
+Checkout data content:
+<<str-scheduled-data>>=
+str(predictDataTyped)
+@
+
+Checkout factor levels for the variables.
+
+Note: If I train a model on levels that don't exist in the prediction data the prediction phase might fail.
+
+As I did for the historic data the variables \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ are first reformatted and then truncated to the hour.
+<<reformat-scheduled-times>>=
+predictDataTyped$scheduled_departure_time <- as.factor(
+  sprintf("%04s", as.character(predictDataTyped$scheduled_departure_time)))
+predictDataTyped$scheduled_arrival_time <- as.factor(
+  sprintf("%04s", as.character(predictDataTyped$scheduled_arrival_time)))
+@
+
+<<group-scheduled-times>>=
+predictDataTyped$scheduled_departure_time <- as.factor(
+  substr(as.character(predictDataTyped$scheduled_departure_time),1,2))
+predictDataTyped$scheduled_arrival_time <- as.factor(
+  substr(as.character(predictDataTyped$scheduled_arrival_time),1,2))
+@
+
+I also again reformat the variables \verb+day_of_month+ and \verb+month+:
+<<reformat-dates>>=
+predictDataTyped$month <- as.factor(
+  sprintf("%02s", as.character(predictDataTyped$month)))
+predictDataTyped$day_of_month <- as.factor(
+  sprintf("%02s", as.character(predictDataTyped$day_of_month)))
+@
+
+\pagebreak
+
+See summary of descriptive statistics of the scheduled data: 
+%this takes about 12 seconds
+<<summary-scheduled-data>>=
+summary(predictDataTyped)
+@
+
+Save data frame for next step:
+<<save-df>>==
+save(predictDataTyped, file="predictDataTyped.Rdata")
+@
+
+\end{document}
+
+% create the exploratory_data_analysis_scheduled.tex with (takes about 4 minutes!)
+% library(knitr)
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.tex")
