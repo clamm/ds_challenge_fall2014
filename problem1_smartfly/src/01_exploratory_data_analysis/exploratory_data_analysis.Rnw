@@ -27,7 +27,7 @@ options(formatR.arrow=TRUE,width=90)
 @
 
 
-\title{SmartFly: Exploratory Data Analysis}
+\title{SmartFly: Exploratory Analysis For Historic Flight Data}
 
 
 \author{Cindy Lamm}
@@ -45,7 +45,7 @@ variableNames
 factor_idx <- which(variableNames$type=="factor")
 @
 
-Then load historic data into R. I set empty strings to \verb+NA+ (because of variables \verb+tail_number+ and \verb+cancellation_code+).
+Then load historic data into R. I set empty strings to \verb+NA+ (since I saw in the first rough analysis of the data on the command line that at least \verb+cancellation_code+ contains empty spaces).
 % this takes about 2 minutes 
 <<load-historic-data>>=
 historicDataFile <- "../../data/smartfly_historic.csv"
