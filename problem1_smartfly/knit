@@ -12,6 +12,7 @@ Rscript -e "library(knitr); knit('$path','${dir}/${name}.tex')"
 
 if [ -d figure ]
 then
+  mkdir -p ${dir}/figure
   mv -f figure/* ${dir}/figure/
   rm -rf figure
 fi
