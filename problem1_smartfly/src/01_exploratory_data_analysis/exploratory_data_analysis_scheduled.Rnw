@@ -7,6 +7,7 @@
 \usepackage{pdflscape}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -20,19 +21,17 @@
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
 library(ggplot2)
-library(plyr)
 # set global chunk options
 opts_chunk$set(fig.path='figure/scheduled-', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
-
+\date{\currenttime, \today}
 \title{SmartFly: Exploratory Analysis For Scheduled Flight Data}
-
-
 \author{Cindy Lamm}
 
 \maketitle
+
 Assuming that scheduled flight data and historic flight data have the same variables, I 
 load these variable names and types of historic data (prepared in an additional csv file):
 <<setup-defaults, include=FALSE>>==
@@ -53,8 +52,6 @@ scheduledDataFile <- "../../data/smartfly_scheduled.csv"
 predictDataTyped <- read.csv(scheduledDataFile, header=FALSE, stringsAsFactors=FALSE, 
                            col.names=variableNames$name, colClasses=variableNames$type,
                            na.strings=c("NA",""))
-# convert integer to logical
-predictDataTyped$cancelled <- as.logical(predictDataTyped$cancelled)  
 @
 
 Checkout data content:
@@ -67,14 +64,12 @@ Checkout factor levels for the variables.
 Note: If I train a model on levels that don't exist in the prediction data the prediction phase might fail.
 
 As I did for the historic data the variables \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ are first reformatted and then truncated to the hour.
-<<reformat-scheduled-times>>=
+<<reformat-truncate-scheduled-times>>=
 predictDataTyped$scheduled_departure_time <- as.factor(
   sprintf("%04s", as.character(predictDataTyped$scheduled_departure_time)))
 predictDataTyped$scheduled_arrival_time <- as.factor(
   sprintf("%04s", as.character(predictDataTyped$scheduled_arrival_time)))
-@
 
-<<group-scheduled-times>>=
 predictDataTyped$scheduled_departure_time <- as.factor(
   substr(as.character(predictDataTyped$scheduled_departure_time),1,2))
 predictDataTyped$scheduled_arrival_time <- as.factor(
@@ -101,6 +96,63 @@ Save data frame for next step:
 <<save-df>>==
 save(predictDataTyped, file="predictDataTyped.Rdata")
 @
+
+
+%-------------------------------------------------------------------------------
+%-------  PLOTS
+%-------------------------------------------------------------------------------
+
+Plot the data:
+
+<<define-themes, include=FALSE>>=
+th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
+th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
+th_extra_large <- theme(text=element_text(size=76), 
+                        axis.text=element_blank(),
+                        axis.title=element_text(face="bold"))
+@
+
+All scheduled flight data is in January 2015 - no need for a plot there.
+
+<<plot-day, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=predictDataTyped, aes(x=day_of_week)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=predictDataTyped, aes(x=day_of_month)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+@
+
+<<plot-data-time, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=predictDataTyped, aes(x=scheduled_departure_time)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+ggplot(data=predictDataTyped, aes(x=scheduled_arrival_time)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+
+<<plot-data-airline, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=predictDataTyped, aes(x=airline)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+
+<<plot-data-plane, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=predictDataTyped, aes(x=plane_model)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=predictDataTyped, aes(x=seat_configuration)) + 
+  geom_bar(stat="bin", position=position_dodge()) + scale_x_discrete(labels=abbreviate)+ th_small
+@
+
+The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
+
+\begin{landscape}
+<<plot-data-airports, echo=FALSE, fig.width=80, fig.height=12, out.width='1.0\\linewidth', warning=FALSE>>=
+ggplot(data=predictDataTyped, aes(x=origin_airport)) + geom_bar(stat="bin") + th_extra_large
+ggplot(data=predictDataTyped, aes(x=destination_airport)) + geom_bar(stat="bin") + th_extra_large
+@
+\vspace{3 mm}
+
+<<continous-hist, echo=FALSE, fig.width=12, fig.height=8, out.width='.32\\linewidth'>>=
+ggplot(predictDataTyped, aes(distance_travelled)) + geom_density(alpha=0.2) + th_small
+@
+\end{landscape}
 
 \end{document}
 

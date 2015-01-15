@@ -56,6 +56,7 @@
 \usepackage{pdflscape}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -69,13 +70,12 @@
 
 
 
-
+\date{\currenttime, \today}
 \title{SmartFly: Exploratory Analysis For Scheduled Flight Data}
-
-
 \author{Cindy Lamm}
 
 \maketitle
+
 Assuming that scheduled flight data and historic flight data have the same variables, I 
 load these variable names and types of historic data (prepared in an additional csv file):
 
@@ -125,8 +125,6 @@ Then load scheduled data into R. As I did for the historic data I set empty stri
 \hlstd{predictDataTyped} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(scheduledDataFile,} \hlkwc{header}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,}
                            \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,} \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,}
                            \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
-\hlcom{# convert integer to logical}
-\hlstd{predictDataTyped}\hlopt{$}\hlstd{cancelled} \hlkwb{<-} \hlkwd{as.logical}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{cancelled)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -157,7 +155,7 @@ Checkout data content:
 ##  $ distance_travelled      : num  599 599 599 599 599 599 599 599 599 599 ...
 ##  $ taxi_time_in            : num  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ taxi_time_out           : num  NA NA NA NA NA NA NA NA NA NA ...
-##  $ cancelled               : logi  NA NA NA NA NA NA ...
+##  $ cancelled               : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ cancellation_code       : Factor w/ 0 levels: NA NA NA NA NA NA NA NA NA NA ...
 \end{verbatim}
 \end{kframe}
@@ -236,22 +234,22 @@ See summary of descriptive statistics of the scheduled data:
 ##  N487HA :   310   787 : 46837   V2         : 84879   3rd Qu.: NA      CVG    : 16747  
 ##  N95    :   309   A320: 94748   V3         : 89035   Max.   : NA      IAH    : 16169  
 ##  (Other):564431                                      NA's   :566376   (Other):421977  
-##  destination_airport distance_travelled  taxi_time_in    taxi_time_out    cancelled     
-##  ATL    : 33533      Min.   :  11.0     Min.   : NA      Min.   : NA      Mode:logical  
-##  ORD    : 30063      1st Qu.: 305.0     1st Qu.: NA      1st Qu.: NA      NA's:566376   
-##  DFW    : 28743      Median : 547.0     Median : NA      Median : NA                    
-##  LAX    : 18889      Mean   : 712.9     Mean   :NaN      Mean   :NaN                    
-##  CVG    : 16583      3rd Qu.: 944.0     3rd Qu.: NA      3rd Qu.: NA                    
-##  IAH    : 16148      Max.   :4962.0     Max.   : NA      Max.   : NA                    
-##  (Other):422417                         NA's   :566376   NA's   :566376                 
-##  cancellation_code
-##  NA's:566376      
-##                   
-##                   
-##                   
-##                   
-##                   
-## 
+##  destination_airport distance_travelled  taxi_time_in    taxi_time_out   
+##  ATL    : 33533      Min.   :  11.0     Min.   : NA      Min.   : NA     
+##  ORD    : 30063      1st Qu.: 305.0     1st Qu.: NA      1st Qu.: NA     
+##  DFW    : 28743      Median : 547.0     Median : NA      Median : NA     
+##  LAX    : 18889      Mean   : 712.9     Mean   :NaN      Mean   :NaN     
+##  CVG    : 16583      3rd Qu.: 944.0     3rd Qu.: NA      3rd Qu.: NA     
+##  IAH    : 16148      Max.   :4962.0     Max.   : NA      Max.   : NA     
+##  (Other):422417                         NA's   :566376   NA's   :566376  
+##    cancelled      cancellation_code
+##  Min.   : NA      NA's:566376      
+##  1st Qu.: NA                       
+##  Median : NA                       
+##  Mean   :NaN                       
+##  3rd Qu.: NA                       
+##  Max.   : NA                       
+##  NA's   :566376
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -264,6 +262,92 @@ Save data frame for next step:
 \end{alltt}
 \end{kframe}
 \end{knitrout}
+
+
+%-------------------------------------------------------------------------------
+%-------  PLOTS
+%-------------------------------------------------------------------------------
+
+Plot the data:
+
+
+
+All scheduled flight data is in January 2015 - no need for a plot there.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/scheduled-plot-day-1} 
+\includegraphics[width=.4\linewidth]{figure/scheduled-plot-day-2} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.9\linewidth]{figure/scheduled-plot-data-time-1} 
+\includegraphics[width=.9\linewidth]{figure/scheduled-plot-data-time-2} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.9\linewidth]{figure/scheduled-plot-data-airline-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/scheduled-plot-data-plane-1} 
+\includegraphics[width=.4\linewidth]{figure/scheduled-plot-data-plane-2} 
+
+}
+
+
+
+\end{knitrout}
+
+The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
+
+\begin{landscape}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=1.0\linewidth]{figure/scheduled-plot-data-airports-1} 
+\includegraphics[width=1.0\linewidth]{figure/scheduled-plot-data-airports-2} 
+
+}
+
+
+
+\end{knitrout}
+\vspace{3 mm}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.32\linewidth]{figure/scheduled-continous-hist-1} 
+
+}
+
+
+
+\end{knitrout}
+\end{landscape}
 
 \end{document}
 

@@ -5,6 +5,7 @@
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -20,10 +21,8 @@ opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
-
+\date{\currenttime, \today}
 \title{SmartFly: Prepare Data For Modeling}
-
-
 \author{Cindy Lamm}
 
 \maketitle

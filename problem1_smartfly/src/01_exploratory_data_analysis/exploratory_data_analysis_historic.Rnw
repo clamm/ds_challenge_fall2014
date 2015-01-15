@@ -7,6 +7,7 @@
 \usepackage{pdflscape}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -26,13 +27,12 @@ opts_chunk$set(fig.path='figure/historic-', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
-
+\date{\currenttime, \today}
 \title{SmartFly: Exploratory Analysis For Historic Flight Data}
-
-
 \author{Cindy Lamm}
 
 \maketitle
+
 First load variable names and types of historic data (prepared in an additional csv file):
 <<setup-defaults, include=FALSE>>==
 rm(list=ls())   #clear memory
