@@ -42,7 +42,8 @@ rm(list=ls())   #clear memory
 nameTypeDataFile  <- "resources/raw_variables.csv"
 variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
 variableNames
-factor_idx <- which(variableNames$type=="factor")
+factorIdx <- which(variableNames$type=="factor")
+factorNames <- variableNames$name[factorIdx]
 @
 
 Then load scheduled data into R. As I did for the historic data I set empty strings to \verb+NA+ (here because of variable \verb+tail_number+).
@@ -54,14 +55,12 @@ predictDataTyped <- read.csv(scheduledDataFile, header=FALSE, stringsAsFactors=F
                            na.strings=c("NA",""))
 @
 
+\pagebreak
+
 Checkout data content:
 <<str-scheduled-data>>=
 str(predictDataTyped)
 @
-
-Checkout factor levels for the variables.
-
-Note: If I train a model on levels that don't exist in the prediction data the prediction phase might fail.
 
 As I did for the historic data the variables \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ are first reformatted and then truncated to the hour.
 <<reformat-truncate-scheduled-times>>=
@@ -74,6 +73,10 @@ predictDataTyped$scheduled_departure_time <- as.factor(
   substr(as.character(predictDataTyped$scheduled_departure_time),1,2))
 predictDataTyped$scheduled_arrival_time <- as.factor(
   substr(as.character(predictDataTyped$scheduled_arrival_time),1,2))
+
+# remainin levels are:
+levels(predictDataTyped$scheduled_departure_time)
+levels(predictDataTyped$scheduled_arrival_time)
 @
 
 I also again reformat the variables \verb+day_of_month+ and \verb+month+:
@@ -82,6 +85,78 @@ predictDataTyped$month <- as.factor(
   sprintf("%02s", as.character(predictDataTyped$month)))
 predictDataTyped$day_of_month <- as.factor(
   sprintf("%02s", as.character(predictDataTyped$day_of_month)))
+@
+
+Comparing factor levels of training and prediction data is important because if I train a model on data with levels that don't exist in the prediction data the prediction phase might fail.
+
+<<compute-predict-levels, include=FALSE>>=
+pFactorLevels <- sapply(factorNames, FUN=function(df, x) { levels(df[,x]) }, df=predictDataTyped)
+@
+
+<<load-train-levels, include=FALSE>>=
+load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
+# contains trainDataTyped, factorNames and factorLevels
+tFactorLevels <- factorLevels
+rm(factorLevels)
+@
+
+Find levels that exist in the historic fligh data set but are missing in the scheduled flight data set:
+<<missing-levels-in-predict>>=
+pMissingLevels <- lapply(factorNames, 
+                        FUN=function(list1, list2, x) { setdiff(list1[[x]], list2[[x]]) }, 
+                        list1=tFactorLevels, list2=pFactorLevels)
+names(pMissingLevels) <- factorNames
+@
+
+Find levels that don't exist in the historic fligh data set but do exist in the scheduled flight data set:
+<<missing-levels-in-train>>=
+tMissingLevels <- lapply(factorNames, 
+                        FUN=function(list1, list2, x) { setdiff(list1[[x]], list2[[x]]) }, 
+                        list1=pFactorLevels, list2=tFactorLevels)
+names(tMissingLevels) <- factorNames
+@
+
+<<define-venn-diagram-function, include=FALSE>>=
+require(limma)
+Venn2 <- function(set1, set2, setnames, title) {
+  stopifnot(length(setnames) == 2)
+  universe <- sort( unique( c(set1, set2) ) )
+  Counts <- matrix(NA, nrow=length(universe), ncol=2)
+  colnames(Counts) <- setnames
+  for (i in 1:length(universe))
+  {
+    Counts[i,1] <- universe[i] %in% set1
+    Counts[i,2] <- universe[i] %in% set2
+  }
+  vc <- vennCounts(Counts)
+  vc[1,] <- rep(NA,3)
+  vennDiagram(vc, circle.col=c("orange1", "blue3"), mar=rep(0,4), cex=c(3.5,3,2))
+  text(0, 3, title, cex=4)
+}
+@
+
+<<plot-venn-diagrams, echo=FALSE, fig.width=11, fig.height=8, out.width='.45\\linewidth'>>=>=
+for (name in factorNames) {
+  Venn2(pFactorLevels[[name]], tFactorLevels[[name]], c("predict", "train"), name)
+}
+@
+
+<<list-differences, echo=FALSE>>=
+nbLevels <- sapply(tFactorLevels, FUN=length)
+nbTMissingLevels <- sapply(tMissingLevels, FUN=length) 
+nbPMissingLevels <- sapply(pMissingLevels, FUN=length) 
+haveMissingLevels <- union(which(nbTMissingLevels!=0), which(nbPMissingLevels!=0))
+suitable <- intersect(which(nbLevels<300), haveMissingLevels)
+overview <- list()
+for (name in factorNames[suitable]) {
+  onlyInPredict <- tMissingLevels[[name]]
+  onlyInTrain <- pMissingLevels[[name]]
+  nbRows <- max(length(onlyInPredict), length(onlyInTrain))
+  length(onlyInPredict) <- nbRows
+  length(onlyInTrain) <- nbRows
+  overview[[name]] <- cbind(onlyInPredict, onlyInTrain)
+}
+overview
 @
 
 \pagebreak
@@ -97,62 +172,16 @@ Save data frame for next step:
 save(predictDataTyped, file="predictDataTyped.Rdata")
 @
 
-
-%-------------------------------------------------------------------------------
-%-------  PLOTS
-%-------------------------------------------------------------------------------
-
-Plot the data:
-
-<<define-themes, include=FALSE>>=
-th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
-th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
-th_extra_large <- theme(text=element_text(size=76), 
-                        axis.text=element_blank(),
-                        axis.title=element_text(face="bold"))
+<<setup-plot-data, include=FALSE>>=
+dataTyped <- predictDataTyped
 @
 
-All scheduled flight data is in January 2015 - no need for a plot there.
-
-<<plot-day, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
-ggplot(data=predictDataTyped, aes(x=day_of_week)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_small
-ggplot(data=predictDataTyped, aes(x=day_of_month)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_small
+<<general-plots, child='general_plots.Rnw'>>=
 @
 
-<<plot-data-time, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
-ggplot(data=predictDataTyped, aes(x=scheduled_departure_time)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_large
-ggplot(data=predictDataTyped, aes(x=scheduled_arrival_time)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_large
+<<remove-plot-data, include=FALSE>>=
+rm(dataTyped)
 @
-
-<<plot-data-airline, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
-ggplot(data=predictDataTyped, aes(x=airline)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_large
-@
-
-<<plot-data-plane, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
-ggplot(data=predictDataTyped, aes(x=plane_model)) + 
-  geom_bar(stat="bin", position=position_dodge()) + th_small
-ggplot(data=predictDataTyped, aes(x=seat_configuration)) + 
-  geom_bar(stat="bin", position=position_dodge()) + scale_x_discrete(labels=abbreviate)+ th_small
-@
-
-The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
-
-\begin{landscape}
-<<plot-data-airports, echo=FALSE, fig.width=80, fig.height=12, out.width='1.0\\linewidth', warning=FALSE>>=
-ggplot(data=predictDataTyped, aes(x=origin_airport)) + geom_bar(stat="bin") + th_extra_large
-ggplot(data=predictDataTyped, aes(x=destination_airport)) + geom_bar(stat="bin") + th_extra_large
-@
-\vspace{3 mm}
-
-<<continous-hist, echo=FALSE, fig.width=12, fig.height=8, out.width='.32\\linewidth'>>=
-ggplot(predictDataTyped, aes(distance_travelled)) + geom_density(alpha=0.2) + th_small
-@
-\end{landscape}
 
 \end{document}
 
