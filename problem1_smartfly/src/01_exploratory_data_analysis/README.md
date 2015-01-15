@@ -10,7 +10,7 @@ To generate the [exploratory_data_analysis.pdf](exploratory_data_analysis.pdf) w
 		library(knitr)
 		knit("exploratory_data_analysis.Rnw")
 
-	This creates the file `exploratory_data_analysis.tex`. This might take a few minutes since it loads the 7.3 million data points into R.
+	This creates the file `exploratory_data_analysis.tex`. This might take up to 15 minutes since it works with the 7.3 million data points.
 
 1. Open the file `exploratory_data_analysis.tex` in TeXShop and click on Typeset to generate the pdf. Or open it in Sublime Text (with the installed and configured [LaTeXTools plugin](https://github.com/SublimeText/LaTeXTools)) and run Build (Cmd+B).
 

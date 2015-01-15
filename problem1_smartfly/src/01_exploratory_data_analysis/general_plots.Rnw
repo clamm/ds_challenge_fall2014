@@ -1,0 +1,57 @@
+Plot the data independently of delay, cancellation and taxi time (since these variables are not available for prediction):
+% data.frame called "dataTyped"
+  
+<<define-themes, include=FALSE>>=
+th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
+th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
+th_extra_large <- theme(text=element_text(size=76), 
+                        axis.text=element_blank(),
+                        axis.title=element_text(face="bold"))
+@
+
+<<plot-year-month, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=dataTyped, aes(x=year)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=dataTyped, aes(x=month)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+@
+
+<<plot-day, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=dataTyped, aes(x=day_of_week)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=dataTyped, aes(x=day_of_month)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+@
+
+<<plot-data-time, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=dataTyped, aes(x=scheduled_departure_time)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+ggplot(data=dataTyped, aes(x=scheduled_arrival_time)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+  
+<<plot-data-airline, echo=FALSE, fig.width=16, fig.height=4, out.width='.9\\linewidth'>>=
+ggplot(data=dataTyped, aes(x=airline)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_large
+@
+  
+<<plot-data-plane, echo=FALSE, fig.width=11, fig.height=8, out.width='.4\\linewidth'>>=
+ggplot(data=dataTyped, aes(x=plane_model)) + 
+  geom_bar(stat="bin", position=position_dodge()) + th_small
+ggplot(data=dataTyped, aes(x=seat_configuration)) + 
+  geom_bar(stat="bin", position=position_dodge()) + scale_x_discrete(labels=abbreviate)+ th_small
+@
+  
+The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
+
+\begin{landscape}
+<<plot-data-airports, echo=FALSE, fig.width=80, fig.height=12, out.width='1.0\\linewidth', warning=FALSE>>=
+ggplot(data=dataTyped, aes(x=origin_airport)) + geom_bar(stat="bin") + th_extra_large
+ggplot(data=dataTyped, aes(x=destination_airport)) + geom_bar(stat="bin") + th_extra_large
+@
+\vspace{3 mm}
+
+<<continous-hist, echo=FALSE, fig.width=12, fig.height=8, out.width='.32\\linewidth'>>=
+ggplot(dataTyped, aes(distance_travelled)) + geom_density(alpha=0.2) + th_small
+@
+\end{landscape}

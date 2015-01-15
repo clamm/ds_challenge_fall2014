@@ -110,7 +110,8 @@ First load variable names and types of historic data (prepared in an additional 
 ## 20        cancellation_code    factor
 \end{verbatim}
 \begin{alltt}
-\hlstd{factor_idx} \hlkwb{<-} \hlkwd{which}\hlstd{(variableNames}\hlopt{$}\hlstd{type}\hlopt{==}\hlstr{"factor"}\hlstd{)}
+\hlstd{factorIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(variableNames}\hlopt{$}\hlstd{type}\hlopt{==}\hlstr{"factor"}\hlstd{)}
+\hlstd{factorNames} \hlkwb{<-} \hlstd{variableNames}\hlopt{$}\hlstd{name[factorIdx]}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -184,6 +185,37 @@ In addition I truncate the scheduled times to the hour:
   \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
 \hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
   \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
+
+\hlcom{# remaining levels are:}
+\hlkwd{levels}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time)}
+\end{alltt}
+\begin{verbatim}
+##  [1] "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16"
+## [18] "17" "18" "19" "20" "21" "22" "23" "24"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{levels}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time)}
+\end{alltt}
+\begin{verbatim}
+##  [1] "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16"
+## [18] "17" "18" "19" "20" "21" "22" "23" "24"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+I notice that there is hour "$00$" and "$24$", I consolidate this into "$00$" (and remove level "$24$":
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{replace24with00} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{column}\hlstd{) \{}
+  \hlstd{moveIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(column}\hlopt{==}\hlstr{"24"}\hlstd{)}
+  \hlstd{column[moveIdx]} \hlkwb{<-} \hlstr{"00"}
+  \hlstd{removeIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlkwd{levels}\hlstd{(column)} \hlopt{==} \hlstr{"24"}\hlstd{)}
+  \hlkwd{levels}\hlstd{(column)[removeIdx]} \hlkwb{<-} \hlnum{NA}
+  \hlkwd{return}\hlstd{(column)}
+\hlstd{\}}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{replace24with00}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time)}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{replace24with00}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -258,10 +290,108 @@ Save data frame for next step:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(trainDataTyped,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
+\hlstd{factorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(factorNames,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{x}\hlstd{) \{} \hlkwd{levels}\hlstd{(df[,x]) \},} \hlkwc{df}\hlstd{=trainDataTyped)}
+\hlkwd{save}\hlstd{(trainDataTyped, factorLevels,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
+
+
+
+
+Plot the data independently of delay, cancellation and taxi time (since these variables are not available for prediction):
+% data.frame called "dataTyped"
+  
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-2} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-day-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-2} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-1} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-2} 
+
+}
+
+
+
+\end{knitrout}
+  
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-1} 
+
+}
+
+
+
+\end{knitrout}
+  
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-2} 
+
+}
+
+
+
+\end{knitrout}
+  
+The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valuable plots due to their large number in levels.
+
+\begin{landscape}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-1} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-2} 
+
+}
+
+
+
+\end{knitrout}
+\vspace{3 mm}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-hist-1} 
+
+}
+
+
+
+\end{knitrout}
+\end{landscape}
+
+
 
 
 %-------------------------------------------------------------------------------
@@ -294,17 +424,24 @@ Since I want to predict whether a flight is delayed or not I create a specific v
 Plot the data:
 
 
-
+% already defined in general_plots.Rnw
+% <<redefine-themes, include=FALSE>>=
+% th_small <- theme(text=element_text(size=36), axis.title=element_text(face="bold"))
+% th_large <- theme(text=element_text(size=24), axis.title=element_text(face="bold"))
+% th_extra_large <- theme(text=element_text(size=76), 
+%                         axis.text=element_blank(),
+%                         axis.title=element_text(face="bold"))
+% @
 
 
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-1} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-2} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-3} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-delayed-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-delayed-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-delayed-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-year-month-delayed-4} 
 
 }
 
@@ -315,10 +452,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-day-1} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-day-2} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-day-3} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-day-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-day-delayed-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-delayed-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-delayed-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-day-delayed-4} 
 
 }
 
@@ -330,10 +467,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-1} 
-\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-2} 
-\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-3} 
-\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-4} 
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-delayed-1} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-delayed-2} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-delayed-3} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-time-delayed-4} 
 
 }
 
@@ -344,8 +481,8 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-1} 
-\includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-2} 
+{\centering \includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-delayed-1} 
+\includegraphics[width=.9\linewidth]{figure/historic-plot-data-airline-delayed-2} 
 
 }
 
@@ -356,10 +493,10 @@ Plot the data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-1} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-2} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-3} 
-\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-4} 
+{\centering \includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-delayed-1} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-delayed-2} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-delayed-3} 
+\includegraphics[width=.4\linewidth]{figure/historic-plot-data-plane-delayed-4} 
 
 }
 
@@ -374,10 +511,10 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-1} 
-\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-2} 
-\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-3} 
-\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-4} 
+{\centering \includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-delayed-1} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-delayed-2} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-delayed-3} 
+\includegraphics[width=1.0\linewidth]{figure/historic-plot-data-airports-delayed-4} 
 
 }
 
@@ -392,9 +529,9 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-hist-1} 
-\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-2} 
-\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-3} 
+{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-hist-delayed-1} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-delayed-2} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-hist-delayed-3} 
 
 }
 
@@ -406,9 +543,9 @@ The variables \verb+flight_number+ and \verb+tail_number+ don't produce any valu
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-median-1} 
-\includegraphics[width=.32\linewidth]{figure/historic-continous-median-2} 
-\includegraphics[width=.32\linewidth]{figure/historic-continous-median-3} 
+{\centering \includegraphics[width=.32\linewidth]{figure/historic-continous-median-delayed-1} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-median-delayed-2} 
+\includegraphics[width=.32\linewidth]{figure/historic-continous-median-delayed-3} 
 
 }
 
@@ -451,13 +588,17 @@ Look at some dependency between the binary target variable and other factor vari
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{dependent_with_target}
+\hlstd{dependentWithTarget}
 \end{alltt}
 \begin{verbatim}
-##               year              month        day_of_week            airline 
-##               TRUE               TRUE               TRUE               TRUE 
-##        plane_model seat_configuration  cancellation_code 
-##               TRUE               TRUE              FALSE
+##                       id                     year                    month 
+##                    FALSE                     TRUE                     TRUE 
+##             day_of_month              day_of_week scheduled_departure_time 
+##                     TRUE                     TRUE                     TRUE 
+##   scheduled_arrival_time              tail_number              plane_model 
+##                     TRUE                     TRUE                     TRUE 
+##       seat_configuration          departure_delay           origin_airport 
+##                     TRUE                     TRUE                     TRUE
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
