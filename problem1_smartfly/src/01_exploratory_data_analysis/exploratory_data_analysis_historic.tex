@@ -286,16 +286,6 @@ See summary of descriptive statistics of the historic data:
 \end{kframe}
 \end{knitrout}
 
-Save data frame for next step:
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{factorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(factorNames,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{x}\hlstd{) \{} \hlkwd{levels}\hlstd{(df[,x]) \},} \hlkwc{df}\hlstd{=trainDataTyped)}
-\hlkwd{save}\hlstd{(trainDataTyped, factorLevels,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
 
 
 
@@ -420,6 +410,18 @@ Since I want to predict whether a flight is delayed or not I create a specific v
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+
+Save data frame for next step:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{factorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(factorNames,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{x}\hlstd{) \{} \hlkwd{levels}\hlstd{(df[,x]) \},} \hlkwc{df}\hlstd{=trainDataTyped)}
+\hlkwd{save}\hlstd{(trainDataTyped, factorLevels,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
 
 Plot the data:
 

@@ -113,12 +113,6 @@ See summary of descriptive statistics of the historic data:
 summary(trainDataTyped)
 @
 
-Save data frame for next step:
-<<save-df>>==
-factorLevels <- sapply(factorNames, FUN=function(df, x) { levels(df[,x]) }, df=trainDataTyped)
-save(trainDataTyped, factorLevels, file="trainDataTyped.Rdata")
-@
-
 <<setup-plot-data, include=FALSE>>=
 dataTyped <- trainDataTyped
 @
@@ -144,6 +138,14 @@ summary(trainDataTyped$is_delayed)
 
 summary(trainDataTyped$is_delayed) / length(trainDataTyped$is_delayed)
 @
+
+
+Save data frame for next step:
+<<save-df>>==
+factorLevels <- sapply(trainDataTyped, FUN=levels)
+save(trainDataTyped, factorLevels, file="trainDataTyped.Rdata")
+@
+
 
 Plot the data:
 <<calculate-delayed-proportions-per-group, echo=FALSE>>=

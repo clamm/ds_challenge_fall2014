@@ -90,7 +90,7 @@ predictDataTyped$day_of_month <- as.factor(
 Comparing factor levels of training and prediction data is important because if I train a model on data with levels that don't exist in the prediction data the prediction phase might fail.
 
 <<compute-predict-levels, include=FALSE>>=
-pFactorLevels <- sapply(factorNames, FUN=function(df, x) { levels(df[,x]) }, df=predictDataTyped)
+pFactorLevels <- sapply(predictDataTyped, FUN=levels)
 @
 
 <<load-train-levels, include=FALSE>>=
