@@ -31,60 +31,88 @@ Load preprocessed data from the previous step "Exploratory Analysis For Historic
 <<load-typed-data>>=
 rm(list=ls())   #clear memory
 load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
+modelData <- trainDataTyped
+rm(trainDataTyped)
 @
 
-\subsection{Analyse \& deal with missing values}
+\section{Analyse \& deal with missing values}
 
 <<analyse-cancellations, include=FALSE>>=
-unclear_status <- sum(!trainDataTyped$cancelled & !is.na(trainDataTyped$cancellation_code))
+unclear_status <- sum(!modelData$cancelled & !is.na(modelData$cancellation_code))
 @
 
 The variable \verb+cancellation_code+ has the most missing values since it is only filled if the flight was not cancelled - which is the case for most flights.
-I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found \Sexpr{unclear_status} non-cancelled flights that do have an entry as \verb+cancellation_code+, I'll exclude those observations from the data set in the following.
+I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found \Sexpr{unclear_status} non-cancelled flights that do have an entry as \verb+cancellation_code+. 
+<<analyse-weird-obs>>=
+weirdIdx <- which(!modelData$cancelled & !is.na(modelData$cancellation_code))
+summary(modelData[weirdIdx,])
+@
+A quick analysis of the concerned observations reveals that all but one have a \verb+taxi_time_in+ of 0 minutes.
 
-<<remove-weird-obs>>=
-weird_idx <- which(!trainDataTyped$cancelled & !is.na(trainDataTyped$cancellation_code))
-trainDataTyped <- trainDataTyped[-weird_idx,]
-n_obs <- dim(trainDataTyped)[1]
-n_obs
+I'll exclude those observations from the data set in the following.
+<<remove-weird-obs, echo=1>>=
+modelData <- modelData[-weirdIdx,]
+nbRows <- dim(modelData)[1]
 @
 
+The variable \verb+tail_number+ includes the values "000000" and "0" which are according to Wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Aircraft_registration}} not valid registration numbers. However the value "0" appears as well in the scheduled flight data set, so I only mark the values "000000" as \verb+NA+.
+
+<<tail-number-na>>=
+is_invalid <- modelData$tail_number == "000000"
+sum(is_invalid, na.rm=TRUE)
+naIdx <- which(is_invalid)
+modelData$tail_number[naIdx] <- NA
+@
+
+Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exclude the variable \verb+id+ because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
+Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
+
+<<remove-no-helping-variables>>=
+nonAvailable <- c("id", "departure_delay", "taxi_time_in", "taxi_time_out", 
+                  "cancelled", "cancellation_code")
+excludeIdx <- sapply(nonAvailable, FUN=function(v, x){ which(v==x)}, v=names(modelData))
+modelData <- modelData[,-excludeIdx]
+str(modelData)
+@
+
+
 <<check-na-removal, include=FALSE>>=
-any.na <- function(row){
-  any(is.na(row))
-} 
-# exclude cancellation_code which has NA for more than 50% of the observations
-exclude_idx <- which(names(trainDataTyped)=="cancellation_code")
-n_rows_with_na <- sum(apply(trainDataTyped[,-exclude_idx], MARGIN=1, FUN=any.na) )
-n_rows_left <- n_obs - n_rows_with_na
+rowHasNa <- apply(modelData, MARGIN=1, FUN=function(row){ any(is.na(row)) })
+nbRowsWithNa <- sum(rowHasNa)
+nbRowsLeft <- nbRows - nbRowsWithNa
+# proportion of NA rows:
+nbRowsWithNa / nbRows
 @
 
 Often observations with any missing value are excluded from the modeling stage. 
-There would by \Sexpr{n_rows_left} observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
-I do not remove the \Sexpr{n_rows_with_na} rows with \verb+NA+s yet since I don't know which variables I will use for the modeling.
+There would be \Sexpr{nbRowsLeft} observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
+Since most modeling algorithms can't deal with non available values anyway and there is such a vast amount of training data without \verb+NA+ values left I remove the \Sexpr{nbRowsWithNa} rows with \verb+NA+s from the data.
 
-Split the train data based on simple bootstrap resampling into a series of train and test sets
-<<split-train-data>>=
-library(caret)
-set.seed(998)
-#use simple bootstrap resampling to split data into a series of train and test set
-inTraining <- createDataPartition(trainDataTyped$is_delayed, p = .5, list = FALSE) 
-training <- trainDataTyped[ inTraining,]
-testing  <- trainDataTyped[-inTraining,]
+<<remove-na-rows>>=
+modelData <- modelData[-which(rowHasNa),]
 @
 
-Create custom function to specifiy the type of resampling and a grid for tuning parameters\footnote{both taken from \url{https://github.com/topepo/caret/blob/master/RegressionTests/Code/glmnet.R}}
-<<define-fitcontrol>>==
-cctrl4 <- trainControl(method = "cv", number = 3, classProbs = TRUE)
-eGrid <- expand.grid(.alpha = seq(.05, 1, length = 15), .lambda = c((1:5)/10))
+Since I will use the \verb+randomForest+\footnote{\url{http://www.stat.berkeley.edu/~breiman/RandomForests/cc_manual.htm}} package I also remove the factor variables that have more than 53 levels since otherwise an error occurs.
+<<remaining-factors>>=
+modelFactorIdx <- which(sapply(modelData, FUN=class) == "factor")
+modelFactorLevels <- sapply(modelData, FUN=levels)
+nbLevels <- sapply(modelFactorLevels, FUN=length)
+suitable <- which(nbLevels < 53) # condition for this randomForest implementation
+rfModelData <- modelData[,suitable]
 @
 
-Save R environment 
-<<save-env>>==
-save.image(file="prepared_data.Rdata")
+So the data that I use for the estimation of a random forest looks as follows:
+<<final-model-data>>=
+str(rfModelData)
 @
+
+I save it to use in the next step:
+<<save-rf-model-data>>=
+save(rfModelData, file="../03_train_model/rfModelData.RData")
+@
+
 
 \end{document}
 
-% create the prepare_data.tex with (takes about 2 minutes!)
-% knit("../02_prepare_data_for_modeling/prepare_data.Rnw", output="../02_prepare_data_for_modeling/prepare_data.tex")
+% create the prepare_data.tex with
+% knit("../02_prepare_data_for_modeling/prepare_data_for_modeling.Rnw", output="../02_prepare_data_for_modeling/prepare_data_for_modeling.tex")

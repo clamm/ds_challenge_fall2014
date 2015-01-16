@@ -1,0 +1,269 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+\date{\currenttime, \today}
+\title{SmartFly: Prepare Data For Modeling}
+\author{Cindy Lamm}
+
+\maketitle
+
+Load preprocessed data from the previous step "Exploratory Analysis For Historic Flight Data"
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{rm}\hlstd{(}\hlkwc{list}\hlstd{=}\hlkwd{ls}\hlstd{())}   \hlcom{#clear memory}
+\hlkwd{load}\hlstd{(}\hlstr{"../01_exploratory_data_analysis/trainDataTyped.Rdata"}\hlstd{)}
+\hlstd{modelData} \hlkwb{<-} \hlstd{trainDataTyped}
+\hlkwd{rm}\hlstd{(trainDataTyped)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\section{Analyse \& deal with missing values}
+
+
+
+The variable \verb+cancellation_code+ has the most missing values since it is only filled if the flight was not cancelled - which is the case for most flights.
+I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found 168 non-cancelled flights that do have an entry as \verb+cancellation_code+. 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{weirdIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlopt{!}\hlstd{modelData}\hlopt{$}\hlstd{cancelled} \hlopt{& !}\hlkwd{is.na}\hlstd{(modelData}\hlopt{$}\hlstd{cancellation_code))}
+\hlkwd{summary}\hlstd{(modelData[weirdIdx,])}
+\end{alltt}
+\begin{verbatim}
+##       id              year         month      day_of_month day_of_week
+##  Length:168         2013:  0   06     :167   13     : 12   1:34       
+##  Class :character   2014:168   08     :  1   05     : 11   2:24       
+##  Mode  :character              01     :  0   04     : 10   3:22       
+##                                02     :  0   12     : 10   4:30       
+##                                03     :  0   16     : 10   5:19       
+##                                04     :  0   24     : 10   6:21       
+##                                (Other):  0   (Other):105   7:18       
+##  scheduled_departure_time scheduled_arrival_time    airline    flight_number
+##  16     :18               16     :21             WN     :136   152    :  5  
+##  13     :17               19     :17             AS     : 31   639    :  5  
+##  14     :15               13     :16             EV     :  1   1622   :  4  
+##  18     :15               14     :15             AA     :  0   153    :  3  
+##  15     :14               21     :13             B6     :  0   41     :  3  
+##  17     :12               17     :11             CO     :  0   66     :  3  
+##  (Other):77               (Other):75             (Other):  0   (Other):145  
+##   tail_number  plane_model   seat_configuration departure_delay  origin_airport
+##  N740AS :  4   737 :57     Standard   :39       Min.   : -9.00   MDW    :21    
+##  N80    :  4   747 :39     Three Class:20       1st Qu.:  0.00   PHX    :14    
+##  N661   :  3   757 :22     Two Class  :16       Median : 18.00   ANC    :13    
+##  N746AS :  3   777 : 7     V1         :27       Mean   : 36.29   DAL    :13    
+##  N86    :  3   787 : 9     V2         :33       3rd Qu.: 54.25   HOU    :12    
+##  N87    :  3   A320:34     V3         :33       Max.   :270.00   ELP    : 7    
+##  (Other):148                                                     (Other):88    
+##  destination_airport distance_travelled  taxi_time_in    taxi_time_out   cancelled      
+##  HOU    :28          Min.   :  95.0     Min.   :0.0000   Min.   : 3.00   Mode :logical  
+##  DAL    :16          1st Qu.: 301.2     1st Qu.:0.0000   1st Qu.: 7.00   FALSE:168      
+##  STL    :11          Median : 562.0     Median :0.0000   Median :10.00   NA's :0        
+##  BWI    : 9          Mean   : 827.5     Mean   :0.0119   Mean   :11.01                  
+##  OTZ    : 8          3rd Qu.:1271.8     3rd Qu.:0.0000   3rd Qu.:14.00                  
+##  SEA    : 8          Max.   :2724.0     Max.   :2.0000   Max.   :35.00                  
+##  (Other):88                                                                             
+##  cancellation_code   is_delayed 
+##  A:99              on_time: 54  
+##  B:51              delayed:114  
+##  C:18                           
+##  D: 0                           
+##                                 
+##                                 
+## 
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+A quick analysis of the concerned observations reveals that all but one have a \verb+taxi_time_in+ of 0 minutes.
+
+I'll exclude those observations from the data set in the following.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{modelData} \hlkwb{<-} \hlstd{modelData[}\hlopt{-}\hlstd{weirdIdx,]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The variable \verb+tail_number+ includes the values "000000" and "0" which are according to Wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Aircraft_registration}} not valid registration numbers. However the value "0" appears as well in the scheduled flight data set, so I only mark the values "000000" as \verb+NA+.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{is_invalid} \hlkwb{<-} \hlstd{modelData}\hlopt{$}\hlstd{tail_number} \hlopt{==} \hlstr{"000000"}
+\hlkwd{sum}\hlstd{(is_invalid,} \hlkwc{na.rm}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 10157
+\end{verbatim}
+\begin{alltt}
+\hlstd{naIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(is_invalid)}
+\hlstd{modelData}\hlopt{$}\hlstd{tail_number[naIdx]} \hlkwb{<-} \hlnum{NA}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exclude the variable \verb+id+ because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
+Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{nonAvailable} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"id"}\hlstd{,} \hlstr{"departure_delay"}\hlstd{,} \hlstr{"taxi_time_in"}\hlstd{,} \hlstr{"taxi_time_out"}\hlstd{,}
+                  \hlstr{"cancelled"}\hlstd{,} \hlstr{"cancellation_code"}\hlstd{)}
+\hlstd{excludeIdx} \hlkwb{<-} \hlkwd{sapply}\hlstd{(nonAvailable,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{v}\hlstd{,} \hlkwc{x}\hlstd{)\{} \hlkwd{which}\hlstd{(v}\hlopt{==}\hlstd{x)\},} \hlkwc{v}\hlstd{=}\hlkwd{names}\hlstd{(modelData))}
+\hlstd{modelData} \hlkwb{<-} \hlstd{modelData[,}\hlopt{-}\hlstd{excludeIdx]}
+\hlkwd{str}\hlstd{(modelData)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	7374197 obs. of  15 variables:
+##  $ year                    : Factor w/ 2 levels "2013","2014": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ month                   : Factor w/ 12 levels "01","02","03",..: 8 8 8 8 8 8 8 8 8 8 ...
+##  $ day_of_month            : Factor w/ 31 levels "01","02","03",..: 11 17 18 24 25 31 1 2 3 4 ...
+##  $ day_of_week             : Factor w/ 7 levels "1","2","3","4",..: 7 6 7 6 7 6 4 5 6 7 ...
+##  $ scheduled_departure_time: Factor w/ 24 levels "00","01","02",..: 11 11 11 11 11 11 8 8 8 8 ...
+##  $ scheduled_arrival_time  : Factor w/ 24 levels "00","01","02",..: 12 12 12 12 12 12 9 9 9 9 ...
+##  $ airline                 : Factor w/ 17 levels "AA","AS","B6",..: 15 15 15 15 15 15 15 15 15 15 ...
+##  $ flight_number           : Factor w/ 6889 levels "1","10","100",..: 6744 6744 6744 6744 6744 6744 6748 6748 6748 6748 ...
+##  $ tail_number             : Factor w/ 5035 levels "0","000000","N050AA",..: 3898 3963 3806 3810 4008 3781 1493 1408 2521 1777 ...
+##  $ plane_model             : Factor w/ 6 levels "737","747","757",..: 3 3 5 2 5 2 2 3 2 6 ...
+##  $ seat_configuration      : Factor w/ 6 levels "Standard","Three Class",..: 2 1 4 5 4 5 2 1 5 2 ...
+##  $ origin_airport          : Factor w/ 279 levels "ABE","ABI","ABQ",..: 46 46 46 46 46 46 133 133 133 133 ...
+##  $ destination_airport     : Factor w/ 279 levels "ABE","ABI","ABQ",..: 61 61 61 61 61 61 61 61 61 61 ...
+##  $ distance_travelled      : num  361 361 361 361 361 361 185 185 185 185 ...
+##  $ is_delayed              : Factor w/ 2 levels "on_time","delayed": 1 2 1 1 1 1 1 1 2 1 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+
+Often observations with any missing value are excluded from the modeling stage. 
+There would be 7321827 observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
+Since most modeling algorithms can't deal with non available values anyway and there is such a vast amount of training data without \verb+NA+ values left I remove the 52370 rows with \verb+NA+s from the data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{modelData} \hlkwb{<-} \hlstd{modelData[}\hlopt{-}\hlkwd{which}\hlstd{(rowHasNa),]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Since I will use the \verb+randomForest+\footnote{\url{http://www.stat.berkeley.edu/~breiman/RandomForests/cc_manual.htm}} package I also remove the factor variables that have more than 53 levels since otherwise an error occurs.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{modelFactorIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlkwd{sapply}\hlstd{(modelData,} \hlkwc{FUN}\hlstd{=class)} \hlopt{==} \hlstr{"factor"}\hlstd{)}
+\hlstd{modelFactorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(modelData,} \hlkwc{FUN}\hlstd{=levels)}
+\hlstd{nbLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(modelFactorLevels,} \hlkwc{FUN}\hlstd{=length)}
+\hlstd{suitable} \hlkwb{<-} \hlkwd{which}\hlstd{(nbLevels} \hlopt{<} \hlnum{53}\hlstd{)} \hlcom{# condition for this randomForest implementation}
+\hlstd{rfModelData} \hlkwb{<-} \hlstd{modelData[,suitable]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+So the data that I use for the estimation of a random forest looks as follows:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{str}\hlstd{(rfModelData)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	7321827 obs. of  11 variables:
+##  $ year                    : Factor w/ 2 levels "2013","2014": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ month                   : Factor w/ 12 levels "01","02","03",..: 8 8 8 8 8 8 8 8 8 8 ...
+##  $ day_of_month            : Factor w/ 31 levels "01","02","03",..: 11 17 18 24 25 31 1 2 3 4 ...
+##  $ day_of_week             : Factor w/ 7 levels "1","2","3","4",..: 7 6 7 6 7 6 4 5 6 7 ...
+##  $ scheduled_departure_time: Factor w/ 24 levels "00","01","02",..: 11 11 11 11 11 11 8 8 8 8 ...
+##  $ scheduled_arrival_time  : Factor w/ 24 levels "00","01","02",..: 12 12 12 12 12 12 9 9 9 9 ...
+##  $ airline                 : Factor w/ 17 levels "AA","AS","B6",..: 15 15 15 15 15 15 15 15 15 15 ...
+##  $ plane_model             : Factor w/ 6 levels "737","747","757",..: 3 3 5 2 5 2 2 3 2 6 ...
+##  $ seat_configuration      : Factor w/ 6 levels "Standard","Three Class",..: 2 1 4 5 4 5 2 1 5 2 ...
+##  $ distance_travelled      : num  361 361 361 361 361 361 185 185 185 185 ...
+##  $ is_delayed              : Factor w/ 2 levels "on_time","delayed": 1 2 1 1 1 1 1 1 2 1 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+I save it to use in the next step:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{save}\hlstd{(rfModelData,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/rfModelData.RData"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\end{document}
+
+% create the prepare_data.tex with
+% knit("../02_prepare_data_for_modeling/prepare_data_for_modeling.Rnw", output="../02_prepare_data_for_modeling/prepare_data_for_modeling.tex")
