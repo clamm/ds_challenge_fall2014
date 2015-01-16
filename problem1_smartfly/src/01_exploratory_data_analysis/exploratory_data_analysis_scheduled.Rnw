@@ -94,7 +94,7 @@ pFactorLevels <- sapply(predictDataTyped, FUN=levels)
 @
 
 <<load-train-levels, include=FALSE>>=
-load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
+load("../01_exploratory_data_analysis/trainDataTyped.RData")
 # contains trainDataTyped, factorNames and factorLevels
 tFactorLevels <- factorLevels
 rm(factorLevels)
@@ -169,7 +169,7 @@ summary(predictDataTyped)
 
 Save data frame for next step:
 <<save-df>>==
-save(predictDataTyped, file="predictDataTyped.Rdata")
+save(predictDataTyped, file="predictDataTyped.RData")
 @
 
 <<setup-plot-data, include=FALSE>>=
