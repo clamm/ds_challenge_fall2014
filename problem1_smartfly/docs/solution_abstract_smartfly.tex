@@ -1,7 +1,16 @@
-\documentclass[12pt,a4paper]{article}
-
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
 \usepackage{fancyvrb}
-\usepackage{hyperref}
+\usepackage{color}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
 
 
 \author{Cindy Lamm}
@@ -13,35 +22,108 @@
 
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
+
 \section{Approach} % (fold)
 \label{approach}
 
-\subsubsection{Get to know the data} % (fold)
-\label{sub:get2know_data}
+I identified the given problem as a classification, respectively a class probability estimation and opted for the following steps as general approach:
+\begin{itemize}
+	\item analyse file structure
+	\item explore the historic and scheduled data
+	\item prepare the historic data for modeling
+	\item estimate \textcolor{red}{and validate} a model
+	\item prepare the scheduled data for prediction
+	\item predict the delay probability of scheduled flights using the estimated model
+\end{itemize}
 
+% I considered the following general models to do class probability estimation:
+% \begin{itemize}
+% 	\item Decision/classification Trees and Random Forests
+% 	\item Linear Discriminant Analysis / Support Vector Machines
+% 	\item k-NN Clustering
+% 	\item Logistic Regression
+% 	\item Neural Networks
+% \end{itemize}
+
+
+In the spirit of the Lean Startup by Eric Ries, I tried to keep my mind focused on the "minimal viable solution": I first estimated a basic model on a minor set of data without any validation to get as quick as possible to the prediction stage producing the required output file of ordered flight IDs. I then iterated over each step and improved the solution.
+
+
+
+\subsection{Analyse file structure} % (fold)
+\label{sub:analyse_file_structure}
 As first step I do a basic structure and content analysis of the given data files on the command line in order to prepare loading the data into any tool/program\footnote{see \verb+problem1_smartfly/src/00_file_structure_analysis/file_structure_analysis.sh+ }. The main goal is to get a first impression of data quality: Do all lines of the csv file have the same number of fields? Are there any quotes within the fields that might need escaping?
+
+% subsection analyse_file_structure (end)
+
+
+
+\subsection{Explore the data} % (fold)
+\label{sub:explore_data}
 
 As second step I do an exploratory data analysis on the historic as well as the prediction data set. I analyse both sets to avoid potential issues arising when the prediction data is slightly (or strongly) different in structure or content from the historic data that will be used for training a model. 
 
 I use the open source statistics software R\footnote{\url{http://www.r-project.org/}} for the exploratory data analysis since it has all necessary analysis functions and plotting tools already implemented and the knitr package\footnote{\url{http://yihui.name/knitr/}} allows for reproducible analysis.
 
-% subsection get2know_data (end)
+For the exploratory data analysis I used most variables as factors since they're not really on a continuous scale (s.t. standard arithmetics would make sense)\footnote{For a list of variable types I used see \verb+problem1_smartfly/src/01_exploratory_data_analysis/resources/raw_variables.csv+}.
+I iterated over the process of loading the historic data in R and looking at it in basic tables and plots until I found out which strings to mark as \verb+NA+ (applicable to all variables!) right from the data loading, which data needs cleaning and reformatting. To get the necessary code straight without too long waiting time\footnote{The compilation of the basic plots and summary statistics for the full historic data set of 7.3 million observations took about 4 minutes per run.} I switched back and forth between the full set of historic data and a reduced set of (random not top for impression more close to the truth) 4000 observations.
 
-\section{First basic model} % (fold)
-\label{first_basic_model}
-
-In order to setup the infrastructure from beginning to end I estimate a first basic model with all necessary validation techniques. This allows me to then quickly iterate over other models/algorithms with each iteration producing the required output file of ordered flight IDs.
-
-I thus perform the following steps always bearing in mind to achieve the "minimal viable solution"\footnote{Eric Ries, Lean Startup} (meaning the least effort to get to the next working increment):
-
+\textbf{Assumptions} I took in these steps include: 
 \begin{itemize}
-	\item prototype fast by using a minor fraction of the original historic data for the first iterations
-	\item prepare data for modeling: convert one input variable and the target variable to the necessary format
-	\item estimate model 
+	\item "NA" in general and "" (empty string) for variables \verb+cancellation_code+ and \verb+tail_number+ indicate a missing value
+	% \item "000000" for \verb+tail_number+ is not valid (according to Wikipedia) and is set to missing value %not used anymore since I dropped the variables with levels > 53 before the NA analysis
+	\item Scheduled times either start with "00" or with "24" (I decided to remap "24" to "00")
+	\item I truncated scheduled times to the hour for better intelligibility
+	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & quad (cancelled == FALSE)+ (as per the given definition in the problem description)
 \end{itemize}
 
+The most important statistic from this exploratory analysis of historic data is probrably the percentage of delayed flights (based on \verb+is_delaeyed+), which amounts to 28.6\%. If I see that as a base line, the model I estimate has to have an error rate better than this (because otherwise I could just say at random with a probability of 28.6\% that a flight is delayed - without any input data or model).
+
+After I applied the same pre-processing steps (mark missing values, mark as factors, truncate times, reformat labels) I ran the same exploratory analysis on the scheduled flight data with special focus on factor levels:
+\begin{itemize}
+	\item Except the values for \verb+year+ and \verb+month+ (D'oh!) the variables seem to be roughly distributed in the same maner as they are in the historic data.
+	% \item "0" which is as well an invalid tail number (i.e. aircraft registration number) is as well included in the scheduled flights data
+	\item Not all factor variables have the same levels as in the historic flight data\footnote{Venn diagrams helped a lot to come with a clear picture of this. See \verb+problem1_smartfly/src/01_exploratory_data_analysis/exploratory_data_analysis.pdf+}
+	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & quad (cancelled == FALSE)+ (as per the given definition in the problem description)
+\end{itemize}
+
+The difference in factor levels mattered to me since I have the experience, that when solving a classification problem with a random forest in R, the training and the prediction data need to contain the same number of variables with the same levels. Otherwise you can't even predict with the random forest.
+
+% subsection explore_data (end)
+
+\subsection{Prepare historic data for modeling} % (fold)
+\label{sub:prepare_historic_data_for_modeling}
+Independent from the model I choose it's better to remove all variables that don't help with the prediction from the data before applying an model estimation algorithm. In this case I drop the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data - and thus can't be used as input for delay prediction.
+
+Since I opted for a random forest model implemented in the R package \verb+randomForest+\footnote{\url{http://cran.r-project.org/web/packages/randomForest/index.html}} I also needed to work around the issue that this implementation throws an error if factor variables with more than 53 levels are included in the data. My first \textcolor{red}{(and only)} solution to this was to exclude the concerned variables (\verb+flight_number+, \verb+tail_number+, \verb+origin_airport+, \verb+destination_airport+ - note that the scheduled time variables did not fall into this category since I truncated them to the hour value).
+
+Note that although I assume that the variable \verb+id+ does not have any prediction power regarding the delay of a flight, I don't drop it from the data since I'll need it for identification in the prediction stage to come up with the required order list of flight IDs. 
+
+To work around the issue that a random forest requires the training and the prediction data to contain the same factor levels (and \verb+year+ and \verb+month+ clearly have different levels in the historic and the scheduled flight data) I transform the date and time related variables to numeric data types.
+
+Furthermore, the algorithm for random forest does by default throw an error when encountering missing values so I check if there are missing values in any of the \textit{remaining} variables - and there are not.
+
+% subsection prepare_historic_data_for_modeling (end)
+
+\subsection{Estimate and validate a model}
+\label{sub_estimate_and_validate_a_model}
+
+\textcolor{red}{testing and validation techniques applied, model selection criteria, and total time spent}
 
 
-% subsection first_basic_model (end)
+
+\section{Used Software}
+\label{used_software}
+In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor and 16GB Memory.
+
+\begin{itemize}
+	\item shell command line (for file structure analysis)
+	\item R in RStudio with packages caret, ggplot, knitr, plyr, randomForest (for data analysis, modeling and prediction)
+	\item LateX (for reporting)
+	\item git (for source code version control)
+\end{itemize}
+
+\section{Time Spent}
+
 
 \end{document}
