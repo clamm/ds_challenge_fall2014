@@ -17,7 +17,7 @@
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
 # set global chunk options
-opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
@@ -30,42 +30,42 @@ options(formatR.arrow=TRUE,width=90)
 Load prepared data from the previous step "Prepare Data For Modeling"
 <<load-prepared-data>>=
 rm(list=ls())   #clear memory
-load("../02_prepare_data_for_modeling/prepared_data.Rdata")
+load("../03_train_model/rfModelData.Rdata")
 @
 
-Model a flight being delayed as dependent of the taxi time in:
-<<train-model>>=
-# fit a boosted tree model via the gbm package (that also requires package e1071)
+Split the train data based on simple bootstrap resampling into a series of train and test sets
+<<split-train-data>>=
 library(caret)
-set.seed(825)
-  
-intercept <- rep(1, length(training$is_delayed))
-glmnetFit1 <- train(is_delayed ~ intercept + taxi_time_in, data=training,
-                 method = "glmnet",
-                 metric="ROC",
-                 tuneGrid = eGrid,
-                 trControl = cctrl4,
-                 ## following options are to be passed through for glmnet()
-                 family="binomial",
-                 standardize = FALSE)
+set.seed(998)
+inTraining <- createDataPartition(rfModelData$is_delayed, times=1, p = .05, list = FALSE) 
+length(inTraining)
+training <- rfModelData[ inTraining,]
+testing  <- rfModelData[-inTraining,]
 @
+
+Estimate the a random forest using $5\%$ of the data (as test run):
+<<estimate-single-random-forest, include=FALSE, eval=FALSE>>=
+library(randomForest)
+system.time( 
+  delayRF360k <- randomForest(is_delayed ~ ., data=rfModelData, subset=inTraining, 
+                              importance=TRUE, proximity=FALSE) 
+  )
+@
+Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes for sample size of 360.000.
+
 
 Check out the model result:
 <<model-result>>=
-glmnetFit1
+delayRF360k
+plot(delayRF360k)
 @
 
 Save the model result:
 <<save-model-result>>==
-save(glmnetFit1, file="glmnetFit1.Rdata")
+save(delayRF360k, inTraining, file="delayRF360k.Rdata")
 @
 
 \end{document}
 
 % create the model.tex with (takes about 13 minutes with 1 variable)
-% knit("../03_train_model/train_model.Rnw", output="../03_train_model/train_model.tex")
-
-% knit all
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")
-% knit("../02_prepare_data_for_modeling/prepare_data.Rnw", output="../02_prepare_data_for_modeling/prepare_data.tex")
 % knit("../03_train_model/train_model.Rnw", output="../03_train_model/train_model.tex")
