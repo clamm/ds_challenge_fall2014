@@ -1,9 +1,9 @@
-problem1_smartfly/data/*.csv
-problem1_smartfly/data/*.zip
-problem2_famous/data/*.csv
-problem2_famous/data/*.zip
-problem3_winklr/data/*.csv
-problem3_winklr/data/*.zip
+problem1_smartfly/data/
+problem1_smartfly/data/
+problem2_famous/data/
+problem2_famous/data/
+problem3_winklr/data/
+problem3_winklr/data/
 
 # R files
 .Rhistory
