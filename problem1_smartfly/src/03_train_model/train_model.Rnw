@@ -39,25 +39,32 @@ Split the train data based on simple bootstrap resampling into a series of train
 <<split-train-data>>=
 library(caret)
 set.seed(998)
-inTraining <- createDataPartition(rfModelData$is_delayed, times=1, p = .05, list = FALSE) 
+PERCENTAGE <- 0.07
+inTraining <- createDataPartition(rfModelData$is_delayed, times=1, p = PERCENTAGE, list = FALSE) 
 length(inTraining)
 training <- rfModelData[inTraining,]
 # testing  <- rfModelData[-inTraining,]
 @
 
-Estimate a random forest using $5\%$ of the data (as test run) - without validation:
+Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
 <<estimate-single-random-forest>>=
 library(randomForest)
-delayRF360k <- randomForest(is_delayed ~ ., data=rfModelData, subset=inTraining, 
-                              importance=TRUE, proximity=FALSE) 
+delayRf <- randomForest(is_delayed ~ . - id, data=rfModelData, subset=inTraining, 
+                        importance=TRUE, proximity=FALSE) 
 @
-Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes for sample size of 360.000.
+Note: On a Macbook with 16GB RAM it takes 
+\begin{itemize}
+\item 4 minutes for a training sample size of 1\% (about 76.000 obs)
+\item 6 minutes for a training sample size of 100.000 obs
+\item 30 minutes for a training sample size of 5\% (about 360.000 obs)
+\item 50 minutes for a training sample size of 7\% (about 510.000 obs).
+\end{itemize}
 
-%Estimate a random forest with 3-fold crossvalidation: /kills too much for Macbook 16GB RAM
+% Estimate a random forest with 3-fold crossvalidation: % kills Macbook with 16GB RAM
 <<estimate-crossvalidate-random-forest, include=FALSE, eval=FALSE>>=
-delayRfCv <- train(is_delayed ~ ., data=training, method="rf", 
-                  trControl=trainControl(method="cv",number=3), 
-                  prox=TRUE, allowParallel=TRUE)
+delayRf <- train(is_delayed ~ ., data=training, method="rf", 
+                 trControl=trainControl(method="cv",number=3), 
+                 prox=TRUE, allowParallel=TRUE)
 print(rf_model)
 @
 
@@ -65,13 +72,13 @@ print(rf_model)
 
 Check out the model result:
 <<model-result>>=
-delayRF360k
-plot(delayRF360k)
+delayRf
+plot(delayRf)
 @
 
 Save the model result:
 <<save-model-result>>==
-save(delayRF360k, inTraining, file="../03_train_model/delayRF360k.RData")
+save(delayRf, inTraining, file="../03_train_model/delayRf.RData")
 @
 
 \end{document}

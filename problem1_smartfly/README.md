@@ -41,7 +41,7 @@ SmartFly Deliverables
 The predictions for delay probabilities for all scheduled flights must be placed into a file called problem1.csv, with a single unique flight ID per line. The IDs must be in order of most likely to be delayed to least likely to be delayed, i.e. the first line of the file should contain the ID of the flight that is most likely to be delayed, and the last line should contain the ID of the flight that is least likely to be delayed. A flight that is canceled is not considered delayed for the purposes of this challenge.
 
 Solution abstract: [docs/solution_abstract_smartfly.pdf](docs/solution_abstract_smartfly.pdf)
-<!-- Solution file: [out/problem1.csv](out/problem1.csv) -->
+Solution file: [out/problem1.csv](out/problem1.csv)
 Source code: [src](src)
 
 

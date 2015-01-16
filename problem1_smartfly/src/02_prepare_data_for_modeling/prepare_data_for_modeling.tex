@@ -86,20 +86,20 @@ Load preprocessed data from the previous step "Exploratory Analysis For Historic
 
 \section{Remove variables that don't help with prediction}
 
-Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exclude the variable \verb+id+ because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
-Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
+Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{nonAvailable} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"id"}\hlstd{,} \hlstr{"departure_delay"}\hlstd{,} \hlstr{"taxi_time_in"}\hlstd{,} \hlstr{"taxi_time_out"}\hlstd{,}
+\hlstd{nonAvailable} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"departure_delay"}\hlstd{,} \hlstr{"taxi_time_in"}\hlstd{,} \hlstr{"taxi_time_out"}\hlstd{,}
                   \hlstr{"cancelled"}\hlstd{,} \hlstr{"cancellation_code"}\hlstd{)}
-\hlstd{excludeIdx} \hlkwb{<-} \hlkwd{sapply}\hlstd{(nonAvailable,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{v}\hlstd{,} \hlkwc{x}\hlstd{)\{} \hlkwd{which}\hlstd{(v}\hlopt{==}\hlstd{x)\},} \hlkwc{v}\hlstd{=}\hlkwd{names}\hlstd{(modelData))}
+\hlstd{excludeIdx} \hlkwb{<-} \hlkwd{sapply}\hlstd{(nonAvailable,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{v}\hlstd{,} \hlkwc{x}\hlstd{)\{} \hlkwd{which}\hlstd{(v}\hlopt{==}\hlstd{x) \},} \hlkwc{v}\hlstd{=}\hlkwd{names}\hlstd{(modelData))}
 \hlstd{modelData} \hlkwb{<-} \hlstd{modelData[,}\hlopt{-}\hlstd{excludeIdx]}
 \hlkwd{str}\hlstd{(modelData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	7374365 obs. of  15 variables:
+## 'data.frame':	7374365 obs. of  16 variables:
+##  $ id                      : chr  "4982598272866526024" "5074130684343212714" "8872634703988349126" "1147433994031419585" ...
 ##  $ year                    : Factor w/ 2 levels "2013","2014": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ month                   : Factor w/ 12 levels "01","02","03",..: 8 8 8 8 8 8 8 8 8 8 ...
 ##  $ day_of_month            : Factor w/ 31 levels "01","02","03",..: 11 17 18 24 25 31 1 2 3 4 ...
@@ -119,6 +119,7 @@ Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+,
 \end{kframe}
 \end{knitrout}
 
+Note: I don't exclude the variable \verb+id+ from the data since I need it for identification. However I won't use it for estimation because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
 
 \section{Remove variables due to randomForest constraint}
 
@@ -143,7 +144,8 @@ So the variables that I use for the estimation of a random forest are as follows
 \hlkwd{str}\hlstd{(rfModelData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	7374365 obs. of  11 variables:
+## 'data.frame':	7374365 obs. of  12 variables:
+##  $ id                      : chr  "4982598272866526024" "5074130684343212714" "8872634703988349126" "1147433994031419585" ...
 ##  $ year                    : Factor w/ 2 levels "2013","2014": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ month                   : Factor w/ 12 levels "01","02","03",..: 8 8 8 8 8 8 8 8 8 8 ...
 ##  $ day_of_month            : Factor w/ 31 levels "01","02","03",..: 11 17 18 24 25 31 1 2 3 4 ...
@@ -178,7 +180,8 @@ When predicting from a randomForest it expects the same factor levels to be pres
 \hlkwd{str}\hlstd{(rfModelData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	7374365 obs. of  11 variables:
+## 'data.frame':	7374365 obs. of  12 variables:
+##  $ id                      : chr  "4982598272866526024" "5074130684343212714" "8872634703988349126" "1147433994031419585" ...
 ##  $ year                    : num  2013 2013 2013 2013 2013 ...
 ##  $ month                   : num  8 8 8 8 8 8 8 8 8 8 ...
 ##  $ day_of_month            : num  11 17 18 24 25 31 1 2 3 4 ...

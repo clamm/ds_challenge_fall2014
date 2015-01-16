@@ -94,10 +94,10 @@ Load the variables names that were used for the modeling stage
 \hlstd{modelVariables}
 \end{alltt}
 \begin{verbatim}
-##  [1] "year"                     "month"                    "day_of_month"            
-##  [4] "day_of_week"              "scheduled_departure_time" "scheduled_arrival_time"  
-##  [7] "airline"                  "plane_model"              "seat_configuration"      
-## [10] "distance_travelled"       "is_delayed"
+##  [1] "id"                       "year"                     "month"                   
+##  [4] "day_of_month"             "day_of_week"              "scheduled_departure_time"
+##  [7] "scheduled_arrival_time"   "airline"                  "plane_model"             
+## [10] "seat_configuration"       "distance_travelled"       "is_delayed"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -112,7 +112,8 @@ and remove all non-used variables from the scheduled flight data:
 \hlkwd{str}\hlstd{(rfPredictData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	566376 obs. of  10 variables:
+## 'data.frame':	566376 obs. of  11 variables:
+##  $ id                      : chr  "4972683369271453960" "4755622236989466036" "1092083446069765248" "4503168388465453601" ...
 ##  $ year                    : Factor w/ 1 level "2015": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ month                   : Factor w/ 1 level "01": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ day_of_month            : Factor w/ 31 levels "01","02","03",..: 12 13 14 15 16 17 19 20 21 22 ...
@@ -127,6 +128,8 @@ and remove all non-used variables from the scheduled flight data:
 \end{kframe}
 \end{knitrout}
 
+Note: The variable \verb+id+ is included here. I won't use it for the prediction itself, but I need it for identification of the predicted outcome.
+
 \section{Convert date and time related variables from factors to numbers}
 
 For the scheduled flight data we use for date and time related variables as well numeric values instead of factor levels.
@@ -137,7 +140,8 @@ For the scheduled flight data we use for date and time related variables as well
 \hlkwd{str}\hlstd{(rfPredictData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	566376 obs. of  10 variables:
+## 'data.frame':	566376 obs. of  11 variables:
+##  $ id                      : chr  "4972683369271453960" "4755622236989466036" "1092083446069765248" "4503168388465453601" ...
 ##  $ year                    : num  2015 2015 2015 2015 2015 ...
 ##  $ month                   : num  1 1 1 1 1 1 1 1 1 1 ...
 ##  $ day_of_month            : num  12 13 14 15 16 17 19 20 21 22 ...
@@ -179,6 +183,9 @@ The comparison of historic and scheduled flight data furthermore showed that the
 \hlkwd{sapply}\hlstd{(rfPredictData,} \hlkwc{FUN}\hlstd{=levels)}
 \end{alltt}
 \begin{verbatim}
+## $id
+## NULL
+## 
 ## $year
 ## NULL
 ## 
@@ -232,7 +239,7 @@ There is no need to adapt the levels for the other variables, since they are not
 \end{kframe}
 \end{knitrout}
 
-There are no missing values in any of the remaining varaibles.
+There are no missing values in any of the remaining variables.
 
 So the data that I use for the predicting the probability of delay for the scheduled flights using the estimated random forest looks as follows:
 \begin{knitrout}
@@ -241,7 +248,8 @@ So the data that I use for the predicting the probability of delay for the sched
 \hlkwd{str}\hlstd{(rfPredictData)}
 \end{alltt}
 \begin{verbatim}
-## 'data.frame':	532978 obs. of  10 variables:
+## 'data.frame':	532978 obs. of  11 variables:
+##  $ id                      : chr  "4972683369271453960" "4755622236989466036" "1092083446069765248" "4503168388465453601" ...
 ##  $ year                    : num  2015 2015 2015 2015 2015 ...
 ##  $ month                   : num  1 1 1 1 1 1 1 1 1 1 ...
 ##  $ day_of_month            : num  12 13 14 15 16 17 19 20 21 22 ...

@@ -51,6 +51,8 @@ rfPredictData <- rfPredictData[,-excludeIdx]
 str(rfPredictData)
 @
 
+Note: The variable \verb+id+ is included here. I won't use it for the prediction itself, but I need it for identification of the predicted outcome.
+
 \section{Convert date and time related variables from factors to numbers}
 
 For the scheduled flight data we use for date and time related variables as well numeric values instead of factor levels.
@@ -94,7 +96,7 @@ nbRowsLeft <- nbRows - nbRowsWithNa
 nbRowsWithNa / nbRows
 @
 
-There are no missing values in any of the remaining varaibles.
+There are no missing values in any of the remaining variables.
 
 So the data that I use for the predicting the probability of delay for the scheduled flights using the estimated random forest looks as follows:
 <<final-model-data>>=

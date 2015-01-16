@@ -37,17 +37,17 @@ rm(trainDataTyped)
 
 \section{Remove variables that don't help with prediction}
 
-Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exclude the variable \verb+id+ because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
-Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
+Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
 
 <<remove-no-helping-variables>>=
-nonAvailable <- c("id", "departure_delay", "taxi_time_in", "taxi_time_out", 
+nonAvailable <- c("departure_delay", "taxi_time_in", "taxi_time_out", 
                   "cancelled", "cancellation_code")
-excludeIdx <- sapply(nonAvailable, FUN=function(v, x){ which(v==x)}, v=names(modelData))
+excludeIdx <- sapply(nonAvailable, FUN=function(v, x){ which(v==x) }, v=names(modelData))
 modelData <- modelData[,-excludeIdx]
 str(modelData)
 @
 
+Note: I don't exclude the variable \verb+id+ from the data since I need it for identification. However I won't use it for estimation because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
 
 \section{Remove variables due to randomForest constraint}
 

@@ -36,19 +36,40 @@ load("../04_prepare_data_for_prediction/rfPredictData.RData")
 
 and load the estimated model:
 <<load-estimated-model>>=
-load("../03_train_model/delayRF360k.RData")
+load("../03_train_model/delayRf.RData")
 @
 
 <<predict-scheduled-flights>>=
 library(randomForest)
-predictionDelayRF360k <- predict(delayRF360k, rfPredictData, type="prob")
+# formula is_delayed ~ . - id will take care for not using id for prediction
+predictionDelayRf <- predict(delayRf, rfPredictData, type="prob")
 @
 
 
-Save the prediction result:
+Save the prediction result in R format:
 <<save-prediction-result>>==
-save(predictionDelayRF360k, file="../05_predict_delay_proba/rfPrediction.Rdata")
+save(predictionDelayRf, file="../05_predict_delay_proba/rfPrediction.Rdata")
 @
+
+
+<<check-number-of-rows, echo=FALSE>>=
+targetNbRows <- 566376
+if (nrow(predictionDelayRf) != targetNbRows) { 
+  warning("Number of predicted results (",nrow(predictionDelayRf),") does not coincide with the number of scheduled flights (",targetNbRows,").")
+}
+@
+
+
+Write the prediction result as requested into csv:
+<<write-deliverable-csv>>=
+o <- order(predictionDelayRf[,2], decreasing=TRUE)
+idIdx <- which(names(rfPredictData) == "id")
+idsOrderedByDelayProba <- rfPredictData[o,idIdx]
+write.table(idsOrderedByDelayProba, file="../../out/problem1.csv", 
+            quote=FALSE, col.names=FALSE, row.names=FALSE)
+@
+
+The end!
 
 \end{document}
 

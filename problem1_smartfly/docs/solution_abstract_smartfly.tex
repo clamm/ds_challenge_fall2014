@@ -13,11 +13,11 @@
 
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
-\subsection{Approach} % (fold)
-\label{sub:approach}
+\section{Approach} % (fold)
+\label{approach}
 
 \subsubsection{Get to know the data} % (fold)
-\label{subsub:get2know_data}
+\label{sub:get2know_data}
 
 As first step I do a basic structure and content analysis of the given data files on the command line in order to prepare loading the data into any tool/program\footnote{see \verb+problem1_smartfly/src/00_file_structure_analysis/file_structure_analysis.sh+ }. The main goal is to get a first impression of data quality: Do all lines of the csv file have the same number of fields? Are there any quotes within the fields that might need escaping?
 
@@ -27,8 +27,8 @@ I use the open source statistics software R\footnote{\url{http://www.r-project.o
 
 % subsection get2know_data (end)
 
-\subsection{First basic model} % (fold)
-\label{sub:first_basic_model}
+\section{First basic model} % (fold)
+\label{first_basic_model}
 
 In order to setup the infrastructure from beginning to end I estimate a first basic model with all necessary validation techniques. This allows me to then quickly iterate over other models/algorithms with each iteration producing the required output file of ordered flight IDs.
 

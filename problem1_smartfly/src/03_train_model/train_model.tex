@@ -77,7 +77,7 @@ Load prepared data from the previous step "Prepare Data For Modeling"
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{rm}\hlstd{(}\hlkwc{list}\hlstd{=}\hlkwd{ls}\hlstd{())}   \hlcom{#clear memory}
-\hlkwd{load}\hlstd{(}\hlstr{"../03_train_model/rfModelData.RData"}\hlstd{)}
+\hlkwd{load}\hlstd{(}\hlstr{"../02_prepare_data_for_modeling/rfModelData.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -88,11 +88,12 @@ Split the train data based on simple bootstrap resampling into a series of train
 \begin{alltt}
 \hlkwd{library}\hlstd{(caret)}
 \hlkwd{set.seed}\hlstd{(}\hlnum{998}\hlstd{)}
-\hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(rfModelData}\hlopt{$}\hlstd{is_delayed,} \hlkwc{times}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{p} \hlstd{=} \hlnum{.05}\hlstd{,} \hlkwc{list} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlstd{PERCENTAGE} \hlkwb{<-} \hlnum{0.07}
+\hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(rfModelData}\hlopt{$}\hlstd{is_delayed,} \hlkwc{times}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{p} \hlstd{= PERCENTAGE,} \hlkwc{list} \hlstd{=} \hlnum{FALSE}\hlstd{)}
 \hlkwd{length}\hlstd{(inTraining)}
 \end{alltt}
 \begin{verbatim}
-## [1] 366092
+## [1] 516206
 \end{verbatim}
 \begin{alltt}
 \hlstd{training} \hlkwb{<-} \hlstd{rfModelData[inTraining,]}
@@ -101,19 +102,19 @@ Split the train data based on simple bootstrap resampling into a series of train
 \end{kframe}
 \end{knitrout}
 
-Estimate a random forest using $5\%$ of the data (as test run) - without validation:
+Estimate a random forest using 7\% of the data - without crossvalidation:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{library}\hlstd{(randomForest)}
-\hlstd{delayRF360k} \hlkwb{<-} \hlkwd{randomForest}\hlstd{(is_delayed} \hlopt{~} \hlstd{.,} \hlkwc{data}\hlstd{=rfModelData,} \hlkwc{subset}\hlstd{=inTraining,}
-                              \hlkwc{importance}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{proximity}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\hlstd{delayRf} \hlkwb{<-} \hlkwd{randomForest}\hlstd{(is_delayed} \hlopt{~} \hlstd{.} \hlopt{-} \hlstd{id,} \hlkwc{data}\hlstd{=rfModelData,} \hlkwc{subset}\hlstd{=inTraining,}
+                        \hlkwc{importance}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{proximity}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
-Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes for sample size of 360.000.
+Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes fortraining sample size of 5\% (about 360.000 obs).
 
-%Estimate a random forest with 3-fold crossvalidation: /kills too much for Macbook 16GB RAM
+% Estimate a random forest with 3-fold crossvalidation: % kills Macbook with 16GB RAM
 
 
 
@@ -122,24 +123,24 @@ Check out the model result:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{delayRF360k}
+\hlstd{delayRf}
 \end{alltt}
 \begin{verbatim}
 ## 
 ## Call:
-##  randomForest(formula = is_delayed ~ ., data = rfModelData, importance = TRUE,      proximity = FALSE, subset = inTraining) 
+##  randomForest(formula = is_delayed ~ . - id, data = rfModelData,      importance = TRUE, proximity = FALSE, subset = inTraining) 
 ##                Type of random forest: classification
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 3
 ## 
-##         OOB estimate of  error rate: 28.42%
+##         OOB estimate of  error rate: 27.52%
 ## Confusion matrix:
 ##         on_time delayed class.error
-## on_time  227841   32733   0.1256188
-## delayed   71306   34212   0.6757710
+## on_time  340077   28394  0.07705898
+## delayed  113682   34053  0.76949944
 \end{verbatim}
 \begin{alltt}
-\hlkwd{plot}\hlstd{(delayRF360k)}
+\hlkwd{plot}\hlstd{(delayRf)}
 \end{alltt}
 \end{kframe}
 
@@ -155,7 +156,7 @@ Save the model result:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(delayRF360k, inTraining,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/delayRF360k.RData"}\hlstd{)}
+\hlkwd{save}\hlstd{(delayRf, inTraining,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/delayRf.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
