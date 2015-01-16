@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+library(randomForest)
+# set global chunk options
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{SmartFly: Predict probability of delay of scheduled flights}
+\author{Cindy Lamm}
+
+\maketitle
+
+Load prepared data from the previous step "Prepare Data For Prediction"
+<<load-prepared-data>>=
+rm(list=ls())   #clear memory
+load("../04_prepare_data_for_prediction/rfPredictData.RData")
+@
+
+and load the estimated model:
+<<load-estimated-model>>=
+load("../03_train_model/delayRF360k.RData")
+@
+
+<<predict-scheduled-flights>>=
+library(randomForest)
+predictionDelayRF360k <- predict(delayRF360k, rfPredictData, type="prob")
+@
+
+
+Save the prediction result:
+<<save-prediction-result>>==
+save(predictionDelayRF360k, file="../05_predict_delay_proba/rfPrediction.Rdata")
+@
+
+\end{document}
+
+% create the model.tex with (takes about 13 minutes with 1 variable)
+% knit("../05_predict_delay_proba/predict_delay_proba.Rnw", output="../05_predict_delay_proba/predict_delay_proba.tex")

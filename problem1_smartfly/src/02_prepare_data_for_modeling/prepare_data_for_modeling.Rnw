@@ -17,7 +17,7 @@
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
 # set global chunk options
-opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
@@ -30,39 +30,12 @@ options(formatR.arrow=TRUE,width=90)
 Load preprocessed data from the previous step "Exploratory Analysis For Historic Flight Data"
 <<load-typed-data>>=
 rm(list=ls())   #clear memory
-load("../01_exploratory_data_analysis/trainDataTyped.Rdata")
+load("../01_exploratory_data_analysis/trainDataTyped.RData")
 modelData <- trainDataTyped
 rm(trainDataTyped)
 @
 
-\section{Analyse \& deal with missing values}
-
-<<analyse-cancellations, include=FALSE>>=
-unclear_status <- sum(!modelData$cancelled & !is.na(modelData$cancellation_code))
-@
-
-The variable \verb+cancellation_code+ has the most missing values since it is only filled if the flight was not cancelled - which is the case for most flights.
-I would expect that all non-cancelled flights don't have a \verb+cancellation_code+, however I found \Sexpr{unclear_status} non-cancelled flights that do have an entry as \verb+cancellation_code+. 
-<<analyse-weird-obs>>=
-weirdIdx <- which(!modelData$cancelled & !is.na(modelData$cancellation_code))
-summary(modelData[weirdIdx,])
-@
-A quick analysis of the concerned observations reveals that all but one have a \verb+taxi_time_in+ of 0 minutes.
-
-I'll exclude those observations from the data set in the following.
-<<remove-weird-obs, echo=1>>=
-modelData <- modelData[-weirdIdx,]
-nbRows <- dim(modelData)[1]
-@
-
-The variable \verb+tail_number+ includes the values "000000" and "0" which are according to Wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Aircraft_registration}} not valid registration numbers. However the value "0" appears as well in the scheduled flight data set, so I only mark the values "000000" as \verb+NA+.
-
-<<tail-number-na>>=
-is_invalid <- modelData$tail_number == "000000"
-sum(is_invalid, na.rm=TRUE)
-naIdx <- which(is_invalid)
-modelData$tail_number[naIdx] <- NA
-@
+\section{Remove variables that don't help with prediction}
 
 Before I do an analysis of how many rows contain any missing values, I remove the variables that I won't use for estimating the model. I exclude the variable \verb+id+ because I assume it is randomly assigned to the observation and has no predictive power regarding the delay of a flight.
 Furthermore I exlcude the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data.
@@ -76,21 +49,7 @@ str(modelData)
 @
 
 
-<<check-na-removal, include=FALSE>>=
-rowHasNa <- apply(modelData, MARGIN=1, FUN=function(row){ any(is.na(row)) })
-nbRowsWithNa <- sum(rowHasNa)
-nbRowsLeft <- nbRows - nbRowsWithNa
-# proportion of NA rows:
-nbRowsWithNa / nbRows
-@
-
-Often observations with any missing value are excluded from the modeling stage. 
-There would be \Sexpr{nbRowsLeft} observations left if I would exclude observations that have \verb+NA+ for any of the variables (excluding \verb+cancellation_code+).
-Since most modeling algorithms can't deal with non available values anyway and there is such a vast amount of training data without \verb+NA+ values left I remove the \Sexpr{nbRowsWithNa} rows with \verb+NA+s from the data.
-
-<<remove-na-rows>>=
-modelData <- modelData[-which(rowHasNa),]
-@
+\section{Remove variables due to randomForest constraint}
 
 Since I will use the \verb+randomForest+\footnote{\url{http://www.stat.berkeley.edu/~breiman/RandomForests/cc_manual.htm}} package I also remove the factor variables that have more than 53 levels since otherwise an error occurs.
 <<remaining-factors>>=
@@ -99,20 +58,55 @@ modelFactorLevels <- sapply(modelData, FUN=levels)
 nbLevels <- sapply(modelFactorLevels, FUN=length)
 suitable <- which(nbLevels < 53) # condition for this randomForest implementation
 rfModelData <- modelData[,suitable]
+rm(modelData)
 @
 
-So the data that I use for the estimation of a random forest looks as follows:
+So the variables that I use for the estimation of a random forest are as follows:
 <<final-model-data>>=
 str(rfModelData)
 @
 
-I save it to use in the next step:
+I save these variable names for the prediction step since I use the same variable base for prediction and modeling:
+<<save-rf-model-variables>>=
+modelVariables <- names(rfModelData)
+save(modelVariables, file="../02_prepare_data_for_modeling/modelVariables.RData")
+@
+
+\section{Convert date and time related variables from factors to numbers}
+When predicting from a randomForest it expects the same factor levels to be present in the training and prediction data set. For dates and times I can work around that by using numeric values instead of factor levels.
+
+<<convert-dates-and-times-to-numeric, echo=7>>=
+rfModelData$year <- as.numeric(as.character(rfModelData$year))
+rfModelData$month <- as.numeric(as.character(rfModelData$month))
+rfModelData$day_of_month <- as.numeric(as.character(rfModelData$day_of_month))
+rfModelData$day_of_week <- as.numeric(as.character(rfModelData$day_of_week))
+rfModelData$scheduled_departure_time <- as.numeric(as.character(rfModelData$scheduled_departure_time))
+rfModelData$scheduled_arrival_time <- as.numeric(as.character(rfModelData$scheduled_arrival_time))
+str(rfModelData)
+@
+
+
+\section{Analyse \& deal with missing values}
+
+Check for missing values in any of the remaining variables:
+<<check-na-removal>>=
+nbRows <- dim(rfModelData)[1]
+rowHasNa <- apply(rfModelData, MARGIN=1, FUN=function(row){ any(is.na(row)) })
+nbRowsWithNa <- sum(rowHasNa)
+nbRowsLeft <- nbRows - nbRowsWithNa
+# proportion of NA rows:
+nbRowsWithNa / nbRows
+@
+
+There are no rows with missing values (after we deleted variables that we won't use for modeling anyway).
+
+I save the model data for the estimation step:
 <<save-rf-model-data>>=
-save(rfModelData, file="../03_train_model/rfModelData.RData")
+save(rfModelData, file="../02_prepare_data_for_modeling/rfModelData.RData")
 @
 
 
 \end{document}
 
-% create the prepare_data.tex with
+% create the .tex with (takes about 3 minutes)
 % knit("../02_prepare_data_for_modeling/prepare_data_for_modeling.Rnw", output="../02_prepare_data_for_modeling/prepare_data_for_modeling.tex")

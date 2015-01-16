@@ -16,6 +16,8 @@
 \begin{document}
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
+library(randomForest)
+library(caret)
 # set global chunk options
 opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
@@ -30,7 +32,7 @@ options(formatR.arrow=TRUE,width=90)
 Load prepared data from the previous step "Prepare Data For Modeling"
 <<load-prepared-data>>=
 rm(list=ls())   #clear memory
-load("../03_train_model/rfModelData.Rdata")
+load("../02_prepare_data_for_modeling/rfModelData.RData")
 @
 
 Split the train data based on simple bootstrap resampling into a series of train and test sets
@@ -39,19 +41,26 @@ library(caret)
 set.seed(998)
 inTraining <- createDataPartition(rfModelData$is_delayed, times=1, p = .05, list = FALSE) 
 length(inTraining)
-training <- rfModelData[ inTraining,]
-testing  <- rfModelData[-inTraining,]
+training <- rfModelData[inTraining,]
+# testing  <- rfModelData[-inTraining,]
 @
 
-Estimate the a random forest using $5\%$ of the data (as test run):
-<<estimate-single-random-forest, include=FALSE, eval=FALSE>>=
+Estimate a random forest using $5\%$ of the data (as test run) - without validation:
+<<estimate-single-random-forest>>=
 library(randomForest)
-system.time( 
-  delayRF360k <- randomForest(is_delayed ~ ., data=rfModelData, subset=inTraining, 
+delayRF360k <- randomForest(is_delayed ~ ., data=rfModelData, subset=inTraining, 
                               importance=TRUE, proximity=FALSE) 
-  )
 @
 Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes for sample size of 360.000.
+
+%Estimate a random forest with 3-fold crossvalidation: /kills too much for Macbook 16GB RAM
+<<estimate-crossvalidate-random-forest, include=FALSE, eval=FALSE>>=
+delayRfCv <- train(is_delayed ~ ., data=training, method="rf", 
+                  trControl=trainControl(method="cv",number=3), 
+                  prox=TRUE, allowParallel=TRUE)
+print(rf_model)
+@
+
 
 
 Check out the model result:
@@ -62,10 +71,10 @@ plot(delayRF360k)
 
 Save the model result:
 <<save-model-result>>==
-save(delayRF360k, inTraining, file="delayRF360k.Rdata")
+save(delayRF360k, inTraining, file="../03_train_model/delayRF360k.RData")
 @
 
 \end{document}
 
-% create the model.tex with (takes about 13 minutes with 1 variable)
+% create the .tex with
 % knit("../03_train_model/train_model.Rnw", output="../03_train_model/train_model.tex")

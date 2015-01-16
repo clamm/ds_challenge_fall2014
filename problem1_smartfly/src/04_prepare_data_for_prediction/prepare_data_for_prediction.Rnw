@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{SmartFly: Prepare Data For Prediction}
+\author{Cindy Lamm}
+
+\maketitle
+
+Load preprocessed data from the previous step "Exploratory Analysis For Scheduled Flight Data"
+<<load-typed-data>>=
+rm(list=ls())   #clear memory
+load("../01_exploratory_data_analysis/predictDataTyped.RData")
+rfPredictData <- predictDataTyped
+rm(predictDataTyped)
+@
+
+\section{Set variables as used in modeling data}
+
+Load the variables names that were used for the modeling stage
+<<load-model-variables>>=
+load("../02_prepare_data_for_modeling/modelVariables.RData")
+modelVariables
+@
+
+and remove all non-used variables from the scheduled flight data:
+<<set-model-variables-here>>=
+removeNames <- setdiff(names(rfPredictData), modelVariables)
+excludeIdx <- sapply(removeNames, FUN=function(v, x){ which(v==x)}, v=names(rfPredictData))
+rfPredictData <- rfPredictData[,-excludeIdx]
+str(rfPredictData)
+@
+
+\section{Convert date and time related variables from factors to numbers}
+
+For the scheduled flight data we use for date and time related variables as well numeric values instead of factor levels.
+
+<<convert-dates-and-times-to-numeric, echo=7>>=
+rfPredictData$year <- as.numeric(as.character(rfPredictData$year))
+rfPredictData$month <- as.numeric(as.character(rfPredictData$month))
+rfPredictData$day_of_month <- as.numeric(as.character(rfPredictData$day_of_month))
+rfPredictData$day_of_week <- as.numeric(as.character(rfPredictData$day_of_week))
+rfPredictData$scheduled_departure_time <- as.numeric(as.character(rfPredictData$scheduled_departure_time))
+rfPredictData$scheduled_arrival_time <- as.numeric(as.character(rfPredictData$scheduled_arrival_time))
+str(rfPredictData)
+@
+
+\section{Remove unknown factor levels}
+
+The comparison of historic and scheduled flight data furthermore showed that there are two airlines in the scheduled data that are not listed in the historic data. In order to be able to predict using the estimated random forest from the historic data I need to exclude the observations listed for these two airlines:
+<<remove-new-airlines>>=
+removeNames <- c("HA","OH")
+removeIdxs <- union(which(rfPredictData$airline=="HA"), which(rfPredictData$airline=="OH"))
+length(removeIdxs)
+rfPredictData <- rfPredictData[-removeIdxs,]
+lvlIdx <- c(which(levels(rfPredictData$airline)=="HA"), which(levels(rfPredictData$airline)=="OH"))
+levels(rfPredictData$airline)[lvlIdx] <- NA
+@
+
+<<check-levels>>=
+sapply(rfPredictData, FUN=levels)
+@
+
+There is no need to adapt the levels for the other variables, since they are not included in the modeling (or prediction) process anyway.
+
+\section{Analyse \& deal with missing values}
+
+<<check-na-removal>>=
+nbRows <- dim(rfPredictData)[1]
+rowHasNa <- apply(rfPredictData, MARGIN=1, FUN=function(row){ any(is.na(row)) })
+nbRowsWithNa <- sum(rowHasNa)
+nbRowsLeft <- nbRows - nbRowsWithNa
+# proportion of NA rows:
+nbRowsWithNa / nbRows
+@
+
+There are no missing values in any of the remaining varaibles.
+
+So the data that I use for the predicting the probability of delay for the scheduled flights using the estimated random forest looks as follows:
+<<final-model-data>>=
+str(rfPredictData)
+@
+
+I save the data for the next step:
+<<save-rf-model-data>>=
+save(rfPredictData, file="../04_prepare_data_for_prediction/rfPredictData.RData")
+@
+
+
+\end{document}
+
+% create the .tex with
+% knit("../04_prepare_data_for_prediction/prepare_data_for_prediction.Rnw", output="../04_prepare_data_for_prediction/prepare_data_for_prediction.tex")

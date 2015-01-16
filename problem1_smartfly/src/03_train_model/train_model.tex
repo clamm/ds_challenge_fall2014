@@ -54,6 +54,7 @@
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -65,10 +66,8 @@
 \begin{document}
 
 
-
+\date{\currenttime, \today}
 \title{SmartFly: Train model and validate via cross-validation}
-
-
 \author{Cindy Lamm}
 
 \maketitle
@@ -78,604 +77,90 @@ Load prepared data from the previous step "Prepare Data For Modeling"
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{rm}\hlstd{(}\hlkwc{list}\hlstd{=}\hlkwd{ls}\hlstd{())}   \hlcom{#clear memory}
-\hlkwd{load}\hlstd{(}\hlstr{"../02_prepare_data_for_modeling/prepared_data.Rdata"}\hlstd{)}
+\hlkwd{load}\hlstd{(}\hlstr{"../03_train_model/rfModelData.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-Model a flight being delayed as dependent of the taxi time in:
+Split the train data based on simple bootstrap resampling into a series of train and test sets
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlcom{# fit a boosted tree model via the gbm package (that also requires package e1071)}
 \hlkwd{library}\hlstd{(caret)}
-\hlkwd{set.seed}\hlstd{(}\hlnum{825}\hlstd{)}
-
-\hlstd{intercept} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlkwd{length}\hlstd{(training}\hlopt{$}\hlstd{is_delayed))}
-\hlstd{glmnetFit1} \hlkwb{<-} \hlkwd{train}\hlstd{(is_delayed} \hlopt{~} \hlstd{intercept} \hlopt{+} \hlstd{taxi_time_in,} \hlkwc{data}\hlstd{=training,}
-                 \hlkwc{method} \hlstd{=} \hlstr{"glmnet"}\hlstd{,}
-                 \hlkwc{metric}\hlstd{=}\hlstr{"ROC"}\hlstd{,}
-                 \hlkwc{tuneGrid} \hlstd{= eGrid,}
-                 \hlkwc{trControl} \hlstd{= cctrl4,}
-                 \hlcom{## following options are to be passed through for glmnet()}
-                 \hlkwc{family}\hlstd{=}\hlstr{"binomial"}\hlstd{,}
-                 \hlkwc{standardize} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlkwd{set.seed}\hlstd{(}\hlnum{998}\hlstd{)}
+\hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(rfModelData}\hlopt{$}\hlstd{is_delayed,} \hlkwc{times}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{p} \hlstd{=} \hlnum{.05}\hlstd{,} \hlkwc{list} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlkwd{length}\hlstd{(inTraining)}
 \end{alltt}
-
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in train.default(x, y, weights = w, ...): The metric "{}ROC"{} was not in the result set. Accuracy will be used instead.}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in ni[1:m] * nj[1:m]: NAs produced by integer overflow}}
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info = trainInfo, : There were missing values in resampled performance measures.}}\end{kframe}
+\begin{verbatim}
+## [1] 366092
+\end{verbatim}
+\begin{alltt}
+\hlstd{training} \hlkwb{<-} \hlstd{rfModelData[inTraining,]}
+\hlcom{# testing  <- rfModelData[-inTraining,]}
+\end{alltt}
+\end{kframe}
 \end{knitrout}
+
+Estimate a random forest using $5\%$ of the data (as test run) - without validation:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(randomForest)}
+\hlstd{delayRF360k} \hlkwb{<-} \hlkwd{randomForest}\hlstd{(is_delayed} \hlopt{~} \hlstd{.,} \hlkwc{data}\hlstd{=rfModelData,} \hlkwc{subset}\hlstd{=inTraining,}
+                              \hlkwc{importance}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{proximity}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes for sample size of 360.000.
+
+%Estimate a random forest with 3-fold crossvalidation: /kills too much for Macbook 16GB RAM
+
+
+
 
 Check out the model result:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{glmnetFit1}
+\hlstd{delayRF360k}
 \end{alltt}
 \begin{verbatim}
-## glmnet 
 ## 
-## 3687183 samples
-##      20 predictor
-##       2 classes: 'delayed', 'on_time' 
+## Call:
+##  randomForest(formula = is_delayed ~ ., data = rfModelData, importance = TRUE,      proximity = FALSE, subset = inTraining) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 3
 ## 
-## No pre-processing
-## Resampling: Cross-Validated (3 fold) 
-## 
-## Summary of sample sizes: 2458122, 2458122, 2458122 
-## 
-## Resampling results across tuning parameters:
-## 
-##   alpha      lambda  Accuracy   Kappa  Accuracy SD
-##   0.0500000  0.1     0.7138059  NaN    0          
-##   0.0500000  0.2     0.7138059  NaN    0          
-##   0.0500000  0.3     0.7138059  NaN    0          
-##   0.0500000  0.4     0.7138059  NaN    0          
-##   0.0500000  0.5     0.7138059  NaN    0          
-##   0.1178571  0.1     0.7138059  NaN    0          
-##   0.1178571  0.2     0.7138059  NaN    0          
-##   0.1178571  0.3     0.7138059  NaN    0          
-##   0.1178571  0.4     0.7138059  NaN    0          
-##   0.1178571  0.5     0.7138059  NaN    0          
-##   0.1857143  0.1     0.7138059  NaN    0          
-##   0.1857143  0.2     0.7138059  NaN    0          
-##   0.1857143  0.3     0.7138059  NaN    0          
-##   0.1857143  0.4     0.7138059  NaN    0          
-##   0.1857143  0.5     0.7138059  NaN    0          
-##   0.2535714  0.1     0.7138059  NaN    0          
-##   0.2535714  0.2     0.7138059  NaN    0          
-##   0.2535714  0.3     0.7138059  NaN    0          
-##   0.2535714  0.4     0.7138059  NaN    0          
-##   0.2535714  0.5     0.7138059  NaN    0          
-##   0.3214286  0.1     0.7138059  NaN    0          
-##   0.3214286  0.2     0.7138059  NaN    0          
-##   0.3214286  0.3     0.7138059  NaN    0          
-##   0.3214286  0.4     0.7138059  NaN    0          
-##   0.3214286  0.5     0.7138059  NaN    0          
-##   0.3892857  0.1     0.7138059  NaN    0          
-##   0.3892857  0.2     0.7138059  NaN    0          
-##   0.3892857  0.3     0.7138059  NaN    0          
-##   0.3892857  0.4     0.7138059  NaN    0          
-##   0.3892857  0.5     0.7138059  NaN    0          
-##   0.4571429  0.1     0.7138059  NaN    0          
-##   0.4571429  0.2     0.7138059  NaN    0          
-##   0.4571429  0.3     0.7138059  NaN    0          
-##   0.4571429  0.4     0.7138059  NaN    0          
-##   0.4571429  0.5     0.7138059  NaN    0          
-##   0.5250000  0.1     0.7138059  NaN    0          
-##   0.5250000  0.2     0.7138059  NaN    0          
-##   0.5250000  0.3     0.7138059  NaN    0          
-##   0.5250000  0.4     0.7138059  NaN    0          
-##   0.5250000  0.5     0.7138059  NaN    0          
-##   0.5928571  0.1     0.7138059  NaN    0          
-##   0.5928571  0.2     0.7138059  NaN    0          
-##   0.5928571  0.3     0.7138059  NaN    0          
-##   0.5928571  0.4     0.7138059  NaN    0          
-##   0.5928571  0.5     0.7138059  NaN    0          
-##   0.6607143  0.1     0.7138059  NaN    0          
-##   0.6607143  0.2     0.7138059  NaN    0          
-##   0.6607143  0.3     0.7138059  NaN    0          
-##   0.6607143  0.4     0.7138059  NaN    0          
-##   0.6607143  0.5     0.7138059  NaN    0          
-##   0.7285714  0.1     0.7138059  NaN    0          
-##   0.7285714  0.2     0.7138059  NaN    0          
-##   0.7285714  0.3     0.7138059  NaN    0          
-##   0.7285714  0.4     0.7138059  NaN    0          
-##   0.7285714  0.5     0.7138059  NaN    0          
-##   0.7964286  0.1     0.7138059  NaN    0          
-##   0.7964286  0.2     0.7138059  NaN    0          
-##   0.7964286  0.3     0.7138059  NaN    0          
-##   0.7964286  0.4     0.7138059  NaN    0          
-##   0.7964286  0.5     0.7138059  NaN    0          
-##   0.8642857  0.1     0.7138059  NaN    0          
-##   0.8642857  0.2     0.7138059  NaN    0          
-##   0.8642857  0.3     0.7138059  NaN    0          
-##   0.8642857  0.4     0.7138059  NaN    0          
-##   0.8642857  0.5     0.7138059  NaN    0          
-##   0.9321429  0.1     0.7138059  NaN    0          
-##   0.9321429  0.2     0.7138059  NaN    0          
-##   0.9321429  0.3     0.7138059  NaN    0          
-##   0.9321429  0.4     0.7138059  NaN    0          
-##   0.9321429  0.5     0.7138059  NaN    0          
-##   1.0000000  0.1     0.7138059  NaN    0          
-##   1.0000000  0.2     0.7138059  NaN    0          
-##   1.0000000  0.3     0.7138059  NaN    0          
-##   1.0000000  0.4     0.7138059  NaN    0          
-##   1.0000000  0.5     0.7138059  NaN    0          
-## 
-## Accuracy was used to select the optimal model using  the largest value.
-## The final values used for the model were alpha = 0.05 and lambda = 0.5.
+##         OOB estimate of  error rate: 28.42%
+## Confusion matrix:
+##         on_time delayed class.error
+## on_time  227841   32733   0.1256188
+## delayed   71306   34212   0.6757710
 \end{verbatim}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(delayRF360k)}
+\end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=\maxwidth]{figure/model-result-1} 
+
+}
+
+
+
 \end{knitrout}
 
 Save the model result:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(glmnetFit1,} \hlkwc{file}\hlstd{=}\hlstr{"glmnetFit1.Rdata"}\hlstd{)}
+\hlkwd{save}\hlstd{(delayRF360k, inTraining,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/delayRF360k.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
 \end{document}
 
-% create the model.tex with (takes about 13 minutes with 1 variable)
-% knit("../03_train_model/train_model.Rnw", output="../03_train_model/train_model.tex")
-
-% knit all
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis.tex")
-% knit("../02_prepare_data_for_modeling/prepare_data.Rnw", output="../02_prepare_data_for_modeling/prepare_data.tex")
+% create the .tex with
 % knit("../03_train_model/train_model.Rnw", output="../03_train_model/train_model.tex")
