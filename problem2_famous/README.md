@@ -80,16 +80,25 @@ The answers to the questions asked in the five parts of the problem must be plac
 The values marked with angular brackets (<...>) must be replaced with your answers to the challenge problem questions. (The angular brackets must be removed/replaced as well.) The resulting file must be a valid JSON document.
 
 
-Solution abstract: [docs/solution_abstract_famous.pdf](docs/solution_abstract_famous.pdf)
+:arrow_right: Solution abstract: [docs/solution_abstract_famous.pdf](docs/solution_abstract_famous.pdf)
 
-Solution file: [out/problem2.json](out/problem2.json)
+:arrow_right: Solution file: [out/problem2.json](out/problem2.json)
 
-Source code: [src](src)
+:arrow_right: Source code: [src](src)
 
 
-Generate Deliverable
+Generate Deliverables
 -------
 
+Pack the solution files for upload with
+
+	cd /tmp
+	git clone https://github.com/comsysto/ds_challenge_fall2014.git
+	cd ds_challenge_fall2014/
+	grep ":arrow_right:" problem2_famous/README.md | cut -d' ' -f2- > tmp && mv tmp problem2_famous/README.md
+	tar -zcf problem2_famous.tar.gz problem2_famous/README.md problem2_famous/docs/*.pdf problem2_famous/out/problem2.json problem2_famous/src
+	cd ..
+	rm -rf ds_challenge_fall2014
 
 
 Solution requirements / Used software

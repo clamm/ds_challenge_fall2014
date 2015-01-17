@@ -44,11 +44,11 @@ Solution Abstract
 -------
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
-Solution abstract: [docs/solution_abstract_smartfly.pdf](docs/solution_abstract_smartfly.pdf)
+:arrow_right: Solution abstract: [docs/solution_abstract_smartfly.pdf](docs/solution_abstract_smartfly.pdf)
 
-Solution file: [out/problem1.csv](out/problem1.csv)
+:arrow_right: Solution file: [out/problem1.csv](out/problem1.csv)
 
-Source code: [src](src)
+:arrow_right: Source code: [src](src)
 
 
 Generate Deliverables
@@ -64,7 +64,13 @@ To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](knit):
 
 Pack the solution files for upload with
 
-	tar -zcf problem1.tar.gz docs/solution_abstract_smartfly.pdf out/problem1.csv src
+	cd /tmp
+	git clone https://github.com/comsysto/ds_challenge_fall2014.git
+	cd ds_challenge_fall2014/
+	grep ":arrow_right:" problem1_smartfly/README.md | cut -d' ' -f2- > tmp && mv tmp problem1_smartfly/README.md
+	tar -zcf problem1_smartfly.tar.gz problem1_smartfly/README.md problem1_smartfly/docs/*.pdf problem1_smartfly/out/problem1.csv problem1_smartfly/src
+	cd ..
+	rm -rf ds_challenge_fall2014
 
 
 
