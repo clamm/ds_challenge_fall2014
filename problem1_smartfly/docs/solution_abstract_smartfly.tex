@@ -1,26 +1,76 @@
-\documentclass{article}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
 \usepackage[T1]{fontenc}
 \usepackage{geometry}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
+\usepackage{datetime}
 \usepackage{fancyvrb}
-\usepackage{color}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
  breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
  {hyperref}
-
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\VerbatimFootnotes
 
 \author{Cindy Lamm}
 \title{Solution Abstract Problem 1: SmartFly}
 
-\begin{document}
-\VerbatimFootnotes
 \maketitle
-
-Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
 
 \section{Approach} % (fold)
@@ -77,7 +127,7 @@ I iterated over the process of loading the historic data in R and looking at it 
 	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & (cancelled == FALSE)+ (as per the given definition in the problem description)
 \end{itemize}
 
-The most important statistic from this exploratory analysis of historic data is for me the percentage of delayed flights (based on \verb+is_delayed+), which amounts to 28.6\%. If I see that as a base line, the model I estimate has to have an error rate better than this (because otherwise I could just say at random with a probability of 28.6\% that a flight is delayed - without any input data or model).
+The most important statistic from this exploratory analysis of historic data is for me the percentage of delayed flights (based on \verb+is_delayed+), which amounts to $28.6\%$. If I see that as a base rate, the model I estimate has to have an error rate better than this (because otherwise I could just say at random with a probability of $28.6\%$ that a flight is delayed - without any input data or model).
 
 After I applied the same pre-processing steps (mark missing values, mark as factors, truncate times, reformat labels) I ran the same exploratory analysis on the scheduled flight data with special focus on factor levels:
 \begin{itemize}
@@ -107,7 +157,41 @@ Furthermore, the algorithm for random forest does by default throw an error when
 \subsection{Estimate and validate a model} % (fold)
 \label{sub:estimate_and_validate_a_model}
 
-\textcolor{red}{testing and validation techniques applied, model selection criteria, and total time spent}
+I used a training sample consisting of $7\%$ (i.e. $516.206$ observations) of the historic flight data to train a random forest with default parameters:
+\begin{itemize}
+	\item number of variables tried at each split: \verb+mtry=floor(sqrt(ncol(df))))=3+ 
+	\item number of trees in the forest: \verb+ntree=500+
+\end{itemize}
+
+
+\textcolor{red}{(About model selection criteria: The first model I envisioned was a logistic regression, however I could not get it to work using package glmnet in R. So I switched over to random forests in R. The reason behind both options was that I already had experience estimating these in R. Witin the model I did not select model parameters beyond the default because I did not have enough memory to run crossvalidation which would have picked the best model parameters.)}
+
+Anyway, here is the list of variables I included for the my basic random forest estimation:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+training sample:	516206 obs. of  12 variables:
+ $ id                      : chr  "3280125367763225179" "6587250861035043912" ...
+ $ year                    : num  2013 2013 2013 2013 2013 ...
+ $ month                   : num  8 8 8 8 8 8 8 8 8 8 ...
+ $ day_of_month            : num  8 29 10 17 3 13 3 9 17 6 ...
+ $ day_of_week             : num  4 4 6 6 6 2 6 5 6 2 ...
+ $ scheduled_departure_time: num  7 7 12 12 15 15 18 12 12 6 ...
+ $ scheduled_arrival_time  : num  8 8 14 14 17 17 19 15 15 8 ...
+ $ airline                 : Factor w/ 17 levels "AA","AS","B6",..: 15 15 15 15 15 ...
+ $ plane_model             : Factor w/ 6 levels "737","747","757",..: 6 6 2 1 2 3 4 ...
+ $ seat_configuration      : Factor w/ 6 levels "Standard","Three Class",..: 1 3 4 ...
+ $ distance_travelled      : num  185 185 508 508 329 329 213 809 809 329 ...
+ $ is_delayed              : Factor w/ 2 levels "on_time","delayed": 1 1 1 1 1 1 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The estimated random forest has an estimated error rate of $27.5\%$ which is pretty bad given the base rate of $28.6\%$.
+
+In order to improve the model I would check out a plot of accuracy vs model complexity ("ftting graph") for train and test data set to get an impression whether the model overfits. I would double-check the result by having a look at a plot of error rate vs training set size ("learning curve").
+
 
 % subsection estimate_and_validate_a_model (end)
 
@@ -129,13 +213,24 @@ Furthermore, the algorithm for random forest does by default throw an error when
 In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor and 16GB Memory.
 
 \begin{itemize}
-	\item shell command line (for file structure analysis)
-	\item R in RStudio with packages caret, ggplot, knitr, plyr, randomForest (for data analysis, modeling and prediction)
-	\item LateX (for reporting)
-	\item git (for source code version control)
+	\item git
+	\item LateX
+	\item R in RStudio with packages caret, ggplot, knitr, plyr, randomForest
+	\item shell command line
 \end{itemize}
 
 \section{Time Spent}
+\begin{itemize}
+	\item 5h general setup and basic descriptive statistics
+	\item 4h (failed) logistic regression
+	\item 10h exploring data
+	\item 12h preparing data for random forest modeling \& prediction
+	\item 10h modeling and predicting data
+	\item 1h wrting solution abstract 
+	\item 3h cloud server setup
+\end{itemize}
+
+Summing up I spend \textcolor{red}{xx hours} on this problem.
 
 
 \end{document}

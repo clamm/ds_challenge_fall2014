@@ -46,6 +46,11 @@ training <- rfModelData[inTraining,]
 # testing  <- rfModelData[-inTraining,]
 @
 
+<<checkout-training-sample>>=
+str(training)
+@
+
+
 Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
 <<estimate-single-random-forest>>=
 library(randomForest)
