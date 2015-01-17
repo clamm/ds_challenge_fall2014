@@ -72,8 +72,18 @@ Install basic R packages:
 	
 	R
 	install.packages(c("rJava", "Rcpp", "RJSONIO", "bitops", "digest", "functional", "stringr", "plyr", "reshape2"))
-	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr"))
+	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr", "doMC", "doParallel"))
 
+Install RStudio Server:
+
+	echo 'export LC_ALL="en_US.UTF-8"' >> ~/.bashrc
+	wget http://download2.rstudio.org/rstudio-server-0.98.490-x86_64.rpm
+	yum install –nogpgcheck rstudio-server-0.98.490-x86_64.rpm
+
+	# access RStudio server
+	rstudio-server start
+	rstudio-server stop
+	
 
 User stuff
 -------

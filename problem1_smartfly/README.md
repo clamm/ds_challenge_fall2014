@@ -53,9 +53,16 @@ Generate Deliverables
 -------
 To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](knit):
 
-  	./knit src/01_exploratory_data_analysis/exploratory_data_analysis.Rnw
-  	./knit src/02_prepare_data_for_modeling/prepare_data.Rnw
+  	./knit src/01_exploratory_data_analysis/exploratory_data_analysis_historic.Rnw 
+  	./knit src/01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw
+  	./knit src/02_prepare_data_for_modeling/prepare_data_for_modeling.Rnw
   	./knit src/03_train_model/train_model.Rnw 
+  	./knit src/04_prepare_data_for_prediction/prepare_data_for_prediction.Rnw
+  	./knit src/05_predict_delay_proba/predict_delay_proba.Rnw
+
+Pack the solution files for upload with
+
+	tar -zcf problem1.tar.gz docs/solution_abstract_smartfly.pdf out/problem1.csv src
 
 
 

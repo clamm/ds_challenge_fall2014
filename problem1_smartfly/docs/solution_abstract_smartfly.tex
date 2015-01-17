@@ -81,7 +81,7 @@ I identified the given problem as a classification, respectively a class probabi
 	\item analyse file structure
 	\item explore the historic and scheduled data
 	\item prepare the historic data for modeling
-	\item estimate \textcolor{red}{and validate} a model
+	\item estimate \textcolor{black}{and validate} a model
 	\item prepare the scheduled data for prediction
 	\item predict the delay probability of scheduled flights using the estimated model
 \end{itemize}
@@ -144,7 +144,7 @@ The difference in factor levels mattered to me since I have the experience, that
 \label{sub:prepare_historic_data_for_modeling}
 Independent from the model I choose it's better to remove all variables that don't help with the prediction from the data before applying an model estimation algorithm. In this case I drop the variables \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data - and thus can't be used as input for delay prediction. I also drop \verb+departure_delay+ because I condensed its information into a new target variable \verb+is_delayed+ already.
 
-Since I opted for a random forest model implemented in the R package \verb+randomForest+\footnote{\url{http://cran.r-project.org/web/packages/randomForest/index.html}} I also needed to work around the issue that this implementation throws an error if factor variables with more than 53 levels are included in the data. My first \textcolor{red}{(and only)} solution to this was to exclude the concerned variables (\verb+flight_number+, \verb+tail_number+, \verb+origin_airport+, \verb+destination_airport+ - note that the scheduled time variables did not fall into this category since I truncated them to the hour).
+Since I opted for a random forest model implemented in the R package \verb+randomForest+\footnote{\url{http://cran.r-project.org/web/packages/randomForest/index.html}} I also needed to work around the issue that this implementation throws an error if factor variables with more than 53 levels are included in the data. My first \textcolor{black}{(and only)} solution to this was to exclude the concerned variables (\verb+flight_number+, \verb+tail_number+, \verb+origin_airport+, \verb+destination_airport+ - note that the scheduled time variables did not fall into this category since I truncated them to the hour).
 
 Note that although I assume that the variable \verb+id+ does not have any prediction power regarding the delay of a flight, I don't drop it from the data since I need it for identification in the prediction stage to come up with the required order list of flight IDs. 
 
@@ -164,7 +164,7 @@ I used a training sample consisting of $7\%$ (i.e. $516.206$ observations) of th
 \end{itemize}
 
 
-\textcolor{red}{(About model selection criteria: The first model I envisioned was a logistic regression, however I could not get it to work using package glmnet in R. So I switched over to random forests in R. The reason behind both options was that I already had experience estimating these in R. Witin the model I did not select model parameters beyond the default because I did not have enough memory to run crossvalidation which would have picked the best model parameters.)}
+\textcolor{black}{(About model selection criteria: The first model I envisioned was a logistic regression, however I could not get it to work using package glmnet in R. So I switched over to random forests in R. The reason behind both options was that I already had experience estimating these in R. Witin the model I did not select model parameters beyond the default because I did not have enough memory to run crossvalidation which would have picked the best model parameters.)}
 
 Anyway, here is the list of variables I included for the my basic random forest estimation:
 
@@ -190,9 +190,6 @@ training sample:	516206 obs. of  12 variables:
 
 The estimated random forest has an estimated error rate of $27.5\%$ which is pretty bad given the base rate of $28.6\%$.
 
-In order to improve the model I would check out a plot of accuracy vs model complexity ("ftting graph") for train and test data set to get an impression whether the model overfits. I would double-check the result by having a look at a plot of error rate vs training set size ("learning curve").
-
-
 % subsection estimate_and_validate_a_model (end)
 
 \subsection{Current Limitations} % (fold)
@@ -203,6 +200,10 @@ In order to improve the model I would check out a plot of accuracy vs model comp
 	\item I only included a small percentage of the massive historic data for training 
 	\item An error rate of 26\% of the estimated model is not acceptable.
 \end{itemize}
+
+In order to improve the model I would check out a plot of accuracy vs model complexity ("ftting graph") for train and test data set to get an impression whether the model overfits. I would double-check the result by having a look at a plot of error rate vs training set size ("learning curve").
+
+To be able to use more observations to train the random forest I would switch to parallel computing, first trying package \verb+bigrf+\footnote{\url{http://cran.r-project.org/web/packages/bigrf/index.html}}.
 
 % subsection estimate_and_validate_a_model (end)
 
@@ -227,10 +228,11 @@ In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor a
 	\item 12h preparing data for random forest modeling \& prediction
 	\item 10h modeling and predicting data
 	\item 1h wrting solution abstract 
-	\item 3h cloud server setup
+	\item 5h cloud server setup
+	%\item xxh code change for parallel computation
 \end{itemize}
 
-Summing up I spend \textcolor{red}{xx hours} on this problem.
+Summing up I spend \textcolor{black}{47 hours} on this problem.
 
 
 \end{document}

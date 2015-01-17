@@ -18,6 +18,7 @@
 library(knitr)
 library(randomForest)
 library(caret)
+library(doMC)
 # set global chunk options
 opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
@@ -67,6 +68,9 @@ Note: On a Macbook with 16GB RAM it takes
 
 % Estimate a random forest with 3-fold crossvalidation: % kills Macbook with 16GB RAM
 <<estimate-crossvalidate-random-forest, include=FALSE, eval=FALSE>>=
+library(doMC)
+registerDoMC(cores = detectCores(all.tests=TRUE))
+rm(rfModelData, inTraining)
 delayRf <- train(is_delayed ~ ., data=training, method="rf", 
                  trControl=trainControl(method="cv",number=3), 
                  prox=TRUE, allowParallel=TRUE)
