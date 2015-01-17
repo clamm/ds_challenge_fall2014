@@ -63,41 +63,40 @@ As first step I do a basic structure and content analysis of the given data file
 
 As second step I do an exploratory data analysis on the historic as well as the prediction data set. I analyse both sets to avoid potential issues arising when the prediction data is slightly (or strongly) different in structure or content from the historic data that will be used for training a model. 
 
-I use the open source statistics software R\footnote{\url{http://www.r-project.org/}} for the exploratory data analysis since it has all necessary analysis functions and plotting tools already implemented and the knitr package\footnote{\url{http://yihui.name/knitr/}} allows for reproducible analysis.
+I use the open source statistics software R\footnote{\url{http://www.r-project.org/}} for the exploratory data analysis since it has all necessary analysis functions and plotting tools already implemented and the package knitr\footnote{\url{http://yihui.name/knitr/}} allows for reproducible analysis.
 
 For the exploratory data analysis I used most variables as factors since they're not really on a continuous scale (s.t. standard arithmetics would make sense)\footnote{For a list of variable types I used see \verb+problem1_smartfly/src/01_exploratory_data_analysis/resources/raw_variables.csv+}.
-I iterated over the process of loading the historic data in R and looking at it in basic tables and plots until I found out which strings to mark as \verb+NA+ (applicable to all variables!) right from the data loading, which data needs cleaning and reformatting. To get the necessary code straight without too long waiting time\footnote{The compilation of the basic plots and summary statistics for the full historic data set of 7.3 million observations took about 4 minutes per run.} I switched back and forth between the full set of historic data and a reduced set of (random not top for impression more close to the truth) 4000 observations.
+I iterated over the process of loading the historic data in R and looking at it in basic tables and plots until I found out which strings to mark as \verb+NA+ (applicable to all variables!) right from the data loading, which data needs cleaning and reformatting. To get the necessary code straight without too long waiting time\footnote{The compilation of the basic plots and summary statistics for the full historic data set of 7.3 million observations took about 4 minutes per run.} I switched back and forth between the full set of historic data and a reduced set of 4000 observations (random observations not the first 4000, to get an impression of the data more close to the truth even with a reduced set).
 
-\textbf{Assumptions} I took in these steps include: 
+\textbf{Assumptions} I took in these steps: 
 \begin{itemize}
 	\item "NA" in general and "" (empty string) for variables \verb+cancellation_code+ and \verb+tail_number+ indicate a missing value
 	% \item "000000" for \verb+tail_number+ is not valid (according to Wikipedia) and is set to missing value %not used anymore since I dropped the variables with levels > 53 before the NA analysis
 	\item Scheduled times either start with "00" or with "24" (I decided to remap "24" to "00")
 	\item I truncated scheduled times to the hour for better intelligibility
-	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & quad (cancelled == FALSE)+ (as per the given definition in the problem description)
+	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & (cancelled == FALSE)+ (as per the given definition in the problem description)
 \end{itemize}
 
-The most important statistic from this exploratory analysis of historic data is probrably the percentage of delayed flights (based on \verb+is_delaeyed+), which amounts to 28.6\%. If I see that as a base line, the model I estimate has to have an error rate better than this (because otherwise I could just say at random with a probability of 28.6\% that a flight is delayed - without any input data or model).
+The most important statistic from this exploratory analysis of historic data is for me the percentage of delayed flights (based on \verb+is_delayed+), which amounts to 28.6\%. If I see that as a base line, the model I estimate has to have an error rate better than this (because otherwise I could just say at random with a probability of 28.6\% that a flight is delayed - without any input data or model).
 
 After I applied the same pre-processing steps (mark missing values, mark as factors, truncate times, reformat labels) I ran the same exploratory analysis on the scheduled flight data with special focus on factor levels:
 \begin{itemize}
-	\item Except the values for \verb+year+ and \verb+month+ (D'oh!) the variables seem to be roughly distributed in the same maner as they are in the historic data.
+	\item The variables seem to be roughly distributed in the same manner as they are in the historic data, except for the values for \verb+year+ and \verb+month+ (which stems from the problem itself).
 	% \item "0" which is as well an invalid tail number (i.e. aircraft registration number) is as well included in the scheduled flights data
-	\item Not all factor variables have the same levels as in the historic flight data\footnote{Venn diagrams helped a lot to come with a clear picture of this. See \verb+problem1_smartfly/src/01_exploratory_data_analysis/exploratory_data_analysis.pdf+}
-	\item I defined the target variable \verb+is_delayed=(departure_delay > 0) & quad (cancelled == FALSE)+ (as per the given definition in the problem description)
+	\item Not all factor variables have the same levels as in the historic flight data\footnote{Venn diagrams helped a lot to come with a clear picture of this. See \verb+problem1_smartfly/src/01_exploratory_data_analysis/exploratory_data_analysis.pdf+}.
 \end{itemize}
 
-The difference in factor levels mattered to me since I have the experience, that when solving a classification problem with a random forest in R, the training and the prediction data need to contain the same number of variables with the same levels. Otherwise you can't even predict with the random forest.
+The difference in factor levels mattered to me since I have the experience, that when solving a classification problem with a random forest in R, the training and the prediction data need to contain the same variables with the same levels. Otherwise you can't even predict with the random forest.
 
 % subsection explore_data (end)
 
 \subsection{Prepare historic data for modeling} % (fold)
 \label{sub:prepare_historic_data_for_modeling}
-Independent from the model I choose it's better to remove all variables that don't help with the prediction from the data before applying an model estimation algorithm. In this case I drop the variables \verb+departure_delay+, \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data - and thus can't be used as input for delay prediction.
+Independent from the model I choose it's better to remove all variables that don't help with the prediction from the data before applying an model estimation algorithm. In this case I drop the variables \verb+taxi_time_in+, \verb+taxi_time_out+, \verb+cancelled+, \verb+cancellation_code+ because they are not available in the scheduled flight data - and thus can't be used as input for delay prediction. I also drop \verb+departure_delay+ because I condensed its information into a new target variable \verb+is_delayed+ already.
 
-Since I opted for a random forest model implemented in the R package \verb+randomForest+\footnote{\url{http://cran.r-project.org/web/packages/randomForest/index.html}} I also needed to work around the issue that this implementation throws an error if factor variables with more than 53 levels are included in the data. My first \textcolor{red}{(and only)} solution to this was to exclude the concerned variables (\verb+flight_number+, \verb+tail_number+, \verb+origin_airport+, \verb+destination_airport+ - note that the scheduled time variables did not fall into this category since I truncated them to the hour value).
+Since I opted for a random forest model implemented in the R package \verb+randomForest+\footnote{\url{http://cran.r-project.org/web/packages/randomForest/index.html}} I also needed to work around the issue that this implementation throws an error if factor variables with more than 53 levels are included in the data. My first \textcolor{red}{(and only)} solution to this was to exclude the concerned variables (\verb+flight_number+, \verb+tail_number+, \verb+origin_airport+, \verb+destination_airport+ - note that the scheduled time variables did not fall into this category since I truncated them to the hour).
 
-Note that although I assume that the variable \verb+id+ does not have any prediction power regarding the delay of a flight, I don't drop it from the data since I'll need it for identification in the prediction stage to come up with the required order list of flight IDs. 
+Note that although I assume that the variable \verb+id+ does not have any prediction power regarding the delay of a flight, I don't drop it from the data since I need it for identification in the prediction stage to come up with the required order list of flight IDs. 
 
 To work around the issue that a random forest requires the training and the prediction data to contain the same factor levels (and \verb+year+ and \verb+month+ clearly have different levels in the historic and the scheduled flight data) I transform the date and time related variables to numeric data types.
 
@@ -105,10 +104,23 @@ Furthermore, the algorithm for random forest does by default throw an error when
 
 % subsection prepare_historic_data_for_modeling (end)
 
-\subsection{Estimate and validate a model}
-\label{sub_estimate_and_validate_a_model}
+\subsection{Estimate and validate a model} % (fold)
+\label{sub:estimate_and_validate_a_model}
 
 \textcolor{red}{testing and validation techniques applied, model selection criteria, and total time spent}
+
+% subsection estimate_and_validate_a_model (end)
+
+\subsection{Current Limitations} % (fold)
+\label{sub:current_limitations}
+
+\begin{itemize}
+	\item I excluded some observations from prediction because of new values in factor variable \verb+airline+ $\rightarrow$ these flights are not contained in the output!
+	\item I only included a small percentage of the massive historic data for training 
+	\item An error rate of 26\% of the estimated model is not acceptable.
+\end{itemize}
+
+% subsection estimate_and_validate_a_model (end)
 
 
 
