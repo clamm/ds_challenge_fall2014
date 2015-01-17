@@ -144,6 +144,7 @@ for (name in factorNames) {
 
 <<list-differences, echo=FALSE>>=
 nbLevels <- sapply(tFactorLevels, FUN=length)
+nbLevels
 nbTMissingLevels <- sapply(tMissingLevels, FUN=length) 
 nbPMissingLevels <- sapply(pMissingLevels, FUN=length) 
 haveMissingLevels <- union(which(nbTMissingLevels!=0), which(nbPMissingLevels!=0))

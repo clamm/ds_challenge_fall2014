@@ -290,18 +290,18 @@ ALPHA <- 0.001
 @
 
 Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which I reject if the p-value is smaller than $\alpha=\Sexpr{ALPHA}$ (chosen so small due to large sample size):
-<<prepare-chisqare-independence, include=FALSE>>=
+<<prepare-chisqare-independence, warning=FALSE>>=
 nbLevels <- sapply(factorLevels, FUN=length)
+nbLevels
 suitable <- which(nbLevels < 300)
+
 testIndependence <- function(col, alpha){
   result <- chisq.test(table(trainDataTyped$is_delayed, trainDataTyped[,col]))
   return(result$p.value < alpha)
 }
+
 dependentWithTarget <- sapply(suitable, FUN=testIndependence, alpha=ALPHA)
 names(dependentWithTarget) <- variableNames$name[suitable]
-@
-
-<<result-chisqare-independence>>=
 dependentWithTarget
 @
 
