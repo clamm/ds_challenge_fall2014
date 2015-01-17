@@ -133,7 +133,7 @@ After I applied the same pre-processing steps (mark missing values, mark as fact
 \begin{itemize}
 	\item The variables seem to be roughly distributed in the same manner as they are in the historic data, except for the values for \verb+year+ and \verb+month+ (which stems from the problem itself).
 	% \item "0" which is as well an invalid tail number (i.e. aircraft registration number) is as well included in the scheduled flights data
-	\item Not all factor variables have the same levels as in the historic flight data\footnote{Venn diagrams helped a lot to come with a clear picture of this. See \verb+problem1_smartfly/src/01_exploratory_data_analysis/exploratory_data_analysis.pdf+}.
+	\item Not all factor variables have the same levels as in the historic flight data\footnote{Venn diagrams helped a lot to come with a clear picture of this. Installation see \url{http://www.ats.ucla.edu/stat/r/faq/venn.htm}, results see \verb+problem1_smartfly/src/01_exploratory_data_analysis/exploratory_data_analysis.pdf+}.
 \end{itemize}
 
 The difference in factor levels mattered to me since I have the experience, that when solving a classification problem with a random forest in R, the training and the prediction data need to contain the same variables with the same levels. Otherwise you can't even predict with the random forest.

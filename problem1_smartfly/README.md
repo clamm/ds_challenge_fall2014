@@ -84,6 +84,7 @@ Solution requirements / Used software
 	* knitr	
 	* plyr	
 	* randomForest
+	* VennDiagram
 * TeXShop (or SublimeText with LaTexTools plugin and Skim)
 
 

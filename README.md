@@ -73,6 +73,8 @@ Install basic R packages:
 	R
 	install.packages(c("rJava", "Rcpp", "RJSONIO", "bitops", "digest", "functional", "stringr", "plyr", "reshape2"))
 	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr", "doMC", "doParallel"))
+	source("http://www.bioconductor.org/biocLite.R")
+	biocLite("limma")
 
 Install RStudio Server:
 
