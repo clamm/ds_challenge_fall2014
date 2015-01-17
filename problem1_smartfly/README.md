@@ -45,7 +45,9 @@ Solution Abstract
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
 Solution abstract: [docs/solution_abstract_smartfly.pdf](docs/solution_abstract_smartfly.pdf)
+
 Solution file: [out/problem1.csv](out/problem1.csv)
+
 Source code: [src](src)
 
 

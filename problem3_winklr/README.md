@@ -28,7 +28,9 @@ Solution Abstract:
 Explain your methodology including approach, assumptions, software and algorithms used, testing and validation techniques applied, model selection criteria, and total time spent.
 
 Solution abstract: [docs/solution_abstract_winklr.pdf](docs/solution_abstract_winklr.pdf)
+
 Solution file: [out/problem3.csv](out/problem3.csv)
+
 Source code: [src](src)
 
 Solution requirements / Used software
