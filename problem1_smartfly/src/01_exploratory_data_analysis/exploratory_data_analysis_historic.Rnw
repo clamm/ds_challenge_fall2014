@@ -66,10 +66,11 @@ str(trainDataTyped)
 Specifically note the factor levels for the different variables\footnote{The number of levels matters if I would want to create a dummy variable for each level. With lots of levels the number of variables would be HUGE and so would be the sparsity of the design matrix.}.
 I see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ need to be reformatted to have for all observations values that are 4 characters long (assuming "100" means "0100" and thus a time of 01h00):
 <<reformat-scheduled-times>>=
-trainDataTyped$scheduled_departure_time <- as.factor(
-  sprintf("%04s", as.character(trainDataTyped$scheduled_departure_time)))
-trainDataTyped$scheduled_arrival_time <- as.factor(
-  sprintf("%04s", as.character(trainDataTyped$scheduled_arrival_time)))
+dep_time_number <- as.numeric(as.character(trainDataTyped$scheduled_departure_time))
+trainDataTyped$scheduled_departure_time <- as.factor(sprintf("%04i", dep_time_number))
+
+arr_time_number <- as.numeric(as.character(trainDataTyped$scheduled_arrival_time))
+trainDataTyped$scheduled_arrival_time <- as.factor(sprintf("%04i", arr_time_number))
 @
 
 In addition I truncate the scheduled times to the hour:
@@ -100,9 +101,9 @@ trainDataTyped$scheduled_arrival_time <- replace24with00(trainDataTyped$schedule
 I also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they're ordered automatically in graphs):
 <<reformat-dates>>=
 trainDataTyped$month <- as.factor(
-  sprintf("%02s", as.character(trainDataTyped$month)))
+  sprintf("%02i", as.numeric(as.character(trainDataTyped$month))))
 trainDataTyped$day_of_month <- as.factor(
-  sprintf("%02s", as.character(trainDataTyped$day_of_month)))
+  sprintf("%02i", as.numeric(as.character(trainDataTyped$day_of_month))))
 @
 
 \pagebreak

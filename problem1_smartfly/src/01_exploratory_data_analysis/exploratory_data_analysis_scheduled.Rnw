@@ -64,10 +64,11 @@ str(predictDataTyped)
 
 As I did for the historic data the variables \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ are first reformatted and then truncated to the hour.
 <<reformat-truncate-scheduled-times>>=
-predictDataTyped$scheduled_departure_time <- as.factor(
-  sprintf("%04s", as.character(predictDataTyped$scheduled_departure_time)))
-predictDataTyped$scheduled_arrival_time <- as.factor(
-  sprintf("%04s", as.character(predictDataTyped$scheduled_arrival_time)))
+dep_time_number <- as.numeric(as.character(predictDataTyped$scheduled_departure_time))
+predictDataTyped$scheduled_departure_time <- as.factor(sprintf("%04i", dep_time_number))
+
+arr_time_number <- as.numeric(as.character(predictDataTyped$scheduled_arrival_time))
+predictDataTyped$scheduled_arrival_time <- as.factor(sprintf("%04i", arr_time_number))
 
 predictDataTyped$scheduled_departure_time <- as.factor(
   substr(as.character(predictDataTyped$scheduled_departure_time),1,2))
@@ -82,9 +83,9 @@ levels(predictDataTyped$scheduled_arrival_time)
 I also again reformat the variables \verb+day_of_month+ and \verb+month+:
 <<reformat-dates>>=
 predictDataTyped$month <- as.factor(
-  sprintf("%02s", as.character(predictDataTyped$month)))
+  sprintf("%02i", as.numeric(as.character(predictDataTyped$month))))
 predictDataTyped$day_of_month <- as.factor(
-  sprintf("%02s", as.character(predictDataTyped$day_of_month)))
+  sprintf("%02i", as.numeric(as.character(predictDataTyped$day_of_month))))
 @
 
 Comparing factor levels of training and prediction data is important because if I train a model on data with levels that don't exist in the prediction data the prediction phase might fail.
