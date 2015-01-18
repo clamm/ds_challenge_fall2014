@@ -106,18 +106,13 @@ Save the prediction result in R format:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(predictionDelayRf,} \hlkwc{file}\hlstd{=}\hlstr{"../05_predict_delay_proba/rfPrediction.Rdata"}\hlstd{)}
+\hlkwd{save}\hlstd{(predictionDelayRf,} \hlkwc{file}\hlstd{=}\hlstr{"../05_predict_delay_proba/rfPrediction.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
-
-{\ttfamily\noindent\color{warningcolor}{\#\# Warning: Number of predicted results (532978) does not coincide with the number of scheduled flights (566376).}}\end{kframe}
-\end{knitrout}
 
 
 Write the prediction result as requested into csv:
@@ -125,6 +120,18 @@ Write the prediction result as requested into csv:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{o} \hlkwb{<-} \hlkwd{order}\hlstd{(predictionDelayRf[,}\hlnum{2}\hlstd{],} \hlkwc{decreasing}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlkwd{head}\hlstd{(predictionDelayRf[o,])}
+\end{alltt}
+\begin{verbatim}
+##        on_time delayed
+## 27859    0.100   0.900
+## 40700    0.104   0.896
+## 292940   0.106   0.894
+## 499920   0.108   0.892
+## 551857   0.110   0.890
+## 16455    0.112   0.888
+\end{verbatim}
+\begin{alltt}
 \hlstd{idIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlkwd{names}\hlstd{(rfPredictData)} \hlopt{==} \hlstr{"id"}\hlstd{)}
 \hlstd{idsOrderedByDelayProba} \hlkwb{<-} \hlstd{rfPredictData[o,idIdx]}
 \hlkwd{write.table}\hlstd{(idsOrderedByDelayProba,} \hlkwc{file}\hlstd{=}\hlstr{"../../out/problem1.csv"}\hlstd{,}

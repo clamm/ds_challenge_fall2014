@@ -48,7 +48,7 @@ predictionDelayRf <- predict(delayRf, rfPredictData, type="prob")
 
 Save the prediction result in R format:
 <<save-prediction-result>>==
-save(predictionDelayRf, file="../05_predict_delay_proba/rfPrediction.Rdata")
+save(predictionDelayRf, file="../05_predict_delay_proba/rfPrediction.RData")
 @
 
 

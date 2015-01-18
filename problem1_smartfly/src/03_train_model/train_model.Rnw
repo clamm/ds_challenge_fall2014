@@ -86,17 +86,23 @@ delayRf
 plot(delayRf)
 @
 
+Save the model result:
+<<save-model-result>>==
+save(delayRf, file="../03_train_model/delayRf.RData")
+@
+
+Predict on test data:
 <<do-evaluation>>=
 testPrediction <- predict(delayRf, newdata=testing, type="prob")
-classPrediction <- factor(ifelse(testPrediction$delayed<0.5,"on_time","delayed"), 
+classPrediction <- factor(ifelse(testPrediction[,"delayed"]<0.5,"on_time","delayed"), 
                           levels=c("on_time","delayed"))
 confusionMatrix(classPrediction, reference=testing$is_delayed)
 @
 
 
-Save the model result:
-<<save-model-result>>==
-save(delayRf, trainX, trainY, testPrediction, file="../03_train_model/delayRf.RData")
+Save the prediction result:
+<<save-prediction-result>>==
+save(testPrediction, file="../03_train_model/testPrediction.RData")
 @
 
 \end{document}

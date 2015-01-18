@@ -82,27 +82,52 @@ Load prepared data from the previous step "Prepare Data For Modeling"
 \end{kframe}
 \end{knitrout}
 
-Split the train data based on simple bootstrap resampling into a series of train and test sets
+Split the train data based on simple bootstrap resampling into a train and test set
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{library}\hlstd{(caret)}
 \hlkwd{set.seed}\hlstd{(}\hlnum{998}\hlstd{)}
-\hlstd{PERCENTAGE} \hlkwb{<-} \hlnum{0.07}
-\hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(rfModelData}\hlopt{$}\hlstd{is_delayed,} \hlkwc{times}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{p} \hlstd{= PERCENTAGE,} \hlkwc{list} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlstd{PERCENTAGE} \hlkwb{<-} \hlnum{0.03}
+\hlstd{inTraining} \hlkwb{<-} \hlkwd{createDataPartition}\hlstd{(rfModelData}\hlopt{$}\hlstd{is_delayed,} \hlkwc{p}\hlstd{=PERCENTAGE,} \hlkwc{list}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \hlkwd{length}\hlstd{(inTraining)}
 \end{alltt}
 \begin{verbatim}
-## [1] 516206
+## [1] 221231
 \end{verbatim}
 \begin{alltt}
 \hlstd{training} \hlkwb{<-} \hlstd{rfModelData[inTraining,]}
-\hlcom{# testing  <- rfModelData[-inTraining,]}
+\hlstd{testing} \hlkwb{<-} \hlstd{rfModelData[}\hlopt{-}\hlstd{inTraining,]}
+\hlstd{testing} \hlkwb{<-} \hlstd{testing[}\hlnum{1}\hlopt{:}\hlnum{100}\hlstd{,]}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-Estimate a random forest using 7\% of the data - without crossvalidation:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{str}\hlstd{(training)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	221231 obs. of  12 variables:
+##  $ id                      : chr  "3280125367763225179" "7292790258672752809" "3535895314207389905" "4438467181967933512" ...
+##  $ year                    : num  2013 2013 2013 2013 2013 ...
+##  $ month                   : num  8 8 8 8 8 8 8 8 8 8 ...
+##  $ day_of_month            : num  8 17 3 9 17 25 11 28 29 15 ...
+##  $ day_of_week             : num  4 6 6 5 6 7 7 3 4 4 ...
+##  $ scheduled_departure_time: num  7 12 15 12 12 6 7 7 7 7 ...
+##  $ scheduled_arrival_time  : num  8 14 17 15 15 8 9 8 8 8 ...
+##  $ airline                 : Factor w/ 19 levels "AA","AS","B6",..: 15 15 15 15 15 15 15 15 15 15 ...
+##  $ plane_model             : Factor w/ 6 levels "737","747","757",..: 6 1 2 3 3 3 1 1 1 2 ...
+##  $ seat_configuration      : Factor w/ 6 levels "Standard","Three Class",..: 1 6 5 2 4 6 2 3 2 5 ...
+##  $ distance_travelled      : num  185 508 329 809 809 329 728 370 370 508 ...
+##  $ is_delayed              : Factor w/ 2 levels "on_time","delayed": 1 1 1 1 1 1 1 1 1 1 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Estimate a random forest using 3\% of the data - without crossvalidation:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -112,9 +137,13 @@ Estimate a random forest using 7\% of the data - without crossvalidation:
 \end{alltt}
 \end{kframe}
 \end{knitrout}
-Note: On a Macbook with 16GB RAM it takes 6 minutes for sample size of 100.000 and 30 minutes fortraining sample size of 5\% (about 360.000 obs).
-
-% Estimate a random forest with 3-fold crossvalidation: % kills Macbook with 16GB RAM
+% Note: On a Macbook with 16GB RAM it takes 
+% \begin{itemize}
+% \item 4 minutes for a training sample size of 1\% (about 76.000 obs)
+% \item 6 minutes for a training sample size of 100.000 obs
+% \item 30 minutes for a training sample size of 5\% (about 360.000 obs)
+% \item 50 minutes for a training sample size of 7\% (about 510.000 obs).
+% \end{itemize}
 
 
 
@@ -133,11 +162,11 @@ Check out the model result:
 ##                      Number of trees: 500
 ## No. of variables tried at each split: 3
 ## 
-##         OOB estimate of  error rate: 27.52%
+##         OOB estimate of  error rate: 27.97%
 ## Confusion matrix:
 ##         on_time delayed class.error
-## on_time  340077   28394  0.07705898
-## delayed  113682   34053  0.76949944
+## on_time  145972   11944  0.07563515
+## delayed   49942   13373  0.78878623
 \end{verbatim}
 \begin{alltt}
 \hlkwd{plot}\hlstd{(delayRf)}
@@ -156,7 +185,57 @@ Save the model result:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(delayRf, inTraining,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/delayRf.RData"}\hlstd{)}
+\hlkwd{save}\hlstd{(delayRf,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/delayRf.RData"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Predict on test data:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{testPrediction} \hlkwb{<-} \hlkwd{predict}\hlstd{(delayRf,} \hlkwc{newdata}\hlstd{=testing,} \hlkwc{type}\hlstd{=}\hlstr{"prob"}\hlstd{)}
+\hlstd{classPrediction} \hlkwb{<-} \hlkwd{factor}\hlstd{(}\hlkwd{ifelse}\hlstd{(testPrediction[,}\hlstr{"delayed"}\hlstd{]}\hlopt{<}\hlnum{0.5}\hlstd{,}\hlstr{"on_time"}\hlstd{,}\hlstr{"delayed"}\hlstd{),}
+                          \hlkwc{levels}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"on_time"}\hlstd{,}\hlstr{"delayed"}\hlstd{))}
+\hlkwd{confusionMatrix}\hlstd{(classPrediction,} \hlkwc{reference}\hlstd{=testing}\hlopt{$}\hlstd{is_delayed)}
+\end{alltt}
+\begin{verbatim}
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction on_time delayed
+##    on_time      75      23
+##    delayed       1       1
+##                                           
+##                Accuracy : 0.76            
+##                  95% CI : (0.6643, 0.8398)
+##     No Information Rate : 0.76            
+##     P-Value [Acc > NIR] : 0.5545          
+##                                           
+##                   Kappa : 0.0415          
+##  Mcnemar's Test P-Value : 1.814e-05       
+##                                           
+##             Sensitivity : 0.98684         
+##             Specificity : 0.04167         
+##          Pos Pred Value : 0.76531         
+##          Neg Pred Value : 0.50000         
+##              Prevalence : 0.76000         
+##          Detection Rate : 0.75000         
+##    Detection Prevalence : 0.98000         
+##       Balanced Accuracy : 0.51425         
+##                                           
+##        'Positive' Class : on_time         
+## 
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Save the prediction result:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{save}\hlstd{(testPrediction,} \hlkwc{file}\hlstd{=}\hlstr{"../03_train_model/testPrediction.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
