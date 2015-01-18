@@ -23,10 +23,14 @@ imputeNA <- function(df, variable) {
   varIsNa <- is.na(df[,varIdx])
   actualValues <- df[!varIsNa,c(1,varIdx)]
   naVisits <- df[varIsNa,1]
-  for (visit in naVisits) {
+  l <- length(naVisits)
+  for (i in 1:l) {
+    if (i %% 1000 == 0) print(paste(variable, i, l,))
+    visit <- naVisits[i]
     value <- actualValues[actualValues[,1]==visit,2]
     visitIdx <- which(df[,1]==visit) 
     df[visitIdx,varIdx] <- value
+    
   }
   return(df)
 }
