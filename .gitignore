@@ -20,3 +20,6 @@ problem3_winklr/data/
 */src/*/all.pdf
 */src/*/figure/*.pdf
 
+# IntelliJ files
+*.iml
+.idea
