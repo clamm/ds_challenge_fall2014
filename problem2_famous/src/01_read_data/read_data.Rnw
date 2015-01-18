@@ -109,7 +109,7 @@ factorNames <- variableNames$name[factorIdx]
 
 Read web log data:
 <<read-web-data>>=
-webFile <- "../../data/web.csv"
+webFile <- "../../data/head2000.csv"
 webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
                     colClasses=variableNames$type, na.strings=c("NA",""))
 webData$tstamp <- as.POSIXct(webData$tstamp)
@@ -173,12 +173,14 @@ summary(spamData)
 Look at a summary per visit for the spam data:
 <<per-visit-summary-spam>>=
 spamAggVisits <- aggregatePerVisit(spamData)
+summary(spamAggVisits)
 viewAggExample(spamAggVisits, "spam", "visit")
 @
 
 Look at a summary per uid (supposedly user) for the spam data:
 <<per-uid-summary-spam>>=
 spamAggUids <- aggregatePerUid(spamData)
+summary(spamAggUids)
 viewAggExample(spamAggUids, "spam", "uid")
 @
 
