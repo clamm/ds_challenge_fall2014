@@ -36,15 +36,16 @@ rm(list=ls())   #clear memory
 load("../02_prepare_data_for_modeling/rfModelData.RData")
 @
 
-Split the train data based on simple bootstrap resampling into a series of train and test sets
+Split the train data based on simple bootstrap resampling into a train and test set
 <<split-train-data>>=
 library(caret)
 set.seed(998)
-PERCENTAGE <- 0.07
-inTraining <- createDataPartition(rfModelData$is_delayed, times=1, p = PERCENTAGE, list = FALSE) 
+PERCENTAGE <- 0.001
+inTraining <- createDataPartition(rfModelData$is_delayed, p=PERCENTAGE, list=FALSE) 
 length(inTraining)
 training <- rfModelData[inTraining,]
-# testing  <- rfModelData[-inTraining,]
+testing <- rfModelData[-inTraining,]
+testing <- testing[1:100,] 
 @
 
 <<checkout-training-sample>>=
@@ -52,42 +53,53 @@ str(training)
 @
 
 
-Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
-<<estimate-single-random-forest>>=
+% Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
+<<estimate-single-random-forest, include=FALSE, eval=FALSE>>=
 library(randomForest)
 delayRf <- randomForest(is_delayed ~ . - id, data=rfModelData, subset=inTraining, 
                         importance=TRUE, proximity=FALSE) 
 @
-Note: On a Macbook with 16GB RAM it takes 
-\begin{itemize}
-\item 4 minutes for a training sample size of 1\% (about 76.000 obs)
-\item 6 minutes for a training sample size of 100.000 obs
-\item 30 minutes for a training sample size of 5\% (about 360.000 obs)
-\item 50 minutes for a training sample size of 7\% (about 510.000 obs).
-\end{itemize}
+% Note: On a Macbook with 16GB RAM it takes 
+% \begin{itemize}
+% \item 4 minutes for a training sample size of 1\% (about 76.000 obs)
+% \item 6 minutes for a training sample size of 100.000 obs
+% \item 30 minutes for a training sample size of 5\% (about 360.000 obs)
+% \item 50 minutes for a training sample size of 7\% (about 510.000 obs).
+% \end{itemize}
 
-% Estimate a random forest with 3-fold crossvalidation: % kills Macbook with 16GB RAM
-<<estimate-crossvalidate-random-forest, include=FALSE, eval=FALSE>>=
+
+<<split-dfs>>=
+trainX <- training[!colnames(training) %in% "is_delayed"]
+trainY <- as.factor(training$is_delayed)
+@
+
+<<estimate-crossvalidate-random-forest>>=
 library(doMC)
 registerDoMC(cores = detectCores(all.tests=TRUE))
 rm(rfModelData, inTraining)
-delayRf <- train(is_delayed ~ ., data=training, method="rf", 
-                 trControl=trainControl(method="cv",number=3), 
+set.seed(825)
+delayRf <- train(x=trainX, y=trainY, method="rf",  
                  prox=TRUE, allowParallel=TRUE)
-print(rf_model)
 @
-
-
 
 Check out the model result:
 <<model-result>>=
 delayRf
+delayRf$finalModel$confusion
 plot(delayRf)
 @
 
+<<do-evaluation>>=
+testPrediction <- predict(delayRf, newdata=testing, type="prob")
+classPrediction <- factor(ifelse(testPrediction$delayed<0.5,"on_time","delayed"), 
+                          levels=c("on_time","delayed"))
+confusionMatrix(classPrediction, reference=testing$is_delayed)
+@
+
+
 Save the model result:
 <<save-model-result>>==
-save(delayRf, inTraining, file="../03_train_model/delayRf.RData")
+save(delayRf, trainX, trainY, testPrediction, file="../03_train_model/delayRf.RData")
 @
 
 \end{document}

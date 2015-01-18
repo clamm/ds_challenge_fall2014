@@ -63,6 +63,7 @@ if (nrow(predictionDelayRf) != targetNbRows) {
 Write the prediction result as requested into csv:
 <<write-deliverable-csv>>=
 o <- order(predictionDelayRf[,2], decreasing=TRUE)
+head(predictionDelayRf[o,])
 idIdx <- which(names(rfPredictData) == "id")
 idsOrderedByDelayProba <- rfPredictData[o,idIdx]
 write.table(idsOrderedByDelayProba, file="../../out/problem1.csv", 
