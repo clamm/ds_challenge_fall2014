@@ -109,7 +109,7 @@ factorNames <- variableNames$name[factorIdx]
 
 Read web log data:
 <<read-web-data>>=
-webFile <- "../../data/head2000.csv"
+webFile <- "../../data/web.csv"
 webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
                     colClasses=variableNames$type, na.strings=c("NA",""))
 webData$tstamp <- as.POSIXct(webData$tstamp)
