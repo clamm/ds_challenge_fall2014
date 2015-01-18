@@ -83,7 +83,7 @@ load these variable names and types of historic data (prepared in an additional 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{nameTypeDataFile}  \hlkwb{<-} \hlstr{"resources/raw_variables.csv"}
+\hlstd{nameTypeDataFile}  \hlkwb{<-} \hlstr{"../01_exploratory_data_analysis/resources/raw_variables.csv"}
 \hlstd{variableNames} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(nameTypeDataFile,} \hlkwc{header}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \hlstd{variableNames}
 \end{alltt}
@@ -168,10 +168,11 @@ As I did for the historic data the variables \verb+scheduled_departure_time+ and
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time)))}
-\hlstd{predictDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time)))}
+\hlstd{dep_time_number} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time))}
+\hlstd{predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}\hlkwd{sprintf}\hlstd{(}\hlstr{"%04i"}\hlstd{, dep_time_number))}
+
+\hlstd{arr_time_number} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time))}
+\hlstd{predictDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}\hlkwd{sprintf}\hlstd{(}\hlstr{"%04i"}\hlstd{, arr_time_number))}
 
 \hlstd{predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
   \hlkwd{substr}\hlstd{(}\hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{scheduled_departure_time),}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
@@ -200,9 +201,9 @@ I also again reformat the variables \verb+day_of_month+ and \verb+month+:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{predictDataTyped}\hlopt{$}\hlstd{month} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02s"}\hlstd{,} \hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{month)))}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02i"}\hlstd{,} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{month))))}
 \hlstd{predictDataTyped}\hlopt{$}\hlstd{day_of_month} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02s"}\hlstd{,} \hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{day_of_month)))}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02i"}\hlstd{,} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(predictDataTyped}\hlopt{$}\hlstd{day_of_month))))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -266,6 +267,19 @@ Find levels that don't exist in the historic fligh data set but do exist in the 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{verbatim}
+##                     year                    month             day_of_month 
+##                        2                       12                       31 
+##              day_of_week scheduled_departure_time   scheduled_arrival_time 
+##                        7                       24                       24 
+##                  airline            flight_number              tail_number 
+##                       17                     6889                     5035 
+##              plane_model       seat_configuration           origin_airport 
+##                        6                        6                      279 
+##      destination_airport        cancellation_code 
+##                      279                        4
+## [1] "year"                   "month"                  "scheduled_arrival_time"
+## [4] "airline"                "origin_airport"         "destination_airport"   
+## [7] "cancellation_code"
 ## $year
 ##      onlyInPredict onlyInTrain
 ## [1,] "2015"        "2013"     
@@ -388,7 +402,7 @@ Save data frame for next step:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{save}\hlstd{(predictDataTyped,} \hlkwc{file}\hlstd{=}\hlstr{"predictDataTyped.Rdata"}\hlstd{)}
+\hlkwd{save}\hlstd{(predictDataTyped,} \hlkwc{file}\hlstd{=}\hlstr{"predictDataTyped.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}

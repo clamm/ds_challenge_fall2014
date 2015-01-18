@@ -169,10 +169,11 @@ I see that \verb+scheduled_departure_time+ and \verb+scheduled_arrival_time+ nee
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time)))}
-\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%04s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time)))}
+\hlstd{dep_time_number} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time))}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_departure_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}\hlkwd{sprintf}\hlstd{(}\hlstr{"%04i"}\hlstd{, dep_time_number))}
+
+\hlstd{arr_time_number} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time))}
+\hlstd{trainDataTyped}\hlopt{$}\hlstd{scheduled_arrival_time} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}\hlkwd{sprintf}\hlstd{(}\hlstr{"%04i"}\hlstd{, arr_time_number))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -225,9 +226,9 @@ I also reformat the variables \verb+day_of_month+ and \verb+month+ (so that they
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{trainDataTyped}\hlopt{$}\hlstd{month} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{month)))}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02i"}\hlstd{,} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{month))))}
 \hlstd{trainDataTyped}\hlopt{$}\hlstd{day_of_month} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(}
-  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02s"}\hlstd{,} \hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{day_of_month)))}
+  \hlkwd{sprintf}\hlstd{(}\hlstr{"%02i"}\hlstd{,} \hlkwd{as.numeric}\hlstd{(}\hlkwd{as.character}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{day_of_month))))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -416,8 +417,16 @@ Save data frame for next step:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{factorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(factorNames,} \hlkwc{FUN}\hlstd{=}\hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{x}\hlstd{) \{} \hlkwd{levels}\hlstd{(df[,x]) \},} \hlkwc{df}\hlstd{=trainDataTyped)}
-\hlkwd{save}\hlstd{(trainDataTyped, factorLevels,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.Rdata"}\hlstd{)}
+\hlkwd{save}\hlstd{(trainDataTyped,} \hlkwc{file}\hlstd{=}\hlstr{"trainDataTyped.RData"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{factorLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(trainDataTyped,} \hlkwc{FUN}\hlstd{=levels)}
+\hlkwd{save}\hlstd{(factorLevels,} \hlkwc{file}\hlstd{=}\hlstr{"factorLevels.RData"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -585,11 +594,38 @@ Look at correlations between continuous variables:
 
 
 Look at some dependency between the binary target variable and other factor variables (with reasonably few levels) using the Chi-Square test of independence. The null hypothesis is that the two variables are independent, which I reject if the p-value is smaller than $\alpha=0.001$ (chosen so small due to large sample size):
-
-
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
+\hlstd{nbLevels} \hlkwb{<-} \hlkwd{sapply}\hlstd{(factorLevels,} \hlkwc{FUN}\hlstd{=length)}
+\hlstd{nbLevels}
+\end{alltt}
+\begin{verbatim}
+##                       id                     year                    month 
+##                        0                        2                       12 
+##             day_of_month              day_of_week scheduled_departure_time 
+##                       31                        7                       24 
+##   scheduled_arrival_time                  airline            flight_number 
+##                       24                       17                     6889 
+##              tail_number              plane_model       seat_configuration 
+##                     5035                        6                        6 
+##          departure_delay           origin_airport      destination_airport 
+##                        0                      279                      279 
+##       distance_travelled             taxi_time_in            taxi_time_out 
+##                        0                        0                        0 
+##                cancelled        cancellation_code               is_delayed 
+##                        0                        4                        2
+\end{verbatim}
+\begin{alltt}
+\hlstd{suitable} \hlkwb{<-} \hlkwd{which}\hlstd{(nbLevels} \hlopt{<} \hlnum{300}\hlstd{)}
+
+\hlstd{testIndependence} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{col}\hlstd{,} \hlkwc{alpha}\hlstd{)\{}
+  \hlstd{result} \hlkwb{<-} \hlkwd{chisq.test}\hlstd{(}\hlkwd{table}\hlstd{(trainDataTyped}\hlopt{$}\hlstd{is_delayed, trainDataTyped[,col]))}
+  \hlkwd{return}\hlstd{(result}\hlopt{$}\hlstd{p.value} \hlopt{<} \hlstd{alpha)}
+\hlstd{\}}
+
+\hlstd{dependentWithTarget} \hlkwb{<-} \hlkwd{sapply}\hlstd{(suitable,} \hlkwc{FUN}\hlstd{=testIndependence,} \hlkwc{alpha}\hlstd{=ALPHA)}
+\hlkwd{names}\hlstd{(dependentWithTarget)} \hlkwb{<-} \hlstd{variableNames}\hlopt{$}\hlstd{name[suitable]}
 \hlstd{dependentWithTarget}
 \end{alltt}
 \begin{verbatim}
@@ -597,10 +633,16 @@ Look at some dependency between the binary target variable and other factor vari
 ##                    FALSE                     TRUE                     TRUE 
 ##             day_of_month              day_of_week scheduled_departure_time 
 ##                     TRUE                     TRUE                     TRUE 
-##   scheduled_arrival_time              tail_number              plane_model 
+##   scheduled_arrival_time                  airline              plane_model 
 ##                     TRUE                     TRUE                     TRUE 
 ##       seat_configuration          departure_delay           origin_airport 
-##                     TRUE                     TRUE                     TRUE
+##                     TRUE                     TRUE                     TRUE 
+##      destination_airport       distance_travelled             taxi_time_in 
+##                     TRUE                     TRUE                     TRUE 
+##            taxi_time_out                cancelled        cancellation_code 
+##                     TRUE                     TRUE                    FALSE 
+##                     <NA> 
+##                     TRUE
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
