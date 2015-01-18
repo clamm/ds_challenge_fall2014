@@ -40,7 +40,7 @@ Split the train data based on simple bootstrap resampling into a train and test 
 <<split-train-data>>=
 library(caret)
 set.seed(998)
-PERCENTAGE <- 0.001
+PERCENTAGE <- 0.03
 inTraining <- createDataPartition(rfModelData$is_delayed, p=PERCENTAGE, list=FALSE) 
 length(inTraining)
 training <- rfModelData[inTraining,]
@@ -53,8 +53,8 @@ str(training)
 @
 
 
-% Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
-<<estimate-single-random-forest, include=FALSE, eval=FALSE>>=
+Estimate a random forest using \Sexpr{PERCENTAGE*100}\% of the data - without crossvalidation:
+<<estimate-single-random-forest>>=
 library(randomForest)
 delayRf <- randomForest(is_delayed ~ . - id, data=rfModelData, subset=inTraining, 
                         importance=TRUE, proximity=FALSE) 
@@ -68,12 +68,10 @@ delayRf <- randomForest(is_delayed ~ . - id, data=rfModelData, subset=inTraining
 % \end{itemize}
 
 
-<<split-dfs>>=
+<<estimate-crossvalidate-random-forest, include=FALSE, eval=FALSE>>=
 trainX <- training[!colnames(training) %in% "is_delayed"]
 trainY <- as.factor(training$is_delayed)
-@
 
-<<estimate-crossvalidate-random-forest>>=
 library(doMC)
 registerDoMC(cores = detectCores(all.tests=TRUE))
 rm(rfModelData, inTraining)
@@ -85,7 +83,6 @@ delayRf <- train(x=trainX, y=trainY, method="rf",
 Check out the model result:
 <<model-result>>=
 delayRf
-delayRf$finalModel$confusion
 plot(delayRf)
 @
 
