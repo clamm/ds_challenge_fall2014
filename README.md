@@ -103,6 +103,7 @@ Setup working environment for user cindylamm:
 	cat ~/.bashrc_cloud | ssh cindylamm@216.121.66.98 "cat >> ~/.bashrc"
 	scp ~/.alias_cloud cindylamm@216.121.66.98:~/.alias
 	scp ~/.gitconfig cindylamm@216.121.66.98:~/.gitconfig
+	scp ~/.gitconfig.user cindylamm@216.121.66.98:~/.gitconfig.user
 	
 Install the [Data Science Toolbox](http://datascienceatthecommandline.com/) to have R ready:
 :x: (VirtualyBox not installed!) 
