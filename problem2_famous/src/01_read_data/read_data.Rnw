@@ -33,7 +33,10 @@ options(formatR.arrow=TRUE,width=90)
 
 \maketitle
 
-% -------- define functions
+% ------------------------
+% ------------------------ define functions
+% ------------------------
+
 <<define-seed, include=FALSE>>=
 set.seed(748)
 @
@@ -96,7 +99,24 @@ viewAggExample <- function(df,isWeb,isUid) {
 }
 @
 
-% -------- analysis starts here
+<<define-write-level-table>>=
+writeLevelMappingToFile <- function(df, variable, file) {
+  varIdx <- which(names(df)==variable)  
+  tmp <- unclass(unique(df[,varIdx]))
+  mapping <- data.frame(numericLevel=tmp, characterLevel=levels(tmp))
+  write.csv(mapping, file=file, row.names=FALSE)
+}
+@
+
+<<defined-get-map-file-name>>=
+getMapFileName <- function(variableName, type) {
+  paste("out/",type,"_level_map_",variableName,".csv", sep="")
+}
+@
+
+% ------------------------
+% ------------------------ web analysis starts here
+% ------------------------
 
 Load variable names and types:
 <<load-meta-data>>=
@@ -107,9 +127,9 @@ factorIdx <- which(variableNames$type=="factor")
 factorNames <- variableNames$name[factorIdx]
 @
 
-Read web log data:
+Read the top 2000 lines of the web.log data:
 <<read-web-data>>=
-webFile <- "../../data/web.csv"
+webFile <- "../../data/head2000.csv"
 webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
                     colClasses=variableNames$type, na.strings=c("NA",""))
 webData$tstamp <- as.POSIXct(webData$tstamp)
@@ -145,7 +165,9 @@ viewAggExample(webAggUids, "web", "uid")
 @
 
 
-
+% ------------------------
+% ------------------------ spam analysis starts here
+% ------------------------
 
 Read spam data:
 <<read-spam-data>>=
@@ -184,6 +206,26 @@ summary(spamAggUids)
 viewAggExample(spamAggUids, "spam", "uid")
 @
 
+Write out a file which can be processed by Spark, meaning all factors as numeric values. Also \verb+unclass+ factors with digits as levels to have resulting variables on roughly the same scale:
+<<write-spam-numeric>>=
+numericSpamVisits <- data.frame(visit_id=spamAggVisits$visit_id,
+                                nb_actions=spamAggVisits$nb_entries,
+                                uid=unclass(spamAggVisits$uid),
+                                campaign=unclass(spamAggVisits$campaign), 
+                                actions=unclass(spamAggVisits$actions),
+                                queries=unclass(spamAggVisits$queries),
+                                median_time_diff=spamAggVisits$median_time_diff)
+head(numericSpamVisits)
+write.csv(numericSpamVisits, file="out/spam_visits_numeric.csv", row.names=FALSE)
+@
+
+Also write the level mapping in to files:
+<<write-spam-level-mapping>>=
+writeLevelMappingToFile(spamAggVisits, "uid", getMapFileName("uid","spam"))
+writeLevelMappingToFile(spamAggVisits, "campaign", getMapFileName("campaign","spam"))
+writeLevelMappingToFile(spamAggVisits, "actions", getMapFileName("actions","spam"))
+writeLevelMappingToFile(spamAggVisits, "queries", getMapFileName("queries","spam"))
+@
 
 \end{document}
 
