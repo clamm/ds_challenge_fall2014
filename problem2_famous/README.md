@@ -104,5 +104,25 @@ Pack the solution files for upload with
 Solution requirements / Used software
 -------
 
+Install go (to install json2csv):
+	
+	brew install go
+ 	mkdir $HOME/go
+	export GOPATH=$HOME/go
+	export PATH=$PATH:$GOPATH/bin
 
+Install json2csv using https://github.com/zemirco/json2csv.git:
+:x: Error `invalid version control suffix in github.com/ path
+ 	
+ 	go get github.com/zemirco/json2csv.git
+
+Since I was not able to install json2csv myself I used the preinstalled version in the data science toolbox. To install the data science toolbox run:
+
+	mkdir my_ds_toolbox
+	cd my_ds_toolbox
+	vagrant init data-science-toolbox/data-science-at-the-command-line
+
+In order to access the challenge data and code I added the following line in the Vagrantfile:
+
+	config.vm.synced_folder "/path/to/challenge_repo/DS_challenge", "/home/vagrant/work/DS_challenge"
 
