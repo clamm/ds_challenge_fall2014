@@ -84,7 +84,7 @@ Solution requirements / Used software
 	* knitr	
 	* plyr	
 	* randomForest
-	* VennDiagram
+	* [VennDiagram](http://www.ats.ucla.edu/stat/r/faq/venn.htm)
 * TeXShop (or SublimeText with LaTexTools plugin and Skim)
 
 
