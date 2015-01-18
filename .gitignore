@@ -1,8 +1,6 @@
 problem1_smartfly/data/
-problem1_smartfly/data/
 problem2_famous/data/
-problem2_famous/data/
-problem3_winklr/data/
+problem2_famous/src/*/out/*.csv
 problem3_winklr/data/
 
 # R files
