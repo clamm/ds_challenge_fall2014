@@ -95,8 +95,7 @@ pFactorLevels <- sapply(predictDataTyped, FUN=levels)
 @
 
 <<load-train-levels, include=FALSE>>=
-load("../01_exploratory_data_analysis/trainDataTyped.RData")
-# contains trainDataTyped, factorNames and factorLevels
+load("../01_exploratory_data_analysis/factorLevels.RData")
 tFactorLevels <- factorLevels
 rm(factorLevels)
 @

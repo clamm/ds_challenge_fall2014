@@ -143,8 +143,12 @@ summary(trainDataTyped$is_delayed) / length(trainDataTyped$is_delayed)
 
 Save data frame for next step:
 <<save-df>>==
+save(trainDataTyped, file="trainDataTyped.RData")
+@
+
+<<save-factor-levels>>=
 factorLevels <- sapply(trainDataTyped, FUN=levels)
-save(trainDataTyped, factorLevels, file="trainDataTyped.RData")
+save(factorLevels, file="factorLevels.RData")
 @
 
 
