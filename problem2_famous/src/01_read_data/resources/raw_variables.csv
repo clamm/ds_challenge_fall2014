@@ -1,0 +1,8 @@
+name,type
+visit_id,factor
+uid,factor
+campaign,factor
+tstamp,character
+experiments,factor
+action,factor
+query,factor

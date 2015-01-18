@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+\flushbottom
+
+<<setup, include=FALSE, cache=FALSE>>=
+rm(list=ls())   #clear memory
+library(knitr)
+library(plyr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{Almost Famous}
+\author{Cindy Lamm}
+
+\maketitle
+
+% -------- define functions
+<<define-seed, include=FALSE>>=
+set.seed(748)
+@
+
+
+<<define-view-example, include=FALSE>>=
+viewExample <- function(df,type) {
+  nbEntriesPerVisit <- ifelse(type=="web",2,4)
+  visitsFreq <- table(df$visit_id)
+  exampleVisits <- which(visitsFreq==nbEntriesPerVisit)
+  randIdx <- sample(1:length(exampleVisits),1)
+  theOneExample <- exampleVisits[randIdx]
+  df[df$visit_id==names(theOneExample),]  
+}
+@
+
+<<define-aggregate-visits, include=FALSE>>=
+aggregatePerVisit <- function(df) {
+   aggVisit <- ddply(df, .(visit_id), summarise,
+                      nb_entries=length(visit_id),
+                      uid=unique(uid),
+                      campaign=unique(campaign[!is.na(campaign)]),
+                      nb_experiments=unique(experiments[!is.na(experiments)]),
+                      actions=paste(action, collapse=","),
+                      queries=unique(query[!is.na(query)]), 
+                      median_time_diff=median(time_diff, na.rm=TRUE))  
+   # note: query is only defined if action==landed
+   aggVisit$actions <- as.factor(aggVisit$actions)
+   aggVisit$queries <- as.factor(aggVisit$queries)
+   return(aggVisit)
+}
+@
+
+<<define-aggregate-uid, include=FALSE>>=
+aggregatePerUid <- function(df) {
+  aggUid <- ddply(df, .(uid), summarise,
+                  nb_entries=length(uid),
+                  visit_ids=paste(unique(visit_id), collapse=","),
+                  campaign=paste(unique(campaign[!is.na(campaign)]), collapse=","),
+                  nb_experiments=unique(experiments[!is.na(experiments)]),
+                  actions=paste(action, collapse=","),
+                  queries=paste(unique(query[!is.na(query)]), collapse=","),
+                  median_time_diff=median(time_diff, na.rm=TRUE))  
+  aggUid$visit_ids <- as.factor(aggUid$visit_ids)
+  aggUid$campaign <- as.factor(aggUid$campaign)
+  aggUid$actions <- as.factor(aggUid$actions)
+  aggUid$queries <- as.factor(aggUid$queries)
+  return(aggUid)
+}
+@
+
+<<define-view-aggregated-example, include=FALSE>>=
+viewAggExample <- function(df,isWeb,isUid) {
+  nbEntriesPerVisit <- ifelse(isWeb=="web",2,4)
+  if (isUid=="uid") nbEntriesPerVisit <- 2*nbEntriesPerVisit
+  exampleVisits <- which(df$nb_entries==nbEntriesPerVisit)
+  randIdx <- sample(1:length(exampleVisits),1)
+  theOneExample <- exampleVisits[randIdx]
+  df[theOneExample,]  
+}
+@
+
+% -------- analysis starts here
+
+Load variable names and types:
+<<load-meta-data>>=
+nameTypeDataFile  <- "resources/raw_variables.csv"
+variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
+variableNames
+factorIdx <- which(variableNames$type=="factor")
+factorNames <- variableNames$name[factorIdx]
+@
+
+Read web log data:
+<<read-web-data>>=
+webFile <- "../../data/web.csv"
+webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
+                    colClasses=variableNames$type, na.strings=c("NA",""))
+webData$tstamp <- as.POSIXct(webData$tstamp)
+str(webData)
+@
+
+Add variable with the total time spent per visit, \verb+total_time_spent+, and \verb+time_diff+ indicating the seconds that passed inbetween the logged entries within a visit:
+<<add-total-time-spent-to-web-data>>=
+require(plyr)
+webData <- ddply(webData, .(visit_id), mutate, 
+                 total_time_spent=max(tstamp)-min(tstamp),
+                 time_diff=c(NA,diff(tstamp)))
+viewExample(webData,"web")
+@
+
+Look at a summary for the web data:
+<<summary-web-data>>=
+summary(webData)
+@
+
+Look at a summary per visit for the web data:
+<<per-visit-summary-web>>=
+webAggVisits <- aggregatePerVisit(webData)
+summary(webAggVisits)
+viewAggExample(webAggVisits, "web", "visit")
+@
+
+Look at a summary per uid (supposedly user) for the web data:
+<<per-uid-summary-web>>=
+webAggUids <- aggregatePerUid(webData)
+summary(webAggUids)
+viewAggExample(webAggUids, "web", "uid")
+@
+
+
+
+
+Read spam data:
+<<read-spam-data>>=
+spamFile <- "../../data/spam.csv"
+spamData <- read.csv(spamFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
+                     colClasses=variableNames$type, na.strings=c("NA",""))
+spamData$tstamp <- as.POSIXct(spamData$tstamp)
+str(spamData)
+@
+
+I again add a variable \verb+time_spent+
+<<add-total-time-spent-to-spam-data, include=FALSE>>=
+spamData <- ddply(spamData, .(visit_id), mutate, 
+                  total_time_spent=max(tstamp)-min(tstamp),
+                  time_diff=c(NA,diff(tstamp)))
+
+viewExample(spamData,"spam")
+@
+
+Look at a summary of the spam data:
+<<summary-spam-data>>=
+summary(spamData)
+@
+
+Look at a summary per visit for the spam data:
+<<per-visit-summary-spam>>=
+spamAggVisits <- aggregatePerVisit(spamData)
+viewAggExample(spamAggVisits, "spam", "visit")
+@
+
+Look at a summary per uid (supposedly user) for the spam data:
+<<per-uid-summary-spam>>=
+spamAggUids <- aggregatePerUid(spamData)
+viewAggExample(spamAggUids, "spam", "uid")
+@
+
+
+\end{document}
+
+% create the exploratory_data_analysis_scheduled.tex with (takes about 4 minutes!)
+% library(knitr)
+% knit("../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.tex")
