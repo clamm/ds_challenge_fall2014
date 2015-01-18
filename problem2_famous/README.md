@@ -13,6 +13,21 @@ There are three actions that visitors can take once they arrive at the site: the
 
 Along with your ad campaigns, you are running a pair of simultaneous A/B tests on the site. The first pair (experiment one vs. experiment two) tests two different color schemes for the site: a blue one and a green one. The second pair (experiment three vs. experiment four) tests two different promotional blurbs for your book: one from Josh Wills, and one from Sean Owen. Visitors to the site are diverted into the experiments independently using a per-experiment hashing function on a cookie that is placed on the visitor’s browser, so you can assume that visitors will always be in the same experiment no matter how many times they come back to the site. There are no preexisting expectations that either experiment in either pair is more likely to be effective than the other.
 
+Example:
+
+	{
+      "visit_id": 17633600156,
+      "uid": 68021018,
+      "campaign": 94,
+      "tstamp": "2014-09-15 00:00:01",
+      "experiments": [
+        2,
+        3
+      ],
+      "action": "landed",
+      "query": "data science training"
+    }
+
 Almost Famous Deliverables
 -------
 Using your skills in data munging and statistical analysis, answer the following questions about the performance of your site using the log data as your source of truth.
