@@ -39,7 +39,7 @@ rm(list=ls())   #clear memory
 @
 
 <<load-meta-data>>=
-nameTypeDataFile  <- "resources/raw_variables.csv"
+nameTypeDataFile  <- "../01_exploratory_data_analysis/resources/raw_variables.csv"
 variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
 variableNames
 factorIdx <- which(variableNames$type=="factor")
@@ -92,11 +92,13 @@ Comparing factor levels of training and prediction data is important because if 
 
 <<compute-predict-levels, include=FALSE>>=
 pFactorLevels <- sapply(predictDataTyped, FUN=levels)
+pFactorLevels <- pFactorLevels[factorNames]
 @
 
 <<load-train-levels, include=FALSE>>=
 load("../01_exploratory_data_analysis/factorLevels.RData")
-tFactorLevels <- factorLevels
+load("../01_exploratory_data_analysis/trainDataTyped.RData")
+tFactorLevels <- factorLevels[factorNames]
 rm(factorLevels)
 @
 
@@ -146,8 +148,9 @@ nbLevels <- sapply(tFactorLevels, FUN=length)
 nbLevels
 nbTMissingLevels <- sapply(tMissingLevels, FUN=length) 
 nbPMissingLevels <- sapply(pMissingLevels, FUN=length) 
-haveMissingLevels <- union(which(nbTMissingLevels!=0), which(nbPMissingLevels!=0))
-suitable <- intersect(which(nbLevels<300), haveMissingLevels)
+haveMissingLevels <- sort(union(which(nbTMissingLevels!=0), which(nbPMissingLevels!=0)))
+suitable <- intersect(unname(which(nbLevels<300)), haveMissingLevels)
+factorNames[suitable]
 overview <- list()
 for (name in factorNames[suitable]) {
   onlyInPredict <- tMissingLevels[[name]]
