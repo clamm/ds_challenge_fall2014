@@ -197,6 +197,26 @@ When predicting from a randomForest it expects the same factor levels to be pres
 \end{kframe}
 \end{knitrout}
 
+\section{Equalize factor levels with scheduled flight data}
+
+There are two more airline codes in the scheduled flight data. I add these as levels to the modeling data, so that upon the prediction stage there won't be the error, that there are levels that didn't exist in the modeling stage: 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{addNames} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"HA"}\hlstd{,}\hlstr{"OH"}\hlstd{)}
+\hlkwd{levels}\hlstd{(rfModelData}\hlopt{$}\hlstd{airline)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwd{levels}\hlstd{(rfModelData}\hlopt{$}\hlstd{airline), addNames)}
+\hlkwd{levels}\hlstd{(rfModelData}\hlopt{$}\hlstd{airline)}
+\end{alltt}
+\begin{verbatim}
+##  [1] "AA" "AS" "B6" "CO" "DH" "DL" "EV" "FL" "HP" "MQ" "NW" "OO" "TZ" "UA" "US" "WN" "XE"
+## [18] "HA" "OH"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\textbf{Assumption}:
+I assume it doesn't make a difference in which order the levels are. Because in the training data the new levels are last, in the prediction data they are inbetween (due to alphabetical order).
+
 
 \section{Analyse \& deal with missing values}
 

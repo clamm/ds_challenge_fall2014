@@ -67,24 +67,6 @@ rfPredictData$scheduled_arrival_time <- as.numeric(as.character(rfPredictData$sc
 str(rfPredictData)
 @
 
-\section{Remove unknown factor levels}
-
-The comparison of historic and scheduled flight data furthermore showed that there are two airlines in the scheduled data that are not listed in the historic data. In order to be able to predict using the estimated random forest from the historic data I need to exclude the observations listed for these two airlines:
-<<remove-new-airlines>>=
-removeNames <- c("HA","OH")
-removeIdxs <- union(which(rfPredictData$airline=="HA"), which(rfPredictData$airline=="OH"))
-length(removeIdxs)
-rfPredictData <- rfPredictData[-removeIdxs,]
-lvlIdx <- c(which(levels(rfPredictData$airline)=="HA"), which(levels(rfPredictData$airline)=="OH"))
-levels(rfPredictData$airline)[lvlIdx] <- NA
-@
-
-<<check-levels>>=
-sapply(rfPredictData, FUN=levels)
-@
-
-There is no need to adapt the levels for the other variables, since they are not included in the modeling (or prediction) process anyway.
-
 \section{Analyse \& deal with missing values}
 
 <<check-na-removal>>=

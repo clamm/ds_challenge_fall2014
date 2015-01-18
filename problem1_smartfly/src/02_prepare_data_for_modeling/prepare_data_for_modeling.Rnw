@@ -85,6 +85,18 @@ rfModelData$scheduled_arrival_time <- as.numeric(as.character(rfModelData$schedu
 str(rfModelData)
 @
 
+\section{Equalize factor levels with scheduled flight data}
+
+There are two more airline codes in the scheduled flight data. I add these as levels to the modeling data, so that upon the prediction stage there won't be the error, that there are levels that didn't exist in the modeling stage: 
+<<remove-new-airlines>>=
+addNames <- c("HA","OH")
+levels(rfModelData$airline) <- c(levels(rfModelData$airline), addNames)
+levels(rfModelData$airline)
+@
+
+\textbf{Assumption}:
+I assume it doesn't make a difference in which order the levels are. Because in the training data the new levels are last, in the prediction data they are inbetween (due to alphabetical order).
+
 
 \section{Analyse \& deal with missing values}
 
