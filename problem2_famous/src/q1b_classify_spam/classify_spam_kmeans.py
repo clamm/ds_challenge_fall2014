@@ -13,7 +13,7 @@ def parseVector(line):
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        usage = "Usage: kmeans <train file> <k> <test file> <test id file>"
+        usage = "Usage: classify_spam_kmeans <train file> <k> <test file> <test id file>"
         print >> sys.stderr, usage
         exit(-1)
     trainFile = sys.argv[1]
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     prediction = testData.map(model.predict).collect()
 
     name, extension = os.path.splitext(testFile)
-    outFile = name + "_prediction" + extension
+    outFile = name + "_kmeans_prediction" + extension
     print("INFO: Write prediction result into %s" % outFile)
     writer = Writer(outFile)
     writer.writePrediction(prediction, testIdFile)

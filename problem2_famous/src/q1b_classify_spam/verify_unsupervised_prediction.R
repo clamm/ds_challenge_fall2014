@@ -1,5 +1,5 @@
 # load prediction results
-prediction <- read.table("out/unsupervised/train_prediction.csv", 
+prediction <- read.table("out/unsupervised/train_kmeans_prediction.csv", 
                          col.names=c("visit_id", "uid", "is_spam"),
                          colClasses="factor")
 str(prediction)
