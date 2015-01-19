@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+\flushbottom
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/venn-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{Almost Famous: Verify Spam Classification Prediction}
+\author{Cindy Lamm}
+
+\maketitle
+
+Load prediction results:
+<<load-prediction-results>>=
+prediction <- read.table("out/unsupervised/train_kmeans_prediction.csv", 
+                         col.names=c("visit_id", "uid", "is_spam"),
+                         colClasses="factor")
+str(prediction)
+table(prediction$is_spam)
+prop.table(table(prediction$is_spam))
+@
+
+% check prediction consistency within uids
+% library(plyr)
+% predAggUid <- ddply(prediction, .(uid), summarize, 
+%                  is_spam=as.factor(paste(is_spam,collapse="")))
+% 
+% % check prediction consistency within visits
+% predAggVisit <- ddply(prediction, .(visit_id), summarize, 
+%                  is_spam=as.factor(paste(is_spam,collapse="")))
+
+Load spam ids:
+<<load-spam-ids>>=
+spamIdFile <- "out/unsupervised/spam_numeric_id.csv"
+spamIds <- read.table(spamIdFile, header=TRUE, sep=" ", colClasses="factor")
+str(spamIds)
+@
+
+Load web ids:
+<<load-web-ids>>=
+webIdFile <- "out/unsupervised/web_numeric_id.csv"
+topX <- nrow(prediction)-nrow(spamIds)
+webIds <- read.table(webIdFile, header=TRUE, sep=" ", colClasses="factor", nrows=topX)
+str(webIds)
+@
+
+% compare uids
+% isSpam <- prediction$is_spam=="1"
+
+% correctlyIdentified <- intersect(spamData$uid, prediction$uid[isSpam])
+% length(correctlyIdentified)
+% 
+% missedSpam <- intersect(spamData$uid, prediction$uid[!isSpam])
+% length(missedSpam)
+% 
+% length(correctlyIdentified) + length(missedSpam)
+
+<<source-venn3, include=FALSE>>=
+source("Venn3.R")
+@
+
+
+Plot Venn diagram:
+<<plot-venn-diagram, echo=FALSE, fig.width=11, fig.height=8, out.width='.45\\linewidth'>>=>=
+vc <- Venn3(prediction$uid, spamIds$uid, webIds$uid, c("predicted", "spam", "web"), "uid")
+@
+
+Something is off - the counts don't add up!!!
+<<checkout-venn-counts>>=
+vc
+@
+
+
+\end{document}

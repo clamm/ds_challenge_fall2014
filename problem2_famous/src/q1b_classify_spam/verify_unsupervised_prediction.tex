@@ -1,0 +1,204 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\flushbottom
+
+
+
+\date{\currenttime, \today}
+\title{Almost Famous: Verify Spam Classification Prediction}
+\author{Cindy Lamm}
+
+\maketitle
+
+Load prediction results:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{prediction} \hlkwb{<-} \hlkwd{read.table}\hlstd{(}\hlstr{"out/unsupervised/train_kmeans_prediction.csv"}\hlstd{,}
+                         \hlkwc{col.names}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"visit_id"}\hlstd{,} \hlstr{"uid"}\hlstd{,} \hlstr{"is_spam"}\hlstd{),}
+                         \hlkwc{colClasses}\hlstd{=}\hlstr{"factor"}\hlstd{)}
+\hlkwd{str}\hlstd{(prediction)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	204404 obs. of  3 variables:
+##  $ visit_id: Factor w/ 173430 levels "10001576436",..: 17629 17629 15982 15982 15982 71655 71655 71655 71655 164854 ...
+##  $ uid     : Factor w/ 169391 levels "100001489","10000221",..: 165764 165764 37251 37251 37251 1981 1981 1981 1981 49473 ...
+##  $ is_spam : Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
+\end{verbatim}
+\begin{alltt}
+\hlkwd{table}\hlstd{(prediction}\hlopt{$}\hlstd{is_spam)}
+\end{alltt}
+\begin{verbatim}
+## 
+##      0      1 
+## 201671   2733
+\end{verbatim}
+\begin{alltt}
+\hlkwd{prop.table}\hlstd{(}\hlkwd{table}\hlstd{(prediction}\hlopt{$}\hlstd{is_spam))}
+\end{alltt}
+\begin{verbatim}
+## 
+##          0          1 
+## 0.98662942 0.01337058
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+% check prediction consistency within uids
+% library(plyr)
+% predAggUid <- ddply(prediction, .(uid), summarize, 
+%                  is_spam=as.factor(paste(is_spam,collapse="")))
+% 
+% % check prediction consistency within visits
+% predAggVisit <- ddply(prediction, .(visit_id), summarize, 
+%                  is_spam=as.factor(paste(is_spam,collapse="")))
+
+Load spam ids:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{spamIdFile} \hlkwb{<-} \hlstr{"out/unsupervised/spam_numeric_id.csv"}
+\hlstd{spamIds} \hlkwb{<-} \hlkwd{read.table}\hlstd{(spamIdFile,} \hlkwc{header}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{" "}\hlstd{,} \hlkwc{colClasses}\hlstd{=}\hlstr{"factor"}\hlstd{)}
+\hlkwd{str}\hlstd{(spamIds)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	4404 obs. of  2 variables:
+##  $ visit_id: Factor w/ 1482 levels "10199862810",..: 146 146 130 130 130 602 602 602 602 1409 ...
+##  $ uid     : Factor w/ 1060 levels "100191","100547",..: 1038 1038 238 238 238 9 9 9 9 320 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Load web ids:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{webIdFile} \hlkwb{<-} \hlstr{"out/unsupervised/web_numeric_id.csv"}
+\hlstd{topX} \hlkwb{<-} \hlkwd{nrow}\hlstd{(prediction)}\hlopt{-}\hlkwd{nrow}\hlstd{(spamIds)}
+\hlstd{webIds} \hlkwb{<-} \hlkwd{read.table}\hlstd{(webIdFile,} \hlkwc{header}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{" "}\hlstd{,} \hlkwc{colClasses}\hlstd{=}\hlstr{"factor"}\hlstd{,} \hlkwc{nrows}\hlstd{=topX)}
+\hlkwd{str}\hlstd{(webIds)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	200000 obs. of  2 variables:
+##  $ visit_id: Factor w/ 171948 levels "10001576436",..: 14760 4138 171295 21028 40751 45720 3479 7006 16665 55317 ...
+##  $ uid     : Factor w/ 168331 levels "100001489","10000221",..: 138508 147095 2074 115956 75610 118978 142722 154912 32275 148213 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+% compare uids
+% isSpam <- prediction$is_spam=="1"
+
+% correctlyIdentified <- intersect(spamData$uid, prediction$uid[isSpam])
+% length(correctlyIdentified)
+% 
+% missedSpam <- intersect(spamData$uid, prediction$uid[!isSpam])
+% length(missedSpam)
+% 
+% length(correctlyIdentified) + length(missedSpam)
+
+
+
+
+Plot Venn diagram:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=.45\linewidth]{figure/venn-plot-venn-diagram-1} 
+
+}
+
+
+
+\end{knitrout}
+
+Something is off - the counts don't add up!!!
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{vc}
+\end{alltt}
+\begin{verbatim}
+##   predicted spam web Counts
+## 1        NA   NA  NA     NA
+## 2         0    0   1      0
+## 3         0    1   0      0
+## 4         0    1   1      0
+## 5         1    0   0      0
+## 6         1    0   1    141
+## 7         1    1   0    923
+## 8         1    1   1      0
+## attr(,"class")
+## [1] "VennCounts"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\end{document}
