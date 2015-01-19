@@ -91,28 +91,9 @@
 
 
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{writeLevelMappingToFile} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{variable}\hlstd{,} \hlkwc{file}\hlstd{) \{}
-  \hlstd{varIdx} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlkwd{names}\hlstd{(df)}\hlopt{==}\hlstd{variable)}
-  \hlstd{tmp} \hlkwb{<-} \hlkwd{unclass}\hlstd{(}\hlkwd{unique}\hlstd{(df[,varIdx]))}
-  \hlstd{mapping} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{numericLevel}\hlstd{=tmp,} \hlkwc{characterLevel}\hlstd{=}\hlkwd{levels}\hlstd{(tmp))}
-  \hlkwd{write.csv}\hlstd{(mapping,} \hlkwc{file}\hlstd{=file,} \hlkwc{row.names}\hlstd{=}\hlnum{FALSE}\hlstd{)}
-\hlstd{\}}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{getMapFileName} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{variableName}\hlstd{,} \hlkwc{type}\hlstd{) \{}
-  \hlkwd{paste}\hlstd{(}\hlstr{"out/visits/"}\hlstd{,type,}\hlstr{"_level_map_"}\hlstd{,variableName,}\hlstr{".csv"}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{""}\hlstd{)}
-\hlstd{\}}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
+
+
 
 % ------------------------
 % ------------------------ web analysis starts here
@@ -324,10 +305,9 @@ Read spam data:
 \end{kframe}
 \end{knitrout}
 
-I again add a variable \verb+time_spent+
+I again add a variable \verb+time_spent+ and
 
-
-Look at a summary of the spam data:
+look at a summary of the spam data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}

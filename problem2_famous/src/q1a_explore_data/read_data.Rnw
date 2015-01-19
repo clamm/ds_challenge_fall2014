@@ -99,7 +99,7 @@ viewAggExample <- function(df,isWeb,isUid) {
 }
 @
 
-<<define-write-level-table>>=
+<<define-write-level-table, include=FALSE>>=
 writeLevelMappingToFile <- function(df, variable, file) {
   varIdx <- which(names(df)==variable)  
   tmp <- unclass(unique(df[,varIdx]))
@@ -108,7 +108,7 @@ writeLevelMappingToFile <- function(df, variable, file) {
 }
 @
 
-<<defined-get-map-file-name>>=
+<<defined-get-map-file-name, include=FALSE>>=
 getMapFileName <- function(variableName, type) {
   paste("out/visits/",type,"_level_map_",variableName,".csv", sep="")
 }
@@ -178,7 +178,7 @@ spamData$tstamp <- as.POSIXct(spamData$tstamp)
 str(spamData)
 @
 
-I again add a variable \verb+time_spent+
+I again add a variable \verb+time_spent+ and
 <<add-total-time-spent-to-spam-data, include=FALSE>>=
 spamData <- ddply(spamData, .(visit_id), mutate, 
                   total_time_spent=max(tstamp)-min(tstamp),
@@ -186,8 +186,7 @@ spamData <- ddply(spamData, .(visit_id), mutate,
 
 viewExample(spamData,"spam")
 @
-
-Look at a summary of the spam data:
+look at a summary of the spam data:
 <<summary-spam-data>>=
 summary(spamData)
 @
