@@ -1,0 +1,165 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\definecolor{linkcolor}{rgb}{0.686,0.059,0.569}
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{fancyvrb}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=true,linkcolor=linkcolor]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\VerbatimFootnotes
+
+\author{Cindy Lamm}
+\title{Solution Abstract Problem 2: Almost Famous}
+
+\maketitle
+
+
+\section{Approach} % (fold)
+\label{approach}
+
+I identified question 1 as classification problem (supervised or unsupervised) which I wanted to solve using Spark (after the performance problems I encountered for the classification in R with 7.3 million observations). 
+
+I opted for the following approach to solve the questions:
+\begin{itemize}
+	\item analyse file structure
+	\item explore data
+	\item prepare data for modeling
+	\item estimate and validate models for spam classification
+	\item prepare the web data for prediction
+	\item classify entries in web data as spam
+	\item remove spam entries from web data
+	\item calculate required metrics
+\end{itemize}
+
+% section approach (end)
+
+
+\subsection{Analyse file structure} % (fold)
+\label{sub:analyse_file_structure}
+I had a short look into the log data in json format via \href{http://stedolan.github.io/jq/}{jq}. Once I saw that the data is very regular (same number of keys per row, same names for keys) I converted the data to csv using \href{https://github.com/zemirco/json2csv}{json2csv} (which is pre-installed in \href{http://datasciencetoolbox.org/}{the data science toolbox}) to load it into R for exploratory analysis.
+
+% subsection analyse_file_structure (end)
+
+
+\subsection{Explore data} % (fold)
+\label{sub:explore_data}
+To get an impression of the web and spam data I had a look at overall summary statistics but also at summary statistics aggregated over visits and visitors. Since I am not that familiar with web analytics I assume that a \verb+uid+ uniquely identifies a visitor which is a synonym for user. 
+
+From manual inspection it seems that visits that are generated via the bot network only contain the action \verb+adclick+ after they landed on the page. However if I would classify the web data according to this simple rule, then the click through rate for ads on the page would be zero - which seems too extreme.
+
+% subsection explore_data (end)
+
+\subsection{Prepare data for modeling} % (fold)
+\label{sub:prepare_data_for_modeling}
+In order to run a classification/clustering algorithm in Spark I need to code the categorical variables (all but \verb+tstamp+) with integer levels (which means that I implicitely assume that it is okay if an algorithm treats these variables as continuous features, because the resulting model is still good enough).
+I converted the \verb+tstamp+ to epoch values (i.e. to seconds since 1970-01-01 00:00:00 GMT) to have a true continuous variable without loosing the time information.
+
+For the supervised classification I added a variable \verb+is_spam+ with value $1$ to the spam data and with value 0 to the web data (knowing that with this assumption some web data is falsely labeled). I pooled the spam data and different amounts of the web data into a training data sets - which I used as well for testing (see section \ref{sub:current_limitations}).
+
+% subsection prepare_historic_data_for_modeling (end)
+
+\subsection{Estimate and validate models for spam classification} % (fold)
+\label{sub:estimate_and_validate_models_for_spam_classification}
+I tried the different classification and cluster algorithms: I started with unsupervised clustering using k-means (with $k=2$) on a training sample with all spam log data and (the top) $200.000$ observations of the web log data\footnote{Using random $200.000$ observations from the web log data didn't seem to be a good idea given the timely ordered structure.} I had the hope that by using $k=2$ all spam data would end up in one cluster and all web data in the other, so that when I predict the complete web data on this clustering all so far unknow spam entries go into the spam-cluster. However when I used the estimated cluster center to classify the training data, the result was not as good as I would have expected:
+
+\textcolor{red}{TODO: add venn diagram here or error/accuracy values}
+
+% subsection estimate_and_validate_a_model (end)
+
+
+
+\subsection{Current Limitations} % (fold)
+\label{sub:current_limitations}
+
+Currently I used the same data for training, \textcolor{red}{validation} and prediction, which decreases the generalization performance of the estiamted model. It would be better to split the available spam and web log data into independent sets for training and validation.
+For classification/clustering one could use the time difference between the actions and/or the total time spent per visit as input. I also deem worth trying to cluster/classify on aggregated visit and/or user data. %(I didn't do this because of missing compute power in R and missing skills in Spark)
+Given that I relabeled the categorical variables with (rather small) integer labels it might be necessary to scale the epoch values, because they otherwise bias the differences. It might also be better to use 1-of-n encoding for the categorical variables instead of just giving them numerical labels.
+
+% subsection estimate_and_validate_a_model (end)
+
+
+
+\section{Used Software}
+\label{used_software}
+In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor and 16GB Memory.
+
+\begin{itemize}
+	\item git
+	\item jq
+	\item json2csv (pre-installed in the data science toolbox)
+	\item LateX
+	\item R in RStudio with packages knitr, plyr
+	\item shell command line
+	\item Spark with Python API and MLlib package
+\end{itemize}
+
+\section{Time Spent}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+Summing up I spend \textcolor{red}{xx hours} on this problem.
+
+
+\end{document}
