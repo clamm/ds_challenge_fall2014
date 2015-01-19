@@ -108,7 +108,7 @@
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{getMapFileName} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{variableName}\hlstd{,} \hlkwc{type}\hlstd{) \{}
-  \hlkwd{paste}\hlstd{(}\hlstr{"out/"}\hlstd{,type,}\hlstr{"_level_map_"}\hlstd{,variableName,}\hlstr{".csv"}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{""}\hlstd{)}
+  \hlkwd{paste}\hlstd{(}\hlstr{"out/visits/"}\hlstd{,type,}\hlstr{"_level_map_"}\hlstd{,variableName,}\hlstr{".csv"}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{""}\hlstd{)}
 \hlstd{\}}
 \end{alltt}
 \end{kframe}
@@ -469,7 +469,7 @@ Write out a file which can be processed by Spark, meaning all factors as numeric
 ## 6 10485842186          3  431        7       2       1              4.5
 \end{verbatim}
 \begin{alltt}
-\hlkwd{write.csv}\hlstd{(numericSpamVisits,} \hlkwc{file}\hlstd{=}\hlstr{"out/spam_visits_numeric.csv"}\hlstd{,} \hlkwc{row.names}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\hlkwd{write.csv}\hlstd{(numericSpamVisits,} \hlkwc{file}\hlstd{=}\hlstr{"out/visits/spam_visits_numeric.csv"}\hlstd{,} \hlkwc{row.names}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -488,6 +488,6 @@ Also write the level mapping in to files:
 
 \end{document}
 
-% create the exploratory_data_analysis_scheduled.tex with (takes about 4 minutes!)
+% create the .tex with 
 % library(knitr)
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.tex")
+% knit("read_data.Rnw", output="read_data.tex")

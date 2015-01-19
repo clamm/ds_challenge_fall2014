@@ -110,7 +110,7 @@ writeLevelMappingToFile <- function(df, variable, file) {
 
 <<defined-get-map-file-name>>=
 getMapFileName <- function(variableName, type) {
-  paste("out/",type,"_level_map_",variableName,".csv", sep="")
+  paste("out/visits/",type,"_level_map_",variableName,".csv", sep="")
 }
 @
 
@@ -216,7 +216,7 @@ numericSpamVisits <- data.frame(visit_id=spamAggVisits$visit_id,
                                 queries=unclass(spamAggVisits$queries),
                                 median_time_diff=spamAggVisits$median_time_diff)
 head(numericSpamVisits)
-write.csv(numericSpamVisits, file="out/spam_visits_numeric.csv", row.names=FALSE)
+write.csv(numericSpamVisits, file="out/visits/spam_visits_numeric.csv", row.names=FALSE)
 @
 
 Also write the level mapping in to files:
@@ -229,6 +229,6 @@ writeLevelMappingToFile(spamAggVisits, "queries", getMapFileName("queries","spam
 
 \end{document}
 
-% create the exploratory_data_analysis_scheduled.tex with (takes about 4 minutes!)
+% create the .tex with 
 % library(knitr)
-% knit("../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw", output="../01_exploratory_data_analysis/exploratory_data_analysis_scheduled.tex")
+% knit("read_data.Rnw", output="read_data.tex")
