@@ -1,0 +1,47 @@
+{
+    "1": {
+        "number_of_distinct_visitors_that_are_bots": <# bots>
+    },
+    "2": {
+        "overall_ad_click_through_rate": <# Ad clicks/Visit: 0.0-1.0>
+    },
+    "3": {
+	"highest_mean_value": {
+            "campaign": "<Campaign>",
+            "query_string": "<Query String>"
+	},
+	"standard_deviations": [
+            {
+                "campaign": "<Campaign>",
+                "query_string": "<Query String>",
+                "standard_deviation": <Stddev>
+            },
+            ...
+            {
+                "campaign": "<Campaign>",
+                "query_string": "<Query String>",
+                "standard_deviation": <Stddev>
+            }
+        ]
+    },
+    "4": {
+        "overall_signup_rate": {
+		"experiment1": <Rate>,
+		"experiment2": <Rate>,
+		"experiment3": <Rate>,
+		"experiment4": <Rate>
+        },
+        "performance_of_experiment_1_versus_2": <Performance>,
+        "performance_of_experiment_3_versus_4": <Performance>,
+        "number_of_full_days_for_confidence": <# Days>
+    },
+    "5": {
+        "mean_revenue_per_visit": {
+		"experiment1": <Mean Revenue>,
+		"experiment2": <Mean Revenue>,
+		"experiment3": <Mean Revenue>,
+		"experiment4": <Mean Revenue>
+        },
+        "number_of_full_days_for_confidence": <# Days>
+    }
+}
