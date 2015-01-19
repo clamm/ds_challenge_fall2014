@@ -14,7 +14,7 @@ writeLevelMappingToFile <- function(df, variable, file) {
 
 
 getMapFileName <- function(variableName, type) {
-  paste("out/",type,"_level_map_",variableName,".csv", sep="")
+  paste("out/unsupervised/maps/",type,"_level_map_",variableName,".csv", sep="")
 }
 
 
@@ -25,7 +25,7 @@ imputeNA <- function(df, variable) {
   naVisits <- df[varIsNa,1]
   l <- length(naVisits)
   for (i in 1:l) {
-    if (i %% 1000 == 0) print(paste(variable, i, l,))
+    if (i %% 1000 == 0) print(paste(variable, i, l))
     visit <- naVisits[i]
     value <- actualValues[actualValues[,1]==visit,2]
     visitIdx <- which(df[,1]==visit) 
@@ -59,7 +59,7 @@ str(webData)
 # write-web-numeric
 numericWebId <- data.frame(visit_id=webData$visit_id, uid=webData$uid)
 head(numericWebId)
-write.table(numericWebId, file="out/web_numeric_id.csv", row.names=FALSE, 
+write.table(numericWebId, file="out/unsupervised/web_numeric_id.csv", row.names=FALSE, 
             col.names=TRUE, quote=FALSE)
 
 webData <- imputeNA(webData, "campaign")
@@ -69,7 +69,7 @@ numericWeb <- data.frame(campaign=unclass(webData$campaign),
                          query=unclass(webData$query),
                          tstamp=unclass(webData$tstamp))
 head(numericWeb)
-write.table(numericWeb, file="out/web_numeric.csv", row.names=FALSE, 
+write.table(numericWeb, file="out/unsupervised/web_numeric.csv", row.names=FALSE, 
             col.names=FALSE, quote=FALSE)
   
 # also write the level mapping in to files:
@@ -93,7 +93,7 @@ str(spamData)
 # write-spam-numeric
 numericSpamId <- data.frame(visit_id=spamData$visit_id, uid=spamData$uid)
 head(numericSpamId)
-write.table(numericSpamId, file="out/spam_numeric_id.csv", row.names=FALSE, 
+write.table(numericSpamId, file="out/unsupervised/spam_numeric_id.csv", row.names=FALSE, 
             col.names=TRUE, quote=FALSE)
 
 spamData <- imputeNA(spamData, "campaign")
@@ -103,7 +103,7 @@ numericSpam <- data.frame(campaign=unclass(spamData$campaign),
                          query=unclass(spamData$query),
                          tstamp=unclass(spamData$tstamp))
 head(numericSpam)
-write.table(numericSpam, file="out/spam_numeric.csv", row.names=FALSE, 
+write.table(numericSpam, file="out/unsupervised/spam_numeric.csv", row.names=FALSE, 
             col.names=FALSE, quote=FALSE)
 
 # also write the level mapping in to files:
@@ -111,3 +111,10 @@ writeLevelMappingToFile(spamData, "uid", getMapFileName("uid","spam"))
 writeLevelMappingToFile(spamData, "campaign", getMapFileName("campaign","spam"))
 writeLevelMappingToFile(spamData, "actions", getMapFileName("actions","spam"))
 writeLevelMappingToFile(spamData, "queries", getMapFileName("queries","spam"))
+
+
+# ------------------------
+# ------------------------ header info
+# ------------------------
+header <- t(c("campaign", "action", "query", "tstamp"))
+write.table(header, file="out/unsupervised/header.csv", row.names=FALSE, col.names=FALSE, quote=FALSE)
