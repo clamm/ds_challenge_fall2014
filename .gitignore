@@ -1,7 +1,8 @@
-problem1_smartfly/data/
-problem2_famous/data/
-problem2_famous/src/*/out/*.csv
-problem3_winklr/data/
+# data
+*.zip
+*.csv
+*.log
+
 
 # R files
 .Rhistory
@@ -9,7 +10,7 @@ problem3_winklr/data/
 
 # LaTeX files
 *.aux
-*.log
+#*.log
 *.out
 *.synctex.gz
 *.fdb_latexmk
