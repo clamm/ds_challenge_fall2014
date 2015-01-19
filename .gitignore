@@ -22,3 +22,6 @@
 # IntelliJ files
 *.iml
 .idea
+
+# Python files
+*.pyc
