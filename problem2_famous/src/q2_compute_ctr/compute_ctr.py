@@ -22,12 +22,14 @@ if __name__ == "__main__":
     sc = SparkContext(appName="CTR")
     lines = sc.textFile(inJson)
     data = lines.map(lambda x: json.loads(x))
+
     nbVisitIds = data.map(lambda x: x["visit_id"]).distinct().count()
     print("INFO: There are %s unique visit_ids" % nbVisitIds)
     nbAdclicks = data.map(lambda x: x["action"]).filter(lambda s: "adclick" in s).count()
     print("INFO: There are in total %s adclicks" % nbAdclicks)
     ctr = float(nbAdclicks) / nbVisitIds
     print("INFO: The overall CTR is %f" % ctr)
+
     writeOutputJson(outJson, ctr)
     sc.stop()
 

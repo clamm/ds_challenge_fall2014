@@ -137,8 +137,12 @@ Given that I relabeled the categorical variables with (rather small) integer lab
 
 % subsection estimate_and_validate_a_model (end)
 
-\subsection{Calculate Overall Click-Trough Rate} % (fold)
-\label{sub:calculate_ctr}
+\subsection{Compute Required Metrics} % (fold)
+\label{sub:compute_metrics}
+
+
+\subsubsection{Calculate Overall Click-Trough Rate} % (fold)
+\label{subsub:calculate_ctr}
 
 I assume the following formula for the overall click-through rate ($CTR$), that was described as "ad clicks per visit"
 $$
@@ -148,9 +152,16 @@ $$
 Before having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}.
 
 \textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
-% subsection calculate_ctr (end)
+% subsubsection calculate_ctr (end)
+
+\subsubsection{Possible Improvements} % (fold)
+\label{subsub:improvements}
+
+I wrote a separate Spark Python script for each of the metrics where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system. 
+% subsubsection calculate_ctr (end)
 
 
+% subsection estimate_and_validate_a_model (end)
 
 
 \section{Used Software}
