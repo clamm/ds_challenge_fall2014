@@ -39,7 +39,7 @@ imputeNA <- function(df, variable) {
 
 
 # load meta data
-nameTypeDataFile  <- "resources/raw_variables.csv"
+nameTypeDataFile  <- "../../data/raw_variables.csv"
 variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
 variableNames
 factorIdx <- which(variableNames$type=="factor")
