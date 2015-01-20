@@ -53,7 +53,7 @@ Explain your methodology including approach, assumptions, software and algorithm
 
 Generate Deliverables
 -------
-To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](knit):
+To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](../knit):
 
   	./knit src/01_exploratory_data_analysis/exploratory_data_analysis_historic.Rnw 
   	./knit src/01_exploratory_data_analysis/exploratory_data_analysis_scheduled.Rnw
@@ -64,14 +64,7 @@ To generate `.tex` out of `.Rnw` run the custom command-line tool [knit](knit):
 
 Pack the solution files for upload with
 
-	cd /tmp
-	git clone https://github.com/comsysto/ds_challenge_fall2014.git
-	cd ds_challenge_fall2014/
-	grep ":arrow_right:" problem1_smartfly/README.md | cut -d' ' -f2- > tmp && mv tmp problem1_smartfly/README.md
-	tar -zcf problem1_smartfly.tar.gz problem1_smartfly/README.md problem1_smartfly/docs/*.pdf problem1_smartfly/out/problem1.csv problem1_smartfly/src
-	cd ..
-	rm -rf ds_challenge_fall2014
-
+	./pack problem1_smartfly
 
 
 Solution requirements / Used software

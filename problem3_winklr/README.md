@@ -39,13 +39,7 @@ Generate Deliverables
 
 Pack the solution files for upload with
 
-	cd /tmp
-	git clone https://github.com/comsysto/ds_challenge_fall2014.git
-	cd ds_challenge_fall2014/
-	grep ":arrow_right:" problem3_winklr/README.md | cut -d' ' -f2- > tmp && mv tmp problem3_winklr/README.md
-	tar -zcf problem3_winklr.tar.gz problem3_winklr/README.md problem3_winklr/docs/*.pdf problem3_winklr/out/problem2.json problem3_winklr/src
-	cd ..
-	rm -rf ds_challenge_fall2014
+	./pack problem3_winklr
 
 Solution requirements / Used software
 -------

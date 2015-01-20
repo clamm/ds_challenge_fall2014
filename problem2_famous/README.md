@@ -107,13 +107,7 @@ Generate Deliverables
 
 Pack the solution files for upload with
 
-	cd /tmp
-	git clone https://github.com/comsysto/ds_challenge_fall2014.git
-	cd ds_challenge_fall2014/
-	grep ":arrow_right:" problem2_famous/README.md | cut -d' ' -f2- > tmp && mv tmp problem2_famous/README.md
-	tar -zcf problem2_famous.tar.gz problem2_famous/README.md problem2_famous/docs/*.pdf problem2_famous/out/problem2.json problem2_famous/src
-	cd ..
-	rm -rf ds_challenge_fall2014
+	./pack problem2_famous
 
 
 Solution requirements / Used software
