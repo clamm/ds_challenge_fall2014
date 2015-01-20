@@ -58,6 +58,7 @@
 \setcounter{tocdepth}{2}
 \usepackage{datetime}
 \usepackage{fancyvrb}
+\usepackage{dsfont}
 \usepackage{url}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
@@ -127,9 +128,7 @@ I tried the different classification and cluster algorithms: I started with unsu
 
 % subsection estimate_and_validate_a_model (end)
 
-
-
-\subsection{Current Limitations} % (fold)
+\subsection{Current Limitations Of Spam Classification} % (fold)
 \label{sub:current_limitations}
 
 Currently I used the same data for training, \textcolor{red}{validation} and prediction, which decreases the generalization performance of the estiamted model. It would be better to split the available spam and web log data into independent sets for training and validation.
@@ -137,6 +136,20 @@ For classification/clustering one could use the time difference between the acti
 Given that I relabeled the categorical variables with (rather small) integer labels it might be necessary to scale the epoch values, because they otherwise bias the differences. It might also be better to use 1-of-n encoding for the categorical variables instead of just giving them numerical labels.
 
 % subsection estimate_and_validate_a_model (end)
+
+\subsection{Calculate Overall Click-Trough Rate} % (fold)
+\label{sub:calculate_ctr}
+
+I assume the following formula for the overall click-through rate ($CTR$), that was described as "ad clicks per visit"
+$$
+CTR = \frac{ \#\{action=adclick\} }{ \#\{unique \, visit \, ids\}}
+$$
+
+Before having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}.
+
+\textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
+% subsection calculate_ctr (end)
+
 
 
 
