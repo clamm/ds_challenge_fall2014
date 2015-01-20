@@ -2,7 +2,7 @@
 *.zip
 *.csv
 *.log
-
+problem2_famous/data/webVisits/
 
 # R files
 .Rhistory
