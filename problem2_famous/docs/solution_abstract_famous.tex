@@ -98,7 +98,7 @@ I opted for the following approach to solve the questions:
 
 \subsection{Analyse file structure} % (fold)
 \label{sub:analyse_file_structure}
-I had a short look into the log data in json format via \href{http://stedolan.github.io/jq/}{jq}. Once I saw that the data is very regular (same number of keys per row, same names for keys) I converted the data to csv using \href{https://github.com/zemirco/json2csv}{json2csv} (which is pre-installed in \href{http://datasciencetoolbox.org/}{the data science toolbox}) to load it into R for exploratory analysis.
+I had a short look into the log data in json format via \href{http://stedolan.github.io/jq/}{jq}. Once I saw that the data is very regular (same number of keys per row, same names for keys) I converted the data to csv\footnote{see \verb+problem2_famous/data/convert2csv.sh+} using \href{https://github.com/zemirco/json2csv}{json2csv} (which is pre-installed in \href{http://datasciencetoolbox.org/}{the data science toolbox}) to load it into R for exploratory analysis.
 
 % subsection analyse_file_structure (end)
 
@@ -153,6 +153,15 @@ Before having removed the spam visits from the web log data I counted \textcolor
 
 \textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
 % subsubsection calculate_ctr (end)
+
+
+\subsubsection{Calculate Mean Orders Per Visit Within Campaign-Query Combinations} % (fold)
+\label{subsub:calculate_mean_cq}
+ Since the action "order" is only listed in log entries that don't have query and campaign information the first step I did was to aggregate the web log per visit (using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,), putting all actions in a list.
+ I saved the aggregated visits data back to a log file, converted it to csv and work on that in R, where I feel more comfortable computing statistics per groups compared to map/reduce paradigm necessary in Spark.
+
+% subsubsection calculate_mean_cq (end)
+
 
 \subsubsection{Possible Improvements} % (fold)
 \label{subsub:improvements}
