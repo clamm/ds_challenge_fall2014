@@ -5,7 +5,7 @@ problem="$1"
 origdir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
 cd /tmp
-git clone https://github.com/comsysto/ds_challenge_fall2014.git
+git clone --quiet https://github.com/comsysto/ds_challenge_fall2014.git
 cd ds_challenge_fall2014/
 grep ":arrow_right:" ${problem}/README.md | cut -d' ' -f2- > tmp && mv -f tmp ${problem}/README.md
 
@@ -13,3 +13,5 @@ tar -zcf ${problem}.tar.gz ${problem}/README.md ${problem}/docs/*.pdf ${problem}
 mv ${problem}.tar.gz $origdir
 cd /tmp
 rm -rf ds_challenge_fall2014
+
+echo "Packed $origdir/${problem}.tar.gz"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+path="$1"
+file=$(basename "$path")
+name="${file%.*}"
+
+toBeDeleted=$(ls -1 ${name}.* | grep -v ".tex$" | grep -v .Rnw | grep -v .pdf)
+for f in "${toBeDeleted}";do rm $f; done

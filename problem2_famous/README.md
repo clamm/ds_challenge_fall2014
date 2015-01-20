@@ -107,7 +107,7 @@ Generate Deliverables
 
 Pack the solution files for upload with
 
-	./pack problem2_famous
+	helpers/pack problem2_famous
 
 
 Solution requirements / Used software

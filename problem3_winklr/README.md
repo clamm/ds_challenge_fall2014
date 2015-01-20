@@ -39,7 +39,7 @@ Generate Deliverables
 
 Pack the solution files for upload with
 
-	./pack problem3_winklr
+	helpers/pack problem3_winklr
 
 Solution requirements / Used software
 -------
