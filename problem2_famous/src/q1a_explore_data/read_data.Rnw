@@ -127,8 +127,25 @@ factorIdx <- which(variableNames$type=="factor")
 factorNames <- variableNames$name[factorIdx]
 @
 
-Read the top 2000 lines of the web.log data:
+Read the complete web.log data:
 <<read-web-data>>=
+webFile <- "../../data/web.csv"
+webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
+                    colClasses=variableNames$type, na.strings=c("NA",""))
+webData$tstamp <- as.POSIXct(webData$tstamp)
+str(webData)
+@
+
+Look at a summary for the complete web data:
+<<summary-web-data>>=
+summary(webData)
+@
+
+
+
+Now reduce the web log data to the top 2000 entries just to get an impression.
+<<reduce-web-data>>=
+rm(webData)
 webFile <- "../../data/head2000.csv"
 webData <- read.csv(webFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
                     colClasses=variableNames$type, na.strings=c("NA",""))
@@ -136,18 +153,18 @@ webData$tstamp <- as.POSIXct(webData$tstamp)
 str(webData)
 @
 
+Caution: Running the following analysis with all web.log data locally will kill the Mac!
+
 Add variable with the total time spent per visit, \verb+total_time_spent+, and \verb+time_diff+ indicating the seconds that passed inbetween the logged entries within a visit:
 <<add-total-time-spent-to-web-data>>=
 require(plyr)
+library(doMC)
+registerDoMC(cores=detectCores())
 webData <- ddply(webData, .(visit_id), mutate, 
                  total_time_spent=max(tstamp)-min(tstamp),
-                 time_diff=c(NA,diff(tstamp)))
+                 time_diff=c(NA,diff(tstamp)), 
+                 .parallel=TRUE)
 viewExample(webData,"web")
-@
-
-Look at a summary for the web data:
-<<summary-web-data>>=
-summary(webData)
 @
 
 Look at a summary per visit for the web data:
@@ -162,6 +179,10 @@ Look at a summary per uid (supposedly user) for the web data:
 webAggUids <- aggregatePerUid(webData)
 summary(webAggUids)
 viewAggExample(webAggUids, "web", "uid")
+@
+
+<<remove-webdata, include=FALSE>>=
+
 @
 
 

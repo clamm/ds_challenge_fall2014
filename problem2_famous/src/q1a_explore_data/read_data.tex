@@ -103,7 +103,7 @@ Load variable names and types:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{nameTypeDataFile}  \hlkwb{<-} \hlstr{"resources/raw_variables.csv"}
+\hlstd{nameTypeDataFile}  \hlkwb{<-} \hlstr{"../../data/raw_variables.csv"}
 \hlstd{variableNames} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(nameTypeDataFile,} \hlkwc{header}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \hlstd{variableNames}
 \end{alltt}
@@ -124,10 +124,63 @@ Load variable names and types:
 \end{kframe}
 \end{knitrout}
 
-Read the top 2000 lines of the web.log data:
+Read the complete web.log data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
+\hlstd{webFile} \hlkwb{<-} \hlstr{"../../data/web.csv"}
+\hlstd{webData} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(webFile,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,}
+                    \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,} \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
+\hlstd{webData}\hlopt{$}\hlstd{tstamp} \hlkwb{<-} \hlkwd{as.POSIXct}\hlstd{(webData}\hlopt{$}\hlstd{tstamp)}
+\hlkwd{str}\hlstd{(webData)}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	1723198 obs. of  7 variables:
+##  $ visit_id   : Factor w/ 1482602 levels "10000024498",..: 126058 35633 1476965 180008 350306 392666 30273 60497 142533 475810 ...
+##  $ uid        : Factor w/ 1064214 levels "100000493","100000682",..: 875323 929856 13447 732794 478444 752116 902639 979115 204185 937028 ...
+##  $ campaign   : Factor w/ 10 levels "103","127","14",..: 10 8 1 9 7 8 3 1 10 7 ...
+##  $ tstamp     : POSIXct, format: "2014-09-15 00:00:01" "2014-09-15 00:00:02" ...
+##  $ experiments: Factor w/ 4 levels "[1 3]","[1 4]",..: 3 1 1 2 4 1 2 3 2 3 ...
+##  $ action     : Factor w/ 4 levels "adclick","landed",..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ query      : Factor w/ 5 levels "advanced analytics",..: 4 5 5 1 1 5 2 5 4 1 ...
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Look at a summary for the complete web data:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(webData)}
+\end{alltt}
+\begin{verbatim}
+##         visit_id              uid             campaign          tstamp                   
+##  10005995241:      4   150912145:     21   558    :324872   Min.   :2014-09-15 00:00:01  
+##  10007093336:      4   102486699:     20   103    :324027   1st Qu.:2014-09-18 16:27:55  
+##  10022577884:      4   119422118:     20   59     :232002   Median :2014-09-22 16:44:39  
+##  10028728616:      4   114505409:     19   31     :231685   Mean   :2014-09-22 20:28:52  
+##  10033932695:      4   115511329:     18   127    : 92681   3rd Qu.:2014-09-26 19:36:53  
+##  10035022625:      4   143033896:     18   (Other):277335   Max.   :2014-09-30 23:57:08  
+##  (Other)    :1723174   (Other)  :1723082   NA's   :240596                                
+##  experiments        action                               query       
+##  [1 3]:430493   adclick: 103896   advanced analytics        :463687  
+##  [1 4]:431589   landed :1482602   building predictive models: 92454  
+##  [2 3]:431090   order  :  47348   data science              : 92445  
+##  [2 4]:430026   signup :  89352   data science training     :185117  
+##                                   predictive modeling       :648899  
+##                                   NA's                      :240596  
+## 
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+Now reduce the web log data to the top 2000 entries just to get an impression.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{rm}\hlstd{(webData)}
 \hlstd{webFile} \hlkwb{<-} \hlstr{"../../data/head2000.csv"}
 \hlstd{webData} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(webFile,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,}
                     \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,} \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
@@ -147,58 +200,32 @@ Read the top 2000 lines of the web.log data:
 \end{kframe}
 \end{knitrout}
 
+Caution: Running the following analysis with all web.log data locally will kill the Mac!
+
 Add variable with the total time spent per visit, \verb+total_time_spent+, and \verb+time_diff+ indicating the seconds that passed inbetween the logged entries within a visit:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{require}\hlstd{(plyr)}
+\hlkwd{library}\hlstd{(doMC)}
+\end{alltt}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: foreach\\\#\# Loading required package: iterators\\\#\# Loading required package: parallel}}\begin{alltt}
+\hlkwd{registerDoMC}\hlstd{(}\hlkwc{cores}\hlstd{=}\hlkwd{detectCores}\hlstd{())}
 \hlstd{webData} \hlkwb{<-} \hlkwd{ddply}\hlstd{(webData,} \hlkwd{.}\hlstd{(visit_id), mutate,}
                  \hlkwc{total_time_spent}\hlstd{=}\hlkwd{max}\hlstd{(tstamp)}\hlopt{-}\hlkwd{min}\hlstd{(tstamp),}
-                 \hlkwc{time_diff}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{NA}\hlstd{,}\hlkwd{diff}\hlstd{(tstamp)))}
+                 \hlkwc{time_diff}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{NA}\hlstd{,}\hlkwd{diff}\hlstd{(tstamp)),}
+                 \hlkwc{.parallel}\hlstd{=}\hlnum{TRUE}\hlstd{)}
 \hlkwd{viewExample}\hlstd{(webData,}\hlstr{"web"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##       visit_id       uid campaign              tstamp experiments action
-## 850 4789307146 179647219      103 2014-09-15 00:07:53       [2 4] landed
-## 851 4789307146 179647219     <NA> 2014-09-15 00:09:33       [2 4] signup
-##                   query total_time_spent time_diff
-## 850 predictive modeling    1.666667 secs        NA
-## 851                <NA>    1.666667 secs  1.666667
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
-
-Look at a summary for the web data:
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{summary}\hlstd{(webData)}
-\end{alltt}
-\begin{verbatim}
-##         visit_id           uid          campaign       tstamp                   
-##  10424039824:   4   105521118:   4   103    :384   Min.   :2014-09-15 00:00:01  
-##  19883673173:   4   106305837:   4   558    :373   1st Qu.:2014-09-15 00:07:03  
-##  38814711307:   4   110827261:   4   31     :264   Median :2014-09-15 00:13:23  
-##  43032154989:   4   116041288:   4   59     :260   Mean   :2014-09-15 00:13:40  
-##  50850280949:   4   120457434:   4   127    :107   3rd Qu.:2014-09-15 00:20:35  
-##  58444220460:   4   145965967:   4   (Other):331   Max.   :2014-09-15 00:27:14  
-##  (Other)    :1976   (Other)  :1976   NA's   :281                                
-##  experiments     action                            query     total_time_spent 
-##  [1 3]:469   adclick: 126   advanced analytics        :524   Length:2000      
-##  [1 4]:484   landed :1719   building predictive models:113   Class :difftime  
-##  [2 3]:554   order  :  51   data science              :111   Mode  :numeric   
-##  [2 4]:493   signup : 104   data science training     :214                    
-##                             predictive modeling       :757                    
-##                             NA's                      :281                    
-##                                                                               
-##    time_diff      
-##  Min.   :  1.000  
-##  1st Qu.:  2.483  
-##  Median :  4.067  
-##  Mean   : 10.020  
-##  3rd Qu.:  9.000  
-##  Max.   :201.000  
-##  NA's   :1719
+##        visit_id      uid campaign              tstamp experiments action
+## 1731 8786064200 17968217      103 2014-09-15 00:05:17       [2 4] landed
+## 1732 8786064200 17968217     <NA> 2014-09-15 00:07:41       [2 4]  order
+##                    query total_time_spent time_diff
+## 1731 predictive modeling         2.4 secs        NA
+## 1732                <NA>         2.4 secs       2.4
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -232,10 +259,10 @@ Look at a summary per visit for the web data:
 \hlkwd{viewAggExample}\hlstd{(webAggVisits,} \hlstr{"web"}\hlstd{,} \hlstr{"visit"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##        visit_id nb_entries      uid campaign nb_experiments      actions
-## 1492 8786064200          2 17968217      103          [2 4] landed,order
-##                  queries median_time_diff
-## 1492 predictive modeling              2.4
+##        visit_id nb_entries       uid campaign nb_experiments        actions
+## 265 23636693140          2 111585987       31          [1 3] landed,adclick
+##                queries median_time_diff
+## 265 advanced analytics               28
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -269,13 +296,15 @@ Look at a summary per uid (supposedly user) for the web data:
 \hlkwd{viewAggExample}\hlstd{(webAggUids,} \hlstr{"web"}\hlstd{,} \hlstr{"uid"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##           uid nb_entries  visit_ids campaign nb_experiments
-## 110 110827261          4 9909532485       31          [2 3]
-##                            actions            queries median_time_diff
-## 110 landed,adclick,adclick,adclick advanced analytics                9
+##           uid nb_entries   visit_ids campaign nb_experiments
+## 817 185091297          4 43032154989      558          [2 4]
+##                            actions             queries median_time_diff
+## 817 landed,adclick,adclick,adclick predictive modeling                5
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+
 
 
 % ------------------------
@@ -372,9 +401,9 @@ Look at a summary per visit for the spam data:
 \end{alltt}
 \begin{verbatim}
 ##        visit_id nb_entries    uid campaign nb_experiments                        actions
-## 754 54864188974          4 193279       59          [2 4] landed,adclick,adclick,adclick
-##                queries median_time_diff
-## 754 advanced analytics                3
+## 632 48658265045          4 143549      203          [2 3] landed,adclick,adclick,adclick
+##                        queries median_time_diff
+## 632 building predictive models                1
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -416,12 +445,12 @@ Look at a summary per uid (supposedly user) for the spam data:
 \hlkwd{viewAggExample}\hlstd{(spamAggUids,} \hlstr{"spam"}\hlstd{,} \hlstr{"uid"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##        uid nb_entries                           visit_ids campaign nb_experiments
-## 539 188071          8 44678193401,45541719747,73898419674   31,558          [1 4]
+##       uid nb_entries                           visit_ids  campaign nb_experiments
+## 649 29726          8 44028679595,48769224819,57689347785 31,59,103          [2 3]
 ##                                                          actions
-## 539 landed,adclick,landed,adclick,landed,adclick,adclick,adclick
+## 649 landed,adclick,adclick,adclick,landed,adclick,landed,adclick
 ##                                    queries median_time_diff
-## 539 advanced analytics,predictive modeling                5
+## 649 advanced analytics,predictive modeling                7
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
