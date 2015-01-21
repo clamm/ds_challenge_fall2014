@@ -37,7 +37,7 @@ def getValueAsList(doc, key):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        usage = "Usage: write_aggregated_visit_web_log <in.json> <out.json>"
+        usage = "Usage: spark-submit 01_write_aggregated_visit_web_log <in.json> <out.json>"
         print >> sys.stderr, usage
         exit(-1)
     inJson = sys.argv[1]

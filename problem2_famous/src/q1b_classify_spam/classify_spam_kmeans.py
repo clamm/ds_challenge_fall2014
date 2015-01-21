@@ -13,7 +13,7 @@ def parseVector(line):
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        usage = "Usage: classify_spam_kmeans <train file> <k> <test file> <test id file>"
+        usage = "Usage: spark-submit classify_spam_kmeans <train file> <k> <test file> <test id file>"
         print >> sys.stderr, usage
         exit(-1)
     trainFile = sys.argv[1]

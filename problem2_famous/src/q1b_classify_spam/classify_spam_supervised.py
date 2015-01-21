@@ -20,7 +20,7 @@ def parseVector(line):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        usage = "Usage: classify_supervised <train file> <test file> <test id file>"
+        usage = "Usage: spark-submit classify_supervised <train file> <test file> <test id file>"
         print >> sys.stderr, usage
         exit(-1)
     trainFile = sys.argv[1]

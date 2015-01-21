@@ -70,7 +70,7 @@ def calculateMeanOrderPerVisitor(doc):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        usage = "Usage: campaign_query_combi <in.json> <out.json>"
+        usage = "Usage: spark-submit mean_orders_per_campaign_query_combi <in.json> <out.json>"
         print >> sys.stderr, usage
         exit(-1)
     inJson = sys.argv[1]
