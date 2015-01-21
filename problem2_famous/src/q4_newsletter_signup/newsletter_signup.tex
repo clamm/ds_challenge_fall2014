@@ -173,6 +173,8 @@ Read the per visit aggregated web log data:
 \end{kframe}
 \end{knitrout}
 
+\section{Newsletter Signup Rate Per Experiment}
+
 What are the actions per visit??
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -331,18 +333,18 @@ How many signups are there per experiment?
 \hlstd{visitAggExp12}
 \end{alltt}
 \begin{verbatim}
-##   experiment_12 nb_visits nb_uids total_signups signup_rate
-## 1             1    741870  532225         45145  0.08482315
-## 2             2    740732  531989         44207  0.08309758
+##   experiment_12 nb_visits nb_uids total_signups total_non_signups signup_rate
+## 1             1    741870  532225         45145            487080  0.08482315
+## 2             2    740732  531989         44207            487782  0.08309758
 \end{verbatim}
 \begin{alltt}
 \hlstd{visitAggExp34} \hlkwb{<-} \hlkwd{aggregatePerExperiment34}\hlstd{(visitData)}
 \hlstd{visitAggExp34}
 \end{alltt}
 \begin{verbatim}
-##   experiment_34 nb_visits nb_uids total_signups signup_rate
-## 1             3    740100  531345         46819  0.08811413
-## 2             4    742502  532869         42533  0.07981887
+##   experiment_34 nb_visits nb_uids total_signups total_non_signups signup_rate
+## 1             3    740100  531345         46819            484526  0.08811413
+## 2             4    742502  532869         42533            490336  0.07981887
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -369,11 +371,94 @@ Write the result into json file:
 ## 
 \end{verbatim}
 \begin{alltt}
-\hlkwd{write}\hlstd{(jsonString,} \hlkwc{file}\hlstd{=}\hlstr{"../q4a_newsletter_signup/out/overallSignupRates.json"}\hlstd{)}
+\hlkwd{write}\hlstd{(jsonString,} \hlkwc{file}\hlstd{=}\hlstr{"../q4_newsletter_signup/out/overallSignupRates.json"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
+\section{Performance Of Experiments}
 
+I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{gTestTable12} \hlkwb{<-} \hlkwd{cbind}\hlstd{(visitAggExp12}\hlopt{$}\hlstd{total_signups, visitAggExp12}\hlopt{$}\hlstd{total_non_signups)}
+\hlkwd{rownames}\hlstd{(gTestTable12)} \hlkwb{<-} \hlkwd{paste}\hlstd{(}\hlstr{"Experiment"}\hlstd{,}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{,}\hlkwc{sep}\hlstd{=}\hlstr{""}\hlstd{)}
+\hlkwd{colnames}\hlstd{(gTestTable12)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"signups"}\hlstd{,}\hlstr{"ignorations"}\hlstd{)}
+\hlstd{gTestTable12}
+\end{alltt}
+\begin{verbatim}
+##             signups ignorations
+## Experiment1   45145      487080
+## Experiment2   44207      487782
+\end{verbatim}
+\begin{alltt}
+\hlstd{gTestTable34} \hlkwb{<-} \hlkwd{cbind}\hlstd{(visitAggExp34}\hlopt{$}\hlstd{total_signups, visitAggExp34}\hlopt{$}\hlstd{total_non_signups)}
+\hlkwd{rownames}\hlstd{(gTestTable34)} \hlkwb{<-} \hlkwd{paste}\hlstd{(}\hlstr{"Experiment"}\hlstd{,}\hlnum{3}\hlopt{:}\hlnum{4}\hlstd{,}\hlkwc{sep}\hlstd{=}\hlstr{""}\hlstd{)}
+\hlkwd{colnames}\hlstd{(gTestTable34)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"signups"}\hlstd{,}\hlstr{"ignorations"}\hlstd{)}
+\hlstd{gTestTable34}
+\end{alltt}
+\begin{verbatim}
+##             signups ignorations
+## Experiment3   46819      484526
+## Experiment4   42533      490336
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+
+
+
+Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=0.001$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=1064$ observations.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(Deducer)}
+\hlstd{test12} \hlkwb{<-} \hlkwd{likelihood.test}\hlstd{(gTestTable12)}
+\hlkwd{print}\hlstd{(test12)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 	Log likelihood ratio (G-test) test of independence without correction
+## 
+## data:  gTestTable12
+## Log likelihood ratio statistic (G) = 10.3003, X-squared df = 1, p-value =
+## 0.00133
+\end{verbatim}
+\begin{alltt}
+\hlcom{# sampleSize}
+\hlkwd{sum}\hlstd{(visitAggExp12}\hlopt{$}\hlstd{nb_uids)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1064214
+\end{verbatim}
+\begin{alltt}
+\hlstd{test34} \hlkwb{<-} \hlkwd{likelihood.test}\hlstd{(gTestTable34)}
+\hlkwd{print}\hlstd{(test34)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 	Log likelihood ratio (G-test) test of independence without correction
+## 
+## data:  gTestTable34
+## Log likelihood ratio statistic (G) = 238.1123, X-squared df = 1, p-value <
+## 2.2e-16
+\end{verbatim}
+\begin{alltt}
+\hlcom{#sample size}
+\hlkwd{sum}\hlstd{(visitAggExp34}\hlopt{$}\hlstd{nb_uids)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1064214
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+I would interpret the results as follows: Experiments 1 and 2 are indistinguishable based on the number of signups - it doesn't matter whether the color scheme of the page is blue or green.
+
+However there is a statistically significant difference between Experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.
 
 \end{document}

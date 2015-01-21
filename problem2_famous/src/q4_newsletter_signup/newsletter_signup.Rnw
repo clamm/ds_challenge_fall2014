@@ -25,6 +25,7 @@ library(knitr)
 library(plyr) #load packages already to abort early if not installed
 library(doMC)
 library(jsonlite)
+library(Deducer)
 # set global chunk options
 opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
@@ -53,6 +54,7 @@ aggregatePerExperiment12 <- function(df) {
                 nb_visits=length(unique(visit_id)),
                 nb_uids=length(unique(uid)),
                 total_signups=sum(nb_signups),
+                total_non_signups=nb_uids-total_signups,
                 signup_rate=total_signups/nb_uids,
                 .parallel=TRUE)                  
    return(agg)
@@ -63,6 +65,7 @@ aggregatePerExperiment34 <- function(df) {
                 nb_visits=length(unique(visit_id)),
                 nb_uids=length(unique(uid)),
                 total_signups=sum(nb_signups),
+                total_non_signups=nb_uids-total_signups,
                 signup_rate=total_signups/nb_uids,
                 .parallel=TRUE)                  
    return(agg)
@@ -186,9 +189,53 @@ overallSignupRates <- c(visitAggExp12$signup_rate, visitAggExp34$signup_rate)
 names(overallSignupRates) <- paste("experiment", 1:4, sep="")
 jsonString <- toJSON(as.data.frame(t(overallSignupRates)), dataframe="rows", pretty=TRUE)
 jsonString
-write(jsonString, file="../q4a_newsletter_signup/out/overallSignupRates.json")
+write(jsonString, file="../q4_newsletter_signup/out/overallSignupRates.json")
 @
 
 \section{Performance Of Experiments}
+
+I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
+<<table-signups-per-experiment>>=
+gTestTable12 <- cbind(visitAggExp12$total_signups, visitAggExp12$total_non_signups)
+rownames(gTestTable12) <- paste("Experiment",1:2,sep="")
+colnames(gTestTable12) <- c("signups","ignorations")
+gTestTable12
+
+gTestTable34 <- cbind(visitAggExp34$total_signups, visitAggExp34$total_non_signups)
+rownames(gTestTable34) <- paste("Experiment",3:4,sep="")
+colnames(gTestTable34) <- c("signups","ignorations")
+gTestTable34
+@
+
+<<save-gtesttable, include=FALSE>>=
+# Save the input table because Deducer library can't be loaded in RStudio on Mac
+# but it can beloaded on the command line
+save(gTestTable12, file="../q4_newsletter_signup/gTestTable12.RData")
+save(gTestTable34, file="../q4_newsletter_signup/gTestTable34.RData")
+@
+
+<<set-alpha, include=FALSE>>=
+ALPHA=0.001
+@
+
+
+Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=\Sexpr{ALPHA}$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=\Sexpr{round(ALPHA*sum(visitAggExp12$nb_uids))}$ observations.
+
+<<run-g-tests>>==
+library(Deducer)
+test12 <- likelihood.test(gTestTable12)
+print(test12)
+# sampleSize
+sum(visitAggExp12$nb_uids)
+
+test34 <- likelihood.test(gTestTable34)
+print(test34)
+#sample size
+sum(visitAggExp34$nb_uids)
+@
+
+I would interpret the results as follows: Experiments 1 and 2 are indistinguishable based on the number of signups - it doesn't matter whether the color scheme of the page is blue or green.
+
+However there is a statistically significant difference between Experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.
 
 \end{document}

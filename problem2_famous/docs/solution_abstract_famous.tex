@@ -177,26 +177,35 @@ I saved the aggregated visits data back to a log file, converted it to csv and w
 Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even\footnote{see \verb+problem2_almost/src/q4a_newsletter_signup/newsletter_signup.pdf+}.
 
 I used the per visit aggregated web log data and computed in R the newsletter signup rate per experiment using the again the ddply function.
-% I used the following experiment labels:
-% \begin{table}[h]
-% \begin{tabular}{ll}
-% Experiment Number & Label  \\
-% \hline
-% 1                 & blue   \\
-% 2                 & breen  \\
-% 3                 & Willis \\
-% 4                 & Owen  
-% \end{tabular}
-% \end{table}
-
 % subsubsection signup (end)
 
 
-\subsubsection{Possible Improvements} % (fold)
-\label{subsub:improvements}
+\subsubsection{Experiment Performance} % (fold)
+\label{subsub:performance}
 
-I wrote a separate Spark Python script for each of the metrics I computed with Spark, where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system (but need to refactor the code to make it reusable). 
-% subsubsection improvements (end)
+I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
+
+Note: The G-Test is a test of independence just like the Chi-Square test. The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. In this case, rejecting the null hypothesis means that one experiment performs better than the other.
+Usually one uses $\alpha=5\%$ but with such a large sample size of $n=xx$ I would opt for $\alpha=0.001$, which means that if we decide to reject the null hypothesis, we might be wrong for $\alpha \times n=xx$ observations.
+
+I would interpret the results as follows: 
+\begin{itemize}
+	\item With a p-value of $p_{12}=xx$ experiments 1 and 2 are indistinguishable - it doesn't matter for the newsletter signup whether the color scheme of the page is blue or green.
+	\item With a p-value of $p_{34}=xx$ there is a statistically significant difference between experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.	 
+\end{itemize}
+% subsubsection performance (end)
+
+
+% \subsubsection{Required Days for $99\%$ Confidence in G-Test Result} % (fold)
+% \label{subsub:days}
+% % subsubsection performance (end)
+
+
+% \subsubsection{Possible Improvements} % (fold)
+% \label{subsub:improvements}
+
+% I wrote a separate Spark Python script for each of the metrics I computed with Spark, where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system (but need to refactor the code to make it reusable). 
+% % subsubsection improvements (end)
 
 
 % subsection compute_metrics (end)
@@ -211,7 +220,7 @@ In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor a
 	\item jq
 	\item json2csv (pre-installed in the data science toolbox)
 	\item LateX
-	\item R in RStudio with packages knitr, plyr
+	\item R in RStudio with packages Deducer\footnote{only for G-test function \href{http://www.rforge.net/doc/packages/Deducer/likelihood.test.html}{likelihood.test}}, doMC, jsonlite, knitr, plyr 
 	\item shell command line
 	\item Spark with Python API and MLlib package
 \end{itemize}
