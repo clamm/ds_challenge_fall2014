@@ -135,7 +135,7 @@ webAggCampaignQuery[o,]
 
 Write the result into csv file:
 <<write-output-to-json>>=
-write.csv(webAggCampaignQuery, file="../q3_campaign_query_combi/webAggCampaignQuery.csv",
+write.csv(webAggCampaignQuery, file="../q3_campaign_query_combi/out/webAggCampaignQuery.csv",
           row.names=FALSE, quote=FALSE)
 @
 

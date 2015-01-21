@@ -3,7 +3,7 @@ import sys
 import operator
 
 from pyspark import SparkContext
-from writer import Writer
+
 
 # THIS WAS A SUCCESSFUL ATTEMPT TO CALCULATE THE MEAN ORDERS PER CAMPAIGN-QUERY COMBINATION
 # HOWEVER THIS AND THE STANDARD DEVIATION CALCULATION CAN BE DONE WITH A ONE-LINER IN R (ONCE WE PRODUCED THE
@@ -94,8 +94,10 @@ if __name__ == "__main__":
     print("INFO: out of %s (campaign,query) combinations the best mean order per visitor is %f within "
           "(campaign=%s,query=%s)" % (len(means), max_value, bestMean[u'campaign'], bestMean[u'query']))
     listOfStandardDeviations = []
-    writer = Writer(outJson)
-    writer.writeOutputJson(bestMean, listOfStandardDeviations)
+    # writer = Writer(outJson)
+    # result = writer.formatSparkResult(bestMean, listOfStandardDeviations)
+    # writer.writeResult(result)
+    print(bestMean)
     sc.stop()
 
 

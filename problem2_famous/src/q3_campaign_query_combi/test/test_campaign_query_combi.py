@@ -7,9 +7,6 @@ import mock
 # mock spark related modules for spark-unrelated unit tests
 sys.modules["pyspark"] = mock.MagicMock()
 sys.modules["pyspark.SparkContext"] = mock.MagicMock()
-# mock unrelated modules
-sys.modules["writer"] = mock.MagicMock()
-sys.modules["writer.Writer"] = mock.MagicMock()
 
 from src.q3_campaign_query_combi.test.mean_orders_per_campaign_query_combi import *
 
