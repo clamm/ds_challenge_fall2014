@@ -22,6 +22,7 @@
 rm(list=ls())   #clear memory
 library(knitr)
 library(plyr)
+library(doMC)
 # set global chunk options
 opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
@@ -118,6 +119,8 @@ getMapFileName <- function(variableName, type) {
 % ------------------------ web analysis starts here
 % ------------------------
 
+\section{Complete Web Data}
+
 Load variable names and types:
 <<load-meta-data>>=
 nameTypeDataFile  <- "../../data/raw_variables.csv"
@@ -136,12 +139,14 @@ webData$tstamp <- as.POSIXct(webData$tstamp)
 str(webData)
 @
 
+\pagebreak
+
 Look at a summary for the complete web data:
 <<summary-web-data>>=
 summary(webData)
 @
 
-
+\section{Reduced Web Data}
 
 Now reduce the web log data to the top 2000 entries just to get an impression.
 <<reduce-web-data>>=
@@ -153,8 +158,7 @@ webData$tstamp <- as.POSIXct(webData$tstamp)
 str(webData)
 @
 
-Caution: Running the following analysis with all web.log data locally will kill the Mac!
-
+\textbf{Caution:} Running the following analysis with all web.log data locally will kill the Mac!
 Add variable with the total time spent per visit, \verb+total_time_spent+, and \verb+time_diff+ indicating the seconds that passed inbetween the logged entries within a visit:
 <<add-total-time-spent-to-web-data>>=
 require(plyr)
@@ -189,6 +193,7 @@ viewAggExample(webAggUids, "web", "uid")
 % ------------------------
 % ------------------------ spam analysis starts here
 % ------------------------
+\section{Spam Data}
 
 Read spam data:
 <<read-spam-data>>=

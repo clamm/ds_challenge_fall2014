@@ -118,7 +118,7 @@ I converted the \verb+tstamp+ to epoch values (i.e. to seconds since 1970-01-01 
 
 For the supervised classification I added a variable \verb+is_spam+ with value $1$ to the spam data and with value 0 to the web data (knowing that with this assumption some web data is falsely labeled). I pooled the spam data and different amounts of the web data into a training data sets - which I used as well for testing (see section \ref{sub:current_limitations}).
 
-% subsection prepare_historic_data_for_modeling (end)
+% subsection prepare_data_for_modeling (end)
 
 \subsection{Estimate and validate models for spam classification} % (fold)
 \label{sub:estimate_and_validate_models_for_spam_classification}
@@ -126,7 +126,7 @@ I tried different classification and cluster algorithms: I started with unsuperv
 
 \textcolor{red}{TODO: add venn diagram here or error/accuracy values}
 
-% subsection estimate_and_validate_a_model (end)
+% subsection estimate_and_validate_models_for_spam_classification (end)
 
 \subsection{Current Limitations Of Spam Classification} % (fold)
 \label{sub:current_limitations}
@@ -138,15 +138,15 @@ Given that I relabeled the categorical variables with (rather small) integer lab
 
 Since the results are not as expected I would look for better input features, e.g. the time difference between the actions and/or the total time spent per visit. I also deem worth trying to cluster/classify on aggregated visit and/or user data. %(I didn't do this because of missing compute power in R and missing skills in Spark)
 
-% subsection estimate_and_validate_a_model (end)
+% subsection current_limitations (end)
 
 \subsection{Compute Required Metrics} % (fold)
 \label{sub:compute_metrics}
 
 Even if I was not able so far to properly classifiy the spam I prepared all the code to compute the required metrics.
 
-\subsubsection{Calculate Overall Click-Trough Rate} % (fold)
-\label{subsub:calculate_ctr}
+\subsubsection{Overall Click-Trough Rate} % (fold)
+\label{subsub:ctr}
 
 I assume the following formula for the overall click-through rate ($CTR$), that was described as "ad clicks per visit"
 $$
@@ -156,28 +156,37 @@ $$
 Without having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high (if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}) and certainly prooves the necessity to exclude the spam entries from the calculation.
 
 % \textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
-% subsubsection calculate_ctr (end)
+
+% subsubsection ctr (end)
 
 
-\subsubsection{Calculate Mean Orders Per Visit Within Campaign-Query Combinations} % (fold)
-\label{subsub:calculate_mean_cq}
+\subsubsection{Mean Orders Per Visit Within Campaign-Query Combinations} % (fold)
+\label{subsub:mean_cq}
 Since the action "order" is only listed in log entries that don't have query and campaign information, the first step I did was to aggregate the web log per visit 
 %(using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,)
 putting all actions in a list.
 I saved the aggregated visits data back to a log file, converted it to csv and worked on that in R to calculate the mean and standard deviation of number of orders within the groups formed by the campaign-query combination.
 
 \textbf{Note:} Of the 50 possible campaign-query combinations only 10 have any entries in the web.log data. So I only wrote the standard deviations of the number of orders per campaign-query combination that have a non-zero value. 
-% subsubsection calculate_mean_cq (end)
+% subsubsection mean_cq (end)
+
+
+\subsubsection{Newsletter Signup Rate} % (fold)
+\label{subsub:signup}
+
+Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even\footnote{see \verb+problem2_almost/src/q1a_explore_data/read_data.pdf+}.
+
+% subsubsection signup (end)
 
 
 \subsubsection{Possible Improvements} % (fold)
 \label{subsub:improvements}
 
 I wrote a separate Spark Python script for each of the metrics I computed with Spark, where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system (but need to refactor the code to make it reusable). 
-% subsubsection calculate_ctr (end)
+% subsubsection improvements (end)
 
 
-% subsection estimate_and_validate_a_model (end)
+% subsection compute_metrics (end)
 
 
 \section{Used Software}

@@ -99,6 +99,8 @@
 % ------------------------ web analysis starts here
 % ------------------------
 
+\section{Complete Web Data}
+
 Load variable names and types:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -147,6 +149,8 @@ Read the complete web.log data:
 \end{kframe}
 \end{knitrout}
 
+\pagebreak
+
 Look at a summary for the complete web data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -174,7 +178,7 @@ Look at a summary for the complete web data:
 \end{kframe}
 \end{knitrout}
 
-
+\section{Reduced Web Data}
 
 Now reduce the web log data to the top 2000 entries just to get an impression.
 \begin{knitrout}
@@ -200,18 +204,13 @@ Now reduce the web log data to the top 2000 entries just to get an impression.
 \end{kframe}
 \end{knitrout}
 
-Caution: Running the following analysis with all web.log data locally will kill the Mac!
-
+\textbf{Caution:} Running the following analysis with all web.log data locally will kill the Mac!
 Add variable with the total time spent per visit, \verb+total_time_spent+, and \verb+time_diff+ indicating the seconds that passed inbetween the logged entries within a visit:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{require}\hlstd{(plyr)}
 \hlkwd{library}\hlstd{(doMC)}
-\end{alltt}
-
-
-{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Loading required package: foreach\\\#\# Loading required package: iterators\\\#\# Loading required package: parallel}}\begin{alltt}
 \hlkwd{registerDoMC}\hlstd{(}\hlkwc{cores}\hlstd{=}\hlkwd{detectCores}\hlstd{())}
 \hlstd{webData} \hlkwb{<-} \hlkwd{ddply}\hlstd{(webData,} \hlkwd{.}\hlstd{(visit_id), mutate,}
                  \hlkwc{total_time_spent}\hlstd{=}\hlkwd{max}\hlstd{(tstamp)}\hlopt{-}\hlkwd{min}\hlstd{(tstamp),}
@@ -220,12 +219,12 @@ Add variable with the total time spent per visit, \verb+total_time_spent+, and \
 \hlkwd{viewExample}\hlstd{(webData,}\hlstr{"web"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##        visit_id      uid campaign              tstamp experiments action
-## 1731 8786064200 17968217      103 2014-09-15 00:05:17       [2 4] landed
-## 1732 8786064200 17968217     <NA> 2014-09-15 00:07:41       [2 4]  order
-##                    query total_time_spent time_diff
-## 1731 predictive modeling         2.4 secs        NA
-## 1732                <NA>         2.4 secs       2.4
+##       visit_id       uid campaign              tstamp experiments action
+## 850 4789307146 179647219      103 2014-09-15 00:07:53       [2 4] landed
+## 851 4789307146 179647219     <NA> 2014-09-15 00:09:33       [2 4] signup
+##                   query total_time_spent time_diff
+## 850 predictive modeling    1.666667 secs        NA
+## 851                <NA>    1.666667 secs  1.666667
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -259,10 +258,10 @@ Look at a summary per visit for the web data:
 \hlkwd{viewAggExample}\hlstd{(webAggVisits,} \hlstr{"web"}\hlstd{,} \hlstr{"visit"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##        visit_id nb_entries       uid campaign nb_experiments        actions
-## 265 23636693140          2 111585987       31          [1 3] landed,adclick
-##                queries median_time_diff
-## 265 advanced analytics               28
+##        visit_id nb_entries      uid campaign nb_experiments      actions
+## 1492 8786064200          2 17968217      103          [2 4] landed,order
+##                  queries median_time_diff
+## 1492 predictive modeling              2.4
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -296,10 +295,10 @@ Look at a summary per uid (supposedly user) for the web data:
 \hlkwd{viewAggExample}\hlstd{(webAggUids,} \hlstr{"web"}\hlstd{,} \hlstr{"uid"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##           uid nb_entries   visit_ids campaign nb_experiments
-## 817 185091297          4 43032154989      558          [2 4]
-##                            actions             queries median_time_diff
-## 817 landed,adclick,adclick,adclick predictive modeling                5
+##           uid nb_entries  visit_ids campaign nb_experiments
+## 110 110827261          4 9909532485       31          [2 3]
+##                            actions            queries median_time_diff
+## 110 landed,adclick,adclick,adclick advanced analytics                9
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -310,6 +309,7 @@ Look at a summary per uid (supposedly user) for the web data:
 % ------------------------
 % ------------------------ spam analysis starts here
 % ------------------------
+\section{Spam Data}
 
 Read spam data:
 \begin{knitrout}
@@ -401,9 +401,9 @@ Look at a summary per visit for the spam data:
 \end{alltt}
 \begin{verbatim}
 ##        visit_id nb_entries    uid campaign nb_experiments                        actions
-## 632 48658265045          4 143549      203          [2 3] landed,adclick,adclick,adclick
-##                        queries median_time_diff
-## 632 building predictive models                1
+## 754 54864188974          4 193279       59          [2 4] landed,adclick,adclick,adclick
+##                queries median_time_diff
+## 754 advanced analytics                3
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -445,12 +445,12 @@ Look at a summary per uid (supposedly user) for the spam data:
 \hlkwd{viewAggExample}\hlstd{(spamAggUids,} \hlstr{"spam"}\hlstd{,} \hlstr{"uid"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##       uid nb_entries                           visit_ids  campaign nb_experiments
-## 649 29726          8 44028679595,48769224819,57689347785 31,59,103          [2 3]
+##        uid nb_entries                           visit_ids campaign nb_experiments
+## 539 188071          8 44678193401,45541719747,73898419674   31,558          [1 4]
 ##                                                          actions
-## 649 landed,adclick,adclick,adclick,landed,adclick,landed,adclick
+## 539 landed,adclick,landed,adclick,landed,adclick,adclick,adclick
 ##                                    queries median_time_diff
-## 649 advanced analytics,predictive modeling                7
+## 539 advanced analytics,predictive modeling                5
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
