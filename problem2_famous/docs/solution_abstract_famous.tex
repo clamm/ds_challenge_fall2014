@@ -83,14 +83,14 @@ I identified question 1 as classification problem (supervised or unsupervised) w
 
 I opted for the following approach to solve the questions:
 \begin{itemize}
-	\item analyse file structure
+	\item analyse file structure \& convert to csv
 	\item explore data
 	\item prepare data for modeling
 	\item estimate and validate models for spam classification
 	\item prepare the web data for prediction
 	\item classify entries in web data as spam
 	\item remove spam entries from web data
-	\item calculate required metrics
+	\item calculate required metrics on spam free web data
 \end{itemize}
 
 % section approach (end)
@@ -98,14 +98,14 @@ I opted for the following approach to solve the questions:
 
 \subsection{Analyse file structure} % (fold)
 \label{sub:analyse_file_structure}
-I had a short look into the log data in json format via \href{http://stedolan.github.io/jq/}{jq}. Once I saw that the data is very regular (same number of keys per row, same names for keys) I converted the data to csv\footnote{see \verb+problem2_famous/data/convert2csv.sh+} using \href{https://github.com/zemirco/json2csv}{json2csv} (which is pre-installed in \href{http://datasciencetoolbox.org/}{the data science toolbox}) to load it into R for exploratory analysis.
+I had a short look into the log data in json format via \href{http://stedolan.github.io/jq/}{jq}. Once I saw that the data is fairly regular (same names for keys, same number of keys per row even if different row "types") I converted the data to csv\footnote{see \verb+problem2_famous/data/convert2csv.sh+} using \href{https://github.com/zemirco/json2csv}{json2csv} (which is pre-installed in \href{http://datasciencetoolbox.org/}{the data science toolbox}) to load it into R for exploratory analysis.
 
 % subsection analyse_file_structure (end)
 
 
 \subsection{Explore data} % (fold)
 \label{sub:explore_data}
-To get an impression of the web and spam data I had a look at overall summary statistics but also at summary statistics aggregated over visits and visitors. Since I am not that familiar with web analytics I assume that a \verb+uid+ uniquely identifies a visitor which is a synonym for user. 
+To get an impression of the web and spam data I had a look at overall summary statistics but also at summary statistics aggregated over visits and visitors. Since I am not that familiar with web analytics I assume that a \verb+uid+ uniquely identifies a visitor (which I will use as a synonym for user). 
 
 From manual inspection it seems that visits that are generated via the bot network only contain the action \verb+adclick+ after they landed on the page. However if I would classify the web data according to this simple rule, then the click through rate for ads on the page would be zero - which seems too extreme.
 
@@ -122,7 +122,7 @@ For the supervised classification I added a variable \verb+is_spam+ with value $
 
 \subsection{Estimate and validate models for spam classification} % (fold)
 \label{sub:estimate_and_validate_models_for_spam_classification}
-I tried the different classification and cluster algorithms: I started with unsupervised clustering using k-means (with $k=2$) on a training sample with all spam log data and (the top) $200.000$ observations of the web log data\footnote{Using random $200.000$ observations from the web log data didn't seem to be a good idea given the timely ordered structure.} I had the hope that by using $k=2$ all spam data would end up in one cluster and all web data in the other, so that when I predict the complete web data on this clustering all so far unknow spam entries go into the spam-cluster. However when I used the estimated cluster center to classify the training data, the result was not as good as I would have expected:
+I tried different classification and cluster algorithms: I started with unsupervised clustering using k-means on a training sample with all spam log data and (the top) $200.000$ observations of the web log data\footnote{Using random $200.000$ observations from the web log data didn't seem to be a good idea given that entries are ordered by time.}. I had the hope that by using $k=2$ all spam data would end up in one cluster and all web data in the other, so that when I predict the complete web data on this clustering, all so far unknown spam entries go into the spam-cluster. However when I used the estimated cluster centers to see the division into clusters of the training data, the result was not as good as I would have expected:
 
 \textcolor{red}{TODO: add venn diagram here or error/accuracy values}
 
@@ -131,15 +131,19 @@ I tried the different classification and cluster algorithms: I started with unsu
 \subsection{Current Limitations Of Spam Classification} % (fold)
 \label{sub:current_limitations}
 
-Currently I used the same data for training, \textcolor{red}{validation} and prediction, which decreases the generalization performance of the estiamted model. It would be better to split the available spam and web log data into independent sets for training and validation.
-For classification/clustering one could use the time difference between the actions and/or the total time spent per visit as input. I also deem worth trying to cluster/classify on aggregated visit and/or user data. %(I didn't do this because of missing compute power in R and missing skills in Spark)
+I used the same data for training, validation and prediction, which decreases the generalization performance of the estiamted model. It would be better to split the available spam and web log data into independent sets for training and validation.
+
 Given that I relabeled the categorical variables with (rather small) integer labels it might be necessary to scale the epoch values, because they otherwise bias the differences. It might also be better to use 1-of-n encoding for the categorical variables instead of just giving them numerical labels.
+
+
+Since the results are not as expected I would look for better input features, e.g. the time difference between the actions and/or the total time spent per visit. I also deem worth trying to cluster/classify on aggregated visit and/or user data. %(I didn't do this because of missing compute power in R and missing skills in Spark)
 
 % subsection estimate_and_validate_a_model (end)
 
 \subsection{Compute Required Metrics} % (fold)
 \label{sub:compute_metrics}
 
+Even if I was not able so far to properly classifiy the spam I prepared all the code to compute the required metrics.
 
 \subsubsection{Calculate Overall Click-Trough Rate} % (fold)
 \label{subsub:calculate_ctr}
@@ -149,16 +153,18 @@ $$
 CTR = \frac{ \#\{action=adclick\} }{ \#\{unique \, visit \, ids\}}
 $$
 
-Before having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}.
+Without having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high (if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}) and certainly prooves the necessity to exclude the spam entries from the calculation.
 
-\textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
+% \textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
 % subsubsection calculate_ctr (end)
 
 
 \subsubsection{Calculate Mean Orders Per Visit Within Campaign-Query Combinations} % (fold)
 \label{subsub:calculate_mean_cq}
- Since the action "order" is only listed in log entries that don't have query and campaign information the first step I did was to aggregate the web log per visit (using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,), putting all actions in a list.
- I saved the aggregated visits data back to a log file, converted it to csv and work on that in R, where I feel more comfortable computing statistics per groups compared to map/reduce paradigm necessary in Spark.
+Since the action "order" is only listed in log entries that don't have query and campaign information, the first step I did was to aggregate the web log per visit 
+%(using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,)
+putting all actions in a list.
+I saved the aggregated visits data back to a log file, converted it to csv and worked on that in R to calculate the mean and standard deviation of number of orders within the groups formed by the campaign-query combination.
 
 % subsubsection calculate_mean_cq (end)
 
@@ -166,7 +172,7 @@ Before having removed the spam visits from the web log data I counted \textcolor
 \subsubsection{Possible Improvements} % (fold)
 \label{subsub:improvements}
 
-I wrote a separate Spark Python script for each of the metrics where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system. 
+I wrote a separate Spark Python script for each of the metrics I computed with Spark, where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system (but need to refactor the code to make it reusable). 
 % subsubsection calculate_ctr (end)
 
 
@@ -189,7 +195,9 @@ In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor a
 
 \section{Time Spent}
 \begin{itemize}
-	\item 
+	\item 24h for data cleaning, preparing for and running the spam classification
+	\item 12h for computing CTR and metrics for campaign-query combinations
+	\item 1h for solution abstract
 \end{itemize}
 
 Summing up I spend \textcolor{red}{xx hours} on this problem.
