@@ -1,0 +1,192 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage{listings}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+\flushbottom
+
+<<setup, include=FALSE, cache=FALSE>>=
+rm(list=setdiff(ls(), "visitData"))   #clear memory
+library(knitr)
+library(plyr) #load packages already to abort early if not installed
+library(doMC)
+library(jsonlite)
+# set global chunk options
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{Almost Famous: Analyse Newsletter Signup Rate Per Experiment}
+\author{Cindy Lamm}
+
+\maketitle
+
+% ------------------------
+% ------------------------ define functions
+% ------------------------
+
+<<define-get-pattern-index, include=FALSE>>=
+source("../getPatternIndex.R")
+@
+
+<<define-aggregate-per-experiment, include=FALSE>>=
+library(plyr)
+library(doMC)
+registerDoMC(cores=detectCores())
+aggregatePerExperiment12 <- function(df) {
+   agg <- ddply(df, .(experiment_12), summarise,
+                nb_visits=length(unique(visit_id)),
+                nb_uids=length(unique(uid)),
+                total_signups=sum(nb_signups),
+                signup_rate=total_signups/nb_uids,
+                .parallel=TRUE)                  
+   return(agg)
+}
+
+aggregatePerExperiment34 <- function(df) {
+   agg <- ddply(df, .(experiment_34), summarise,
+                nb_visits=length(unique(visit_id)),
+                nb_uids=length(unique(uid)),
+                total_signups=sum(nb_signups),
+                signup_rate=total_signups/nb_uids,
+                .parallel=TRUE)                  
+   return(agg)
+}
+@
+
+% ------------------------
+% ------------------------ web analysis starts here
+% ------------------------
+
+Load variable names and types:
+<<load-meta-data>>=
+nameTypeDataFile  <- "../../data/raw_variables.csv"
+variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
+variableNames
+factorIdx <- which(variableNames$type=="factor")
+factorNames <- variableNames$name[factorIdx]
+@
+
+Read the per visit aggregated web log data:
+<<read-web-data>>=
+visitFile <- "../../data/web_visits.csv"
+visitData <- read.csv(visitFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
+                      colClasses=variableNames$type, na.strings=c("NA",""))
+visitData$tstamp <- as.POSIXct(visitData$tstamp)
+str(visitData)
+@
+
+\pagebreak 
+
+<<summary-visit-data>>=
+summary(visitData)
+@
+
+What are the actions per visit??
+<<table-actions>>=
+table(visitData$action)
+@
+
+Look at visits with signups:
+<<get-visits-with-signups>>=
+signupIdx <- getPatternIndex(visitData$action, "signup")
+totalSignups <- length(signupIdx)
+@
+
+I conclude from the factor levels for \verb+action+ that there is at most 1 signup per visit and overall \Sexpr{totalSignups} signups. I cross check with a simple grep on the command line on the unaggregated web data which gives us the same result:
+
+\begin{lstlisting}
+$ grep -o signup web.log | wc -l
+$ 89352
+\end{lstlisting}
+
+Add the number of signups per visit as variable to the data frame:
+<<add-nb-signups-to-df>>=
+nbSignup <- rep(0, nrow(visitData))
+nbSignup[signupIdx] <- 1
+visitData$nb_signups <- nbSignup
+@
+
+<<prop-table-of-nb-signups, include=FALSE>>==
+ptab <- prop.table(table(visitData$nb_signups))
+@
+
+There are $\Sexpr{round(ptab[1]*100,2)}\%$ of visits that don't have a signup and only $\Sexpr{round(ptab[2]*100,2)}\%$ that do.
+
+Checkout experiment information:
+<<table-experiments-combinations>>=
+prop.table(table(visitData$experiments))
+@
+
+Split up the experiment information into separate variables
+<<split-experiments-into-separate-variables>>=
+expIdx1 <- getPatternIndex(visitData$experiments, 1)
+totalExp1 <- length(expIdx1)
+expIdx2 <- getPatternIndex(visitData$experiments, 2)
+totalExp2 <- length(expIdx2)
+expIdx3 <- getPatternIndex(visitData$experiments, 3)
+totalExp3 <- length(expIdx3)
+expIdx4 <- getPatternIndex(visitData$experiments, 4)
+totalExp4 <- length(expIdx4)
+@
+
+and add them pairwise to the data frame:
+<<add-nb-separate-experiment-variables-to-df>>=
+stopifnot(!any(intersect(expIdx1, expIdx2)), 
+          totalExp1 + totalExp2 == nrow(visitData), 
+          !any(intersect(expIdx3, expIdx4)),
+          totalExp3 + totalExp4 == nrow(visitData))
+
+experiment12 <- rep(1, nrow(visitData))
+experiment12[expIdx2] <- 2
+visitData$experiment_12 <- factor(experiment12, levels=1:2)
+
+experiment34 <- rep(3, nrow(visitData))
+experiment34[expIdx4] <- 4
+visitData$experiment_34 <- factor(experiment34, levels=3:4)
+@
+
+Checkout experiment distribution:
+<<distribution-of-experiments>>=
+prop.table(table(visitData$experiment_12))
+prop.table(table(visitData$experiment_34))
+@
+
+
+How many signups are there per experiment?
+<<summary-per-experiment>>=
+visitAggExp12 <- aggregatePerExperiment12(visitData)
+visitAggExp12
+
+visitAggExp34 <- aggregatePerExperiment34(visitData)
+visitAggExp34
+@
+
+Write the result into json file:
+<<write-output-to-json>>=
+library(jsonlite)
+overallSignupRates <- c(visitAggExp12$signup_rate, visitAggExp34$signup_rate)
+names(overallSignupRates) <- paste("experiment", 1:4, sep="")
+jsonString <- toJSON(as.data.frame(t(overallSignupRates)), dataframe="rows", pretty=TRUE)
+jsonString
+write(jsonString, file="../q4a_newsletter_signup/out/overallSignupRates.json")
+@
+
+
+
+\end{document}

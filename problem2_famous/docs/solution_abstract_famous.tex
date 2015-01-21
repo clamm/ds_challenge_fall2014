@@ -165,7 +165,7 @@ Without having removed the spam visits from the web log data I counted \textcolo
 Since the action "order" is only listed in log entries that don't have query and campaign information, the first step I did was to aggregate the web log per visit 
 %(using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,)
 putting all actions in a list.
-I saved the aggregated visits data back to a log file, converted it to csv and worked on that in R to calculate the mean and standard deviation of number of orders within the groups formed by the campaign-query combination.
+I saved the aggregated visits data back to a log file, converted it to csv and worked on that in R to calculate the mean and standard deviation of number of orders within the groups formed by the campaign-query combination (using the \href{http://www.inside-r.org/packages/cran/plyr/docs/ddply}{ddply} function of package \href{http://cran.r-project.org/web/packages/plyr/index.html}{plyr}).
 
 \textbf{Note:} Of the 50 possible campaign-query combinations only 10 have any entries in the web.log data. So I only wrote the standard deviations of the number of orders per campaign-query combination that have a non-zero value. 
 % subsubsection mean_cq (end)
@@ -174,7 +174,20 @@ I saved the aggregated visits data back to a log file, converted it to csv and w
 \subsubsection{Newsletter Signup Rate} % (fold)
 \label{subsub:signup}
 
-Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even\footnote{see \verb+problem2_almost/src/q1a_explore_data/read_data.pdf+}.
+Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even\footnote{see \verb+problem2_almost/src/q4a_newsletter_signup/newsletter_signup.pdf+}.
+
+I used the per visit aggregated web log data and computed in R the newsletter signup rate per experiment using the again the ddply function.
+% I used the following experiment labels:
+% \begin{table}[h]
+% \begin{tabular}{ll}
+% Experiment Number & Label  \\
+% \hline
+% 1                 & blue   \\
+% 2                 & breen  \\
+% 3                 & Willis \\
+% 4                 & Owen  
+% \end{tabular}
+% \end{table}
 
 % subsubsection signup (end)
 

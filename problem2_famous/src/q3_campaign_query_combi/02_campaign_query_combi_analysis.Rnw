@@ -39,6 +39,10 @@ options(formatR.arrow=TRUE,width=90)
 % ------------------------ define functions
 % ------------------------
 
+<<define-get-pattern-index, include=FALSE>>=
+source("../getPatternIndex.R")
+@
+
 <<define-aggregate-campain-query, include=FALSE>>=
 library(plyr)
 library(doMC)
@@ -94,12 +98,8 @@ table(visitData$action)
 
 Look at visits with orders:
 <<get-visits-with-orders>>=
-orderLevels <- names(unlist(sapply(levels(visitData$action), FUN=grep, pattern="order")))
-orderLevels
-
-isOrderIdx <- sort(union(which(visitData$action == orderLevels[1]), 
-                      which(visitData$action == orderLevels[2])))
-totalOrders <- length(isOrderIdx)
+orderIdx <- getPatternIndex(visitData$action, "order")
+totalOrders <- length(orderIdx)
 @
 
 I conclude from the factor levels for \verb+action+ that there is at most 1 order per visit and overall \Sexpr{totalOrders} orders. I cross check with a simple grep on the command line on the unaggregated web data which gives us the same result:
@@ -112,7 +112,7 @@ $ 47348
 Add the number of orders per visit as variable to the data frame:
 <<add-nb-orders-to-df>>=
 nbOrder <- rep(0, nrow(visitData))
-nbOrder[isOrderIdx] <- 1
+nbOrder[orderIdx] <- 1
 visitData$nb_orders <- nbOrder
 @
 
