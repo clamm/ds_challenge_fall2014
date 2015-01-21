@@ -88,6 +88,7 @@ factorNames <- variableNames$name[factorIdx]
 Read the per visit aggregated web log data:
 <<read-web-data>>=
 visitFile <- "../../data/web_visits.csv"
+# visitFile <- "../../data/head2000.csv"
 visitData <- read.csv(visitFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
                       colClasses=variableNames$type, na.strings=c("NA",""))
 visitData$tstamp <- as.POSIXct(visitData$tstamp)
@@ -102,7 +103,12 @@ summary(visitData)
 
 \section{Newsletter Signup Rate Per Experiment}
 
-What are the actions per visit??
+\begin{quote}
+Compute the overall newsletter signup rate (defined as the number of users who signed up to the newsletter divided by the total number of users) for each of the experiments.
+\end{quote}
+
+
+What are the actions per visit?
 <<table-actions>>=
 table(visitData$action)
 @
@@ -182,17 +188,21 @@ visitAggExp34 <- aggregatePerExperiment34(visitData)
 visitAggExp34
 @
 
-Write the result into json file:
+Write the result into file \verb+overall_signup_rate.json+:
 <<write-output-to-json>>=
 library(jsonlite)
 overallSignupRates <- c(visitAggExp12$signup_rate, visitAggExp34$signup_rate)
 names(overallSignupRates) <- paste("experiment", 1:4, sep="")
 jsonString <- toJSON(as.data.frame(t(overallSignupRates)), dataframe="rows", pretty=TRUE)
 jsonString
-write(jsonString, file="../q4_newsletter_signup/out/overallSignupRates.json")
+write(jsonString, file="../q4_newsletter_signup/out/overall_signup_rate.json")
 @
 
 \section{Performance Of Experiments}
+
+\begin{quote}
+Use a G-test to compare the performance of experiment one vs. experiment two and experiment three vs. experiment four overall.
+\end{quote}
 
 I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
 <<table-signups-per-experiment>>=
@@ -219,23 +229,84 @@ ALPHA=0.001
 @
 
 
-Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=\Sexpr{ALPHA}$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=\Sexpr{round(ALPHA*sum(visitAggExp12$nb_uids))}$ observations.
+Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=\Sexpr{ALPHA*100}\%$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=\Sexpr{round(ALPHA*sum(visitAggExp12$nb_uids))}$ observations.
 
-<<run-g-tests>>==
+Run G-Test for experiments 1 and 2:
+<<run-g-test-12>>==
 library(Deducer)
 test12 <- likelihood.test(gTestTable12)
 print(test12)
 # sampleSize
 sum(visitAggExp12$nb_uids)
+@
 
+Run G-Test for experiments 3 and 4:
+<<run-g-test-34>>==
 test34 <- likelihood.test(gTestTable34)
 print(test34)
 #sample size
 sum(visitAggExp34$nb_uids)
 @
 
-I would interpret the results as follows: Experiments 1 and 2 are indistinguishable based on the number of signups - it doesn't matter whether the color scheme of the page is blue or green.
+I would interpret the results as follows: 
+\begin{itemize}
+  \item With a p-value of $p_{12}=\Sexpr{test12$p.value}$ experiments 1 and 2 are indistinguishable - it doesn't matter for the newsletter signup whether the color scheme of the page is blue or green.
+	\item With a p-value of $p_{34}=\Sexpr{test34$p.value}$ there is a statistically significant difference between experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.	 
+\end{itemize}
 
-However there is a statistically significant difference between Experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.
+Write the result into file \verb+performance_of_experiment_1_versus_2.json+:
+<<write-test-output-to-json>>=
+write(test12$p.value, file="../q4_newsletter_signup/out/performance_of_experiment_1_versus_2.json")
+write(test34$p.value, file="../q4_newsletter_signup/out/performance_of_experiment_3_versus_4.json")
+@
+
+
+\section{Required Days for $99\%$ Confidence in G-Test Result}
+
+\begin{quote}
+How many full days of data, starting from the first day, are required to determine that the newsletter signup rate for experiment one is better than experiment two at the 99\% confidence level?
+\end{quote}
+
+The number of days is "encoded" within the number of visits and users. Reformulated the question is "Given the current signup rate for each experiment and $\alpha=1\%$, how long does an experiment need to run in order to generate enough users/visits for the G-Test to be significant?"
+
+I simulate the answer\footnote{just I like did for proportion test: \url{https://github.com/clamm/R_dev/blob/master/ab_testing.R}}.
+
+Define a function to get the p-value from a G-Test:
+<<define-get-pvalue>>=
+library(Deducer)
+getPValue <- function(signupRates, nbUsers) {
+  # parameters:
+  #   signupRates:  vector of signup rate for experiments
+  #   nbUsers:      vector of number of users how saw the experiment
+  # returns:
+  #   p-value
+  # description:
+  #   H0: experiments perform equally well based on signup rate
+  #   accept H1 if pval < alpha (i.e. the 2 experiments perform differently) 
+  dataExperiments <- c(signupRates * nbUsers, (1-signupRates) * nbUsers)
+  tableExperiments <- matrix(dataExperiments, nrow=2, byrow=FALSE)
+  rownames(tableExperiments) <- paste("Experiment",LETTERS[1:2],sep=" ")
+  colnames(tableExperiments) <- c("signups","ignorations")
+  print(tableExperiments)
+  res <- likelihood.test(tableExperiments)
+  return(res$p.value)
+}
+@
+
+Double check that this function gives the same results as manual extraction of the p-value:
+<<check-if-get-pvalue-works>>=
+newPvalue <- getPValue(overallSignupRates[1:2], visitAggExp12$nb_uids)
+newPvalue == test12$p.value
+@
+
+<<define-day>>=
+
+@
+
+
+<<get-aggregated-statistics-per-day>>=
+
+@
+
 
 \end{document}

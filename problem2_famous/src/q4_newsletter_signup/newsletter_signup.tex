@@ -119,6 +119,7 @@ Read the per visit aggregated web log data:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{visitFile} \hlkwb{<-} \hlstr{"../../data/web_visits.csv"}
+\hlcom{# visitFile <- "../../data/head2000.csv"}
 \hlstd{visitData} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(visitFile,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,}
                       \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,} \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
 \hlstd{visitData}\hlopt{$}\hlstd{tstamp} \hlkwb{<-} \hlkwd{as.POSIXct}\hlstd{(visitData}\hlopt{$}\hlstd{tstamp)}
@@ -175,7 +176,12 @@ Read the per visit aggregated web log data:
 
 \section{Newsletter Signup Rate Per Experiment}
 
-What are the actions per visit??
+\begin{quote}
+Compute the overall newsletter signup rate (defined as the number of users who signed up to the newsletter divided by the total number of users) for each of the experiments.
+\end{quote}
+
+
+What are the actions per visit?
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -349,7 +355,7 @@ How many signups are there per experiment?
 \end{kframe}
 \end{knitrout}
 
-Write the result into json file:
+Write the result into file \verb+overall_signup_rate.json+:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -371,12 +377,16 @@ Write the result into json file:
 ## 
 \end{verbatim}
 \begin{alltt}
-\hlkwd{write}\hlstd{(jsonString,} \hlkwc{file}\hlstd{=}\hlstr{"../q4_newsletter_signup/out/overallSignupRates.json"}\hlstd{)}
+\hlkwd{write}\hlstd{(jsonString,} \hlkwc{file}\hlstd{=}\hlstr{"../q4_newsletter_signup/out/overall_signup_rate.json"}\hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
 \section{Performance Of Experiments}
+
+\begin{quote}
+Use a G-test to compare the performance of experiment one vs. experiment two and experiment three vs. experiment four overall.
+\end{quote}
 
 I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
 \begin{knitrout}
@@ -411,8 +421,9 @@ I assume that the performance of an experiment is measured by the number of sign
 
 
 
-Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=0.001$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=1064$ observations.
+Run G-Test, which is a test of independence (just like the Chi-Square test). The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. Usually one uses $\alpha=5\%$ but with such a large sample size I would opt for $\alpha=0.1\%$, which means that if we decide to reject the null hypothesis and assume the variables are dependent (i.e. in this case this means one experiment is better than the other), we might be wrong for $\alpha \times n=1064$ observations.
 
+Run G-Test for experiments 1 and 2:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
@@ -435,6 +446,12 @@ Run G-Test, which is a test of independence (just like the Chi-Square test). The
 \begin{verbatim}
 ## [1] 1064214
 \end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Run G-Test for experiments 3 and 4:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{test34} \hlkwb{<-} \hlkwd{likelihood.test}\hlstd{(gTestTable34)}
 \hlkwd{print}\hlstd{(test34)}
@@ -457,8 +474,80 @@ Run G-Test, which is a test of independence (just like the Chi-Square test). The
 \end{kframe}
 \end{knitrout}
 
-I would interpret the results as follows: Experiments 1 and 2 are indistinguishable based on the number of signups - it doesn't matter whether the color scheme of the page is blue or green.
+I would interpret the results as follows: 
+\begin{itemize}
+  \item With a p-value of $p_{12}=0.0013301$ experiments 1 and 2 are indistinguishable - it doesn't matter for the newsletter signup whether the color scheme of the page is blue or green.
+	\item With a p-value of $p_{34}=0$ there is a statistically significant difference between experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.	 
+\end{itemize}
 
-However there is a statistically significant difference between Experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.
+Write the result into file \verb+performance_of_experiment_1_versus_2.json+:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{write}\hlstd{(test12}\hlopt{$}\hlstd{p.value,} \hlkwc{file}\hlstd{=}\hlstr{"../q4_newsletter_signup/out/performance_of_experiment_1_versus_2.json"}\hlstd{)}
+\hlkwd{write}\hlstd{(test34}\hlopt{$}\hlstd{p.value,} \hlkwc{file}\hlstd{=}\hlstr{"../q4_newsletter_signup/out/performance_of_experiment_3_versus_4.json"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Required Days for $99\%$ Confidence in G-Test Result}
+
+\begin{quote}
+How many full days of data, starting from the first day, are required to determine that the newsletter signup rate for experiment one is better than experiment two at the 99\% confidence level?
+\end{quote}
+
+The number of days is "encoded" within the number of visits and users. Reformulated the question is "Given the current signup rate for each experiment and $\alpha=1\%$, how long does an experiment need to run in order to generate enough users/visits for the G-Test to be significant?"
+
+I simulate the answer\footnote{just I like did for proportion test: \url{https://github.com/clamm/R_dev/blob/master/ab_testing.R}}.
+
+Define a function to get the p-value from a G-Test:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(Deducer)}
+\hlstd{getPValue} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{signupRates}\hlstd{,} \hlkwc{nbUsers}\hlstd{) \{}
+  \hlcom{# parameters:}
+  \hlcom{#   signupRates:  vector of signup rate for experiments}
+  \hlcom{#   nbUsers:      vector of number of users how saw the experiment}
+  \hlcom{# returns:}
+  \hlcom{#   p-value}
+  \hlcom{# description:}
+  \hlcom{#   H0: experiments perform equally well based on signup rate}
+  \hlcom{#   accept H1 if pval < alpha (i.e. the 2 experiments perform differently) }
+  \hlstd{dataExperiments} \hlkwb{<-} \hlkwd{c}\hlstd{(signupRates} \hlopt{*} \hlstd{nbUsers, (}\hlnum{1}\hlopt{-}\hlstd{signupRates)} \hlopt{*} \hlstd{nbUsers)}
+  \hlstd{tableExperiments} \hlkwb{<-} \hlkwd{matrix}\hlstd{(dataExperiments,} \hlkwc{nrow}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{byrow}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+  \hlkwd{rownames}\hlstd{(tableExperiments)} \hlkwb{<-} \hlkwd{paste}\hlstd{(}\hlstr{"Experiment"}\hlstd{,LETTERS[}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{],}\hlkwc{sep}\hlstd{=}\hlstr{" "}\hlstd{)}
+  \hlkwd{colnames}\hlstd{(tableExperiments)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"signups"}\hlstd{,}\hlstr{"ignorations"}\hlstd{)}
+  \hlkwd{print}\hlstd{(tableExperiments)}
+  \hlstd{res} \hlkwb{<-} \hlkwd{likelihood.test}\hlstd{(tableExperiments)}
+  \hlkwd{return}\hlstd{(res}\hlopt{$}\hlstd{p.value)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Double check that this function gives the same results as manual extraction of the p-value:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{newPvalue} \hlkwb{<-} \hlkwd{getPValue}\hlstd{(overallSignupRates[}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{], visitAggExp12}\hlopt{$}\hlstd{nb_uids)}
+\end{alltt}
+\begin{verbatim}
+##              signups ignorations
+## Experiment A   45145      487080
+## Experiment B   44207      487782
+\end{verbatim}
+\begin{alltt}
+\hlstd{newPvalue} \hlopt{==} \hlstd{test12}\hlopt{$}\hlstd{p.value}
+\end{alltt}
+\begin{verbatim}
+## p.value 
+##    TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
 
 \end{document}

@@ -183,7 +183,7 @@ I used the per visit aggregated web log data and computed in R the newsletter si
 \subsubsection{Experiment Performance} % (fold)
 \label{subsub:performance}
 
-I assume that the performance of an experiment is measured by the number of signups for the newsletter. 
+I assume that the performance of an experiment is measured by the number of signups for the newsletter. Furthermore, from the description "There are no preexisting expectations that either experiment in either pair is more likely to be effective than the other." I conclude that we do a two-sided test.
 
 Note: The G-Test is a test of independence just like the Chi-Square test. The null hypothesis is that the two variables are independent, which is rejected if the p-value is smaller than a chosen significance level $\alpha$. In this case, rejecting the null hypothesis means that one experiment performs better than the other.
 Usually one uses $\alpha=5\%$ but with such a large sample size of $n=xx$ I would opt for $\alpha=0.001$, which means that if we decide to reject the null hypothesis, we might be wrong for $\alpha \times n=xx$ observations.
@@ -196,9 +196,14 @@ I would interpret the results as follows:
 % subsubsection performance (end)
 
 
-% \subsubsection{Required Days for $99\%$ Confidence in G-Test Result} % (fold)
-% \label{subsub:days}
-% % subsubsection performance (end)
+\subsubsection{Required Days for $99\%$ Confidence in G-Test Result} % (fold)
+\label{subsub:days}
+
+\begin{quote}
+How many full days of data, starting from the first day, are required to determine that the newsletter signup rate for experiment one is better than experiment two at the 99\% confidence level?
+\end{quote}
+
+% subsubsection performance (end)
 
 
 % \subsubsection{Possible Improvements} % (fold)
