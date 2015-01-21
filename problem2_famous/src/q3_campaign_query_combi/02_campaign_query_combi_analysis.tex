@@ -58,6 +58,7 @@
 \setcounter{tocdepth}{2}
 \usepackage{datetime}
 \usepackage{url}
+\usepackage{listings}
 \usepackage[unicode=true,pdfusetitle,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
  breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
@@ -115,9 +116,9 @@ Read the per visit aggregated web log data:
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{webFile} \hlkwb{<-} \hlstr{"../../data/web_visits.csv"}
-\hlstd{visitData} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(webFile,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,}
-                    \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,} \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
+\hlstd{visitFile} \hlkwb{<-} \hlstr{"../../data/web_visits.csv"}
+\hlstd{visitData} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(visitFile,} \hlkwc{stringsAsFactors}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{col.names}\hlstd{=variableNames}\hlopt{$}\hlstd{name,}
+                      \hlkwc{colClasses}\hlstd{=variableNames}\hlopt{$}\hlstd{type,} \hlkwc{na.strings}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"NA"}\hlstd{,}\hlstr{""}\hlstd{))}
 \hlstd{visitData}\hlopt{$}\hlstd{tstamp} \hlkwb{<-} \hlkwd{as.POSIXct}\hlstd{(visitData}\hlopt{$}\hlstd{tstamp)}
 \hlkwd{str}\hlstd{(visitData)}
 \end{alltt}
@@ -133,6 +134,8 @@ Read the per visit aggregated web log data:
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+\pagebreak 
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -169,29 +172,131 @@ Read the per visit aggregated web log data:
 \end{knitrout}
 
 
-How many visits are there per campaign-query combination?
+
+What are the actions per visit??
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{table}\hlstd{(visitData}\hlopt{$}\hlstd{action)}
+\end{alltt}
+\begin{verbatim}
+## 
+## [landed adclick adclick adclick]         [landed adclick adclick] 
+##                            14956                            14875 
+##                 [landed adclick]                   [landed order] 
+##                            28233                            43930 
+##          [landed signup adclick]            [landed signup order] 
+##                             1045                             3418 
+##                  [landed signup]                           landed 
+##                            84889                          1291256
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Look at visits with orders:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{orderLevels} \hlkwb{<-} \hlkwd{names}\hlstd{(}\hlkwd{unlist}\hlstd{(}\hlkwd{sapply}\hlstd{(}\hlkwd{levels}\hlstd{(visitData}\hlopt{$}\hlstd{action),} \hlkwc{FUN}\hlstd{=grep,} \hlkwc{pattern}\hlstd{=}\hlstr{"order"}\hlstd{)))}
+\hlstd{orderLevels}
+\end{alltt}
+\begin{verbatim}
+## [1] "[landed order]"        "[landed signup order]"
+\end{verbatim}
+\begin{alltt}
+\hlstd{isOrderIdx} \hlkwb{<-} \hlkwd{sort}\hlstd{(}\hlkwd{union}\hlstd{(}\hlkwd{which}\hlstd{(visitData}\hlopt{$}\hlstd{action} \hlopt{==} \hlstd{orderLevels[}\hlnum{1}\hlstd{]),}
+                      \hlkwd{which}\hlstd{(visitData}\hlopt{$}\hlstd{action} \hlopt{==} \hlstd{orderLevels[}\hlnum{2}\hlstd{])))}
+\hlstd{totalOrders} \hlkwb{<-} \hlkwd{length}\hlstd{(isOrderIdx)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+I conclude from the factor levels for \verb+action+ that there is at most 1 order per visit and overall 47348 orders. I cross check with a simple grep on the command line on the unaggregated web data which gives us the same result:
+
+\begin{lstlisting}
+$ grep -o order web.log | wc -l
+$ 47348
+\end{lstlisting}
+
+Add the number of orders per visit as variable to the data frame:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{nbOrder} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{,} \hlkwd{nrow}\hlstd{(visitData))}
+\hlstd{nbOrder[isOrderIdx]} \hlkwb{<-} \hlnum{1}
+\hlstd{visitData}\hlopt{$}\hlstd{nb_orders} \hlkwb{<-} \hlstd{nbOrder}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{prop.table}\hlstd{(}\hlkwd{table}\hlstd{(visitData}\hlopt{$}\hlstd{nb_orders))}
+\end{alltt}
+\begin{verbatim}
+## 
+##          0          1 
+## 0.96806425 0.03193575
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+There are $96.8064255\%$ of visits that don't have an order and only $3.1935745\%$ that do.
+
+How many orders are there per campaign-query combination?
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{combinations} \hlkwb{<-} \hlkwd{expand.grid}\hlstd{(}\hlkwc{queries}\hlstd{=}\hlkwd{levels}\hlstd{(visitData}\hlopt{$}\hlstd{query),} \hlkwc{campaigns}\hlstd{=}\hlkwd{levels}\hlstd{(visitData}\hlopt{$}\hlstd{campaign))}
-\hlstd{webAggCampaignQuery} \hlkwb{<-} \hlkwd{aggregatePerCQ}\hlstd{(visitData)}
-\hlstd{webAggCampaignQuery}
+\hlkwd{length}\hlstd{(combinations)}
 \end{alltt}
 \begin{verbatim}
-##    campaign                      query nb_visits nb_uids
-## 1       103        predictive modeling    324027  300394
-## 2       127      data science training     92681   90761
-## 3        14 building predictive models     46252   45738
-## 4        17               data science     46308   45814
-## 5       203 building predictive models     46202   45711
-## 6        23               data science     46137   45630
-## 7        31         advanced analytics    231685  219610
-## 8       558        predictive modeling    324872  301174
-## 9        59         advanced analytics    232002  219833
-## 10       94      data science training     92436   90510
+## [1] 2
+\end{verbatim}
+\begin{alltt}
+\hlstd{webAggCampaignQuery} \hlkwb{<-} \hlkwd{aggregatePerCQ}\hlstd{(visitData)}
+\hlstd{o} \hlkwb{<-} \hlkwd{order}\hlstd{(webAggCampaignQuery}\hlopt{$}\hlstd{mean_orders,} \hlkwc{decreasing}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlstd{webAggCampaignQuery[o,]}
+\end{alltt}
+\begin{verbatim}
+##    campaign                      query nb_visits nb_uids total_orders mean_orders
+## 3        14 building predictive models     46252   45738         3065  0.06626740
+## 2       127      data science training     92681   90761         5101  0.05503825
+## 10       94      data science training     92436   90510         5071  0.05485958
+## 5       203 building predictive models     46202   45711         2511  0.05434830
+## 8       558        predictive modeling    324872  301174        10628  0.03271442
+## 1       103        predictive modeling    324027  300394        10425  0.03217324
+## 4        17               data science     46308   45814         1052  0.02271746
+## 9        59         advanced analytics    232002  219833         4396  0.01894811
+## 6        23               data science     46137   45630          858  0.01859679
+## 7        31         advanced analytics    231685  219610         4241  0.01830503
+##    sd_orders
+## 3  0.2487516
+## 2  0.2280561
+## 10 0.2277072
+## 5  0.2267061
+## 8  0.1778884
+## 1  0.1764603
+## 4  0.1490029
+## 9  0.1363421
+## 6  0.1350975
+## 7  0.1340523
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
+
+Write the result into csv file:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{write.csv}\hlstd{(webAggCampaignQuery,} \hlkwc{file}\hlstd{=}\hlstr{"../q3_campaign_query_combi/webAggCampaignQuery.csv"}\hlstd{,}
+          \hlkwc{row.names}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{quote}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+I use a Python script to put the result in the required json format (because even if I would use the package jsonlite to format the result in R, the \verb+sink()+ method, which I would need to write it to the file system, does not work in combination with knitr.)
 
 
 \end{document}

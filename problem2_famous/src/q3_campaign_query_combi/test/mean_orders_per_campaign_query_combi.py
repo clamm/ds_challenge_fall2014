@@ -3,18 +3,11 @@ import sys
 import operator
 
 from pyspark import SparkContext
+from writer import Writer
 
-
-def writeOutputJson(outFile, bestMeanCampaignQuery, listOfStandardDeviations):
-    bestMeanCampaignQuery[u'query_string'] = bestMeanCampaignQuery.pop(u'query')
-    del (bestMeanCampaignQuery[u'meanOrdersPerVisitor'])
-    # assert type(listOfStandardDeviations) == list and \
-    # all([["campaign", "query_string", "standard_deviation"] == el.keys() for el in listOfStandardDeviations])
-    result = json.dumps({"highest_mean_value": bestMeanCampaignQuery,
-                         "standard_deviations": listOfStandardDeviations}, indent=True, sort_keys=True)
-    of = open(outFile, "w+")
-    of.write(result)
-    of.close()
+# THIS WAS A SUCCESSFUL ATTEMPT TO CALCULATE THE MEAN ORDERS PER CAMPAIGN-QUERY COMBINATION
+# HOWEVER THIS AND THE STANDARD DEVIATION CALCULATION CAN BE DONE WITH A ONE-LINER IN R (ONCE WE PRODUCED THE
+# AGGREGATED VISIT DATA IN SPARK)
 
 
 def dropUnusedKeys(doc, keys):
@@ -101,10 +94,11 @@ if __name__ == "__main__":
     print("INFO: out of %s (campaign,query) combinations the best mean order per visitor is %f within "
           "(campaign=%s,query=%s)" % (len(means), max_value, bestMean[u'campaign'], bestMean[u'query']))
     listOfStandardDeviations = []
-    writeOutputJson(outJson, bestMean, listOfStandardDeviations)
+    writer = Writer(outJson)
+    writer.writeOutputJson(bestMean, listOfStandardDeviations)
     sc.stop()
 
 
 # run with: (takes about 5 minutes on Mac)
-# spark-submit campaign_query_combi.py ../../data/web.log ../../out/q3.json
+# spark-submit mean_orders_per_campaign_query_combi.py ../../../data/web.log ../../../out/q3.json
 

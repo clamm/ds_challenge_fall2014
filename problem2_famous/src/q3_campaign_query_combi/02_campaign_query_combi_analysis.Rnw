@@ -1,0 +1,145 @@
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{datetime}
+\usepackage{url}
+\usepackage{listings}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\begin{document}
+\flushbottom
+
+<<setup, include=FALSE, cache=FALSE>>=
+rm(list=ls())   #clear memory
+library(knitr)
+library(plyr) #load packages already to abort early if not installed
+library(doMC)
+# set global chunk options
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\date{\currenttime, \today}
+\title{Almost Famous: Analyse campaign query combinations}
+\author{Cindy Lamm}
+
+\maketitle
+
+% ------------------------
+% ------------------------ define functions
+% ------------------------
+
+<<define-aggregate-campain-query, include=FALSE>>=
+library(plyr)
+library(doMC)
+registerDoMC(cores=detectCores())
+aggregatePerCQ <- function(df) {
+   aggCQ <- ddply(df, .(campaign, query), summarise,
+                  nb_visits=length(unique(visit_id)),
+                  nb_uids=length(unique(uid)),
+                  total_orders=sum(nb_orders),
+                  mean_orders=mean(nb_orders),
+                  sd_orders=sd(nb_orders),
+                  .parallel=TRUE)                  
+   return(aggCQ)
+}
+@
+
+% ------------------------
+% ------------------------ web analysis starts here
+% ------------------------
+
+Load variable names and types:
+<<load-meta-data>>=
+nameTypeDataFile  <- "../../data/raw_variables.csv"
+variableNames <- read.csv(nameTypeDataFile, header=TRUE, stringsAsFactors=FALSE) 
+variableNames
+factorIdx <- which(variableNames$type=="factor")
+factorNames <- variableNames$name[factorIdx]
+@
+
+Read the per visit aggregated web log data:
+<<read-web-data>>=
+visitFile <- "../../data/web_visits.csv"
+visitData <- read.csv(visitFile, stringsAsFactors=FALSE, col.names=variableNames$name, 
+                      colClasses=variableNames$type, na.strings=c("NA",""))
+visitData$tstamp <- as.POSIXct(visitData$tstamp)
+str(visitData)
+@
+
+\pagebreak 
+
+<<summary-visit-data>>=
+summary(visitData)
+@
+
+<<really-each-visit-id-only-once, include=FALSE>>=
+unique(table(visitData$visit_id)) == 1
+@
+
+What are the actions per visit??
+<<table-actions>>=
+table(visitData$action)
+@
+
+Look at visits with orders:
+<<get-visits-with-orders>>=
+orderLevels <- names(unlist(sapply(levels(visitData$action), FUN=grep, pattern="order")))
+orderLevels
+
+isOrderIdx <- sort(union(which(visitData$action == orderLevels[1]), 
+                      which(visitData$action == orderLevels[2])))
+totalOrders <- length(isOrderIdx)
+@
+
+I conclude from the factor levels for \verb+action+ that there is at most 1 order per visit and overall \Sexpr{totalOrders} orders. I cross check with a simple grep on the command line on the unaggregated web data which gives us the same result:
+
+\begin{lstlisting}
+$ grep -o order web.log | wc -l
+$ 47348
+\end{lstlisting}
+
+Add the number of orders per visit as variable to the data frame:
+<<add-nb-orders-to-df>>=
+nbOrder <- rep(0, nrow(visitData))
+nbOrder[isOrderIdx] <- 1
+visitData$nb_orders <- nbOrder
+@
+
+<<prop-table-of-nb-orders, echo=2>>==
+ptab <- prop.table(table(visitData$nb_orders))
+prop.table(table(visitData$nb_orders))
+@
+
+There are $\Sexpr{ptab[1]*100}\%$ of visits that don't have an order and only $\Sexpr{ptab[2]*100}\%$ that do.
+
+How many orders are there per campaign-query combination?
+<<summary-per-campaign-query>>=
+combinations <- expand.grid(queries=levels(visitData$query), campaigns=levels(visitData$campaign))
+length(combinations)
+
+webAggCampaignQuery <- aggregatePerCQ(visitData)
+o <- order(webAggCampaignQuery$mean_orders, decreasing=TRUE)
+webAggCampaignQuery[o,]
+@
+
+Write the result into csv file:
+<<write-output-to-json>>=
+write.csv(webAggCampaignQuery, file="../q3_campaign_query_combi/webAggCampaignQuery.csv",
+          row.names=FALSE, quote=FALSE)
+@
+
+I use a Python script to put the result in the required json format (because even if I would use the package jsonlite to format the result in R, the \verb+sink()+ method, which I would need to write it to the file system, does not work in combination with knitr.)
+
+
+\end{document}
