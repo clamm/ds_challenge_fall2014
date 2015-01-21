@@ -68,11 +68,13 @@ Install R following [this guide](https://ashokharnal.wordpress.com/2014/01/16/in
 
 	yum install R R-devel
 
-Install basic R packages:
+Install R packages that are needed for RStudio Server and those that are needed to run the code of this challenge:
 	
 	R
+	# packages that RStudio Server require:
 	install.packages(c("rJava", "Rcpp", "RJSONIO", "bitops", "digest", "functional", "stringr", "plyr", "reshape2"))
-	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr", "doMC", "doParallel", "e1071"))
+	# packages that the challenge code requires
+	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr", "doMC", "doParallel", "e1071", "jsonlite", "Deducer"))
 	source("http://www.bioconductor.org/biocLite.R")
 	biocLite("limma")
 
