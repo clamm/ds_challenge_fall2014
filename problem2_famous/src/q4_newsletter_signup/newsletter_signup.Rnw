@@ -97,6 +97,8 @@ str(visitData)
 summary(visitData)
 @
 
+\section{Newsletter Signup Rate Per Experiment}
+
 What are the actions per visit??
 <<table-actions>>=
 table(visitData$action)
@@ -187,6 +189,6 @@ jsonString
 write(jsonString, file="../q4a_newsletter_signup/out/overallSignupRates.json")
 @
 
-
+\section{Performance Of Experiments}
 
 \end{document}
