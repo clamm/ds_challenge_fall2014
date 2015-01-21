@@ -9,6 +9,18 @@ Challenge Period
 The Fall 2014 Data Science Challenge runs October 11, 2014 through January 21, 2015.
 
 
+Use AWS EC2 Machine of Spark Lab
+================================
+
+Description of EC2 machine see: https://github.com/comsysto/driver-telematics-kaggle/tree/spark1.2
+
+Connect to the machine:
+
+	ssh -Y -i spark-ml-lab.pem ec2-user@ec2-54-154-1-233.eu-west-1.compute.amazonaws.com
+
+I installed R 3.1.1 (not 3.1.2!) there.
+
+
 Setup GoGrid Server
 ==================
 
@@ -37,6 +49,18 @@ Install git:
 
 Note: I tried to install apt-get (to install with this bash-completion) and followed [this guide](http://everyday-tech.com/apt-get-on-centos/). However I only got to the stage `yum install apt` where I got the message `No package apt available.`. I did not try to revert anything I've done up to that point.
 
+Instead I followed [these steps](http://unix.stackexchange.com/questions/21135/package-bash-completion-missing-from-yum-in-centos-6) ton install bash-completion:
+:x: didn't work on AWS EC2
+	
+	# import key
+	sudo rpm --import https://fedoraproject.org/static/0608B895.txt
+	# Download the bash-completion RPM
+	wget http://www.caliban.org/files/redhat/RPMS/noarch/bash-completion-20060301-1.noarch.rpm
+	# Install the RPM
+	sudo rpm -ivh bash-completion-20060301-1.noarch.rpm
+	# Execute the command
+	. /etc/bash_completion
+
 Install virtual box following [this guide](http://www.if-not-true-then-false.com/2010/install-virtualbox-with-yum-on-fedora-centos-red-hat-rhel/):
 :x: (Some kernel error)
 
@@ -58,25 +82,32 @@ Install vagrant:
 	rpm -i vagrant_1.7.2_x86_64.rpm
 	which vagrant
 
-Install R following [this guide](https://ashokharnal.wordpress.com/2014/01/16/installing-r-rhadoop-and-rstudio-over-cloudera-hadoop-ecosystem-revised/):
+Install R 3.1.2 following [this guide](https://ashokharnal.wordpress.com/2014/01/16/installing-r-rhadoop-and-rstudio-over-cloudera-hadoop-ecosystem-revised/):
 	
 	# check that epel is already added
 	yum repolist
 
 	# Note that rpmforge has an older version of R. Disable rpmforge by opening file below and changing the line `enabled = 1` to `enabled = 0`
-	vim /etc/yum.repos.d/rpmforge.repo
+	sudo vim /etc/yum.repos.d/rpmforge.repo
 
-	yum install R R-devel
+	sudo yum install R R-devel
 
 Install R packages that are needed for RStudio Server and those that are needed to run the code of this challenge:
 	
-	R
+	sudo R
 	# packages that RStudio Server require:
 	install.packages(c("rJava", "Rcpp", "RJSONIO", "bitops", "digest", "functional", "stringr", "plyr", "reshape2"))
 	# packages that the challenge code requires
 	install.packages(c("ggplot2", "caret", "randomForest", "glmnet", "knitr", "doMC", "doParallel", "e1071", "jsonlite", "Deducer"))
 	source("http://www.bioconductor.org/biocLite.R")
 	biocLite("limma")
+
+:x: I couldn't install "Deducer" package on AWS EC2 because of error:
+	
+	X11 connection rejected because of wrong authentication.
+	Error : .onLoad failed in loadNamespace() for 'iplots', details:
+  		call: .jnew("org/rosuda/iplots/Framework")
+  		error: java.lang.InternalError: Can't connect to X11 window server using 'localhost:10.0' as the value of the DISPLAY variable.
 
 Install RStudio Server:
 
