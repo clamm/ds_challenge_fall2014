@@ -121,7 +121,7 @@ ptab <- prop.table(table(visitData$nb_orders))
 prop.table(table(visitData$nb_orders))
 @
 
-There are $\Sexpr{ptab[1]*100}\%$ of visits that don't have an order and only $\Sexpr{ptab[2]*100}\%$ that do.
+There are $\Sexpr{round(ptab[1]*100,2)}\%$ of visits that don't have an order and only $\Sexpr{round(ptab[2]*100,2)}\%$ that do.
 
 How many orders are there per campaign-query combination?
 <<summary-per-campaign-query>>=

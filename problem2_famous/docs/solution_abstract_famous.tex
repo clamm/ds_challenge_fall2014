@@ -79,7 +79,7 @@
 \section{Approach} % (fold)
 \label{approach}
 
-I identified question 1 as classification problem (supervised or unsupervised) which I wanted to solve using Spark (after the performance problems I encountered for the classification in R with 7.3 million observations). 
+I identified question 1 as classification problem (supervised or unsupervised) which I wanted to solve using Spark (after the performance problems I encountered for the classification in R with 7.3 million observations in the SmartFly problem). 
 
 I opted for the following approach to solve the questions:
 \begin{itemize}
@@ -109,14 +109,26 @@ To get an impression of the web and spam data I had a look at overall summary st
 
 From manual inspection it seems that visits that are generated via the bot network only contain the action \verb+adclick+ after they landed on the page. However if I would classify the web data according to this simple rule, then the click through rate for ads on the page would be zero - which seems too extreme.
 
+\bigskip
+More detailed output of data exploration can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q1a_explore_data/read_data.pdf+
+\end{itemize}
+
 % subsection explore_data (end)
 
 \subsection{Prepare data for modeling} % (fold)
 \label{sub:prepare_data_for_modeling}
-In order to run a classification/clustering algorithm in Spark I need to code the categorical variables (all but \verb+tstamp+) with integer levels (which means that I implicitely assume that it is okay if an algorithm treats these variables as continuous features, because the resulting model is still good enough).
+In order to run a classification/clustering algorithm in Spark I need to encode the categorical variables (all but \verb+tstamp+) with integer levels (which means that I implicitely assume that it is okay if an clustering/classification algorithm treats these variables as continuous features, because the resulting model is still good enough).
 I converted the \verb+tstamp+ to epoch values (i.e. to seconds since 1970-01-01 00:00:00 GMT) to have a true continuous variable without loosing the time information.
 
 For the supervised classification I added a variable \verb+is_spam+ with value $1$ to the spam data and with value 0 to the web data (knowing that with this assumption some web data is falsely labeled). I pooled the spam data and different amounts of the web data into a training data sets - which I used as well for testing (see section \ref{sub:current_limitations}).
+
+\bigskip
+The used R script can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q1b_classify_spam/create_unsupervised_data.R+
+\end{itemize}
 
 % subsection prepare_data_for_modeling (end)
 
@@ -124,7 +136,19 @@ For the supervised classification I added a variable \verb+is_spam+ with value $
 \label{sub:estimate_and_validate_models_for_spam_classification}
 I tried different classification and cluster algorithms: I started with unsupervised clustering using k-means on a training sample with all spam log data and (the top) $200.000$ observations of the web log data\footnote{Using random $200.000$ observations from the web log data didn't seem to be a good idea given that entries are ordered by time.}. I had the hope that by using $k=2$ all spam data would end up in one cluster and all web data in the other, so that when I predict the complete web data on this clustering, all so far unknown spam entries go into the spam-cluster. However when I used the estimated cluster centers to see the division into clusters of the training data, the result was not as good as I would have expected:
 
-\textcolor{red}{TODO: add venn diagram here or error/accuracy values}
+\bigskip
+The used Spark Python scripts and how I submitted them can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q1b_classify_spam/classify_spam_kmeans.py+
+	\item \verb+problem2_famous/src/q1b_classify_spam/submit_kmeans.sh+
+	\item \verb+problem2_famous/src/q1b_classify_spam/classify_spam_supervised.py+
+	\item \verb+problem2_famous/src/q1b_classify_spam/submit_supervised.sh+
+\end{itemize}
+
+My verification of the kmeans results can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q1b_classify_spam/verify_unsupervised_prediction.pdf+
+\end{itemize}
 
 % subsection estimate_and_validate_models_for_spam_classification (end)
 
@@ -155,28 +179,44 @@ $$
 
 Without having removed the spam visits from the web log data I counted \textcolor{black}{103896} ad clicks and \textcolor{black}{1482602} unique visit ids, which leads to a CTR of \textcolor{black}{$7.01\%$} - which is unusually high (if we believe in wikipedia\footnote{\url{http://en.wikipedia.org/wiki/Click-through_rate}}) and certainly prooves the necessity to exclude the spam entries from the calculation.
 
-% \textbf{After} having removed the spam visits from the web log data I counted \textcolor{red}{xx} ad clicks and \textcolor{red}{xx} unique visit ids, which leads to a CTR of \textcolor{red}{$xx\%$}.
+\bigskip
+The used Spark Python scripts can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q2_compute_ctr/compute_ctr.py+
+\end{itemize}
 
 % subsubsection ctr (end)
 
 
 \subsubsection{Mean Orders Per Visit Within Campaign-Query Combinations} % (fold)
 \label{subsub:mean_cq}
-Since the action "order" is only listed in log entries that don't have query and campaign information, the first step I did was to aggregate the web log per visit 
-%(using Spark \verb+reduceByKey+ method on the key (\verb+visit_id+,\verb+uid+)\,)
-putting all actions in a list.
+Since the action "order" is only listed in log entries that don't have query and campaign information, the first step I did was to aggregate the web log per visit putting all actions in a list (using Spark which seems to be more memory efficient even in local mode compared to R).
 I saved the aggregated visits data back to a log file, converted it to csv and worked on that in R to calculate the mean and standard deviation of number of orders within the groups formed by the campaign-query combination (using the \href{http://www.inside-r.org/packages/cran/plyr/docs/ddply}{ddply} function of package \href{http://cran.r-project.org/web/packages/plyr/index.html}{plyr}).
 
 \textbf{Note:} Of the 50 possible campaign-query combinations only 10 have any entries in the web.log data. So I only wrote the standard deviations of the number of orders per campaign-query combination that have a non-zero value. 
-% subsubsection mean_cq (end)
 
+\bigskip
+The used Spark Python script and the computation walk-through can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q3_campaign_query_combi/01_write_aggregated_visit_web_log.py+
+	\item \verb+problem2_famous/src/q3_campaign_query_combi/02_campaign_query_combi_analysis.pdf+
+\end{itemize}
+
+% subsubsection mean_cq (end)
 
 \subsubsection{Newsletter Signup Rate} % (fold)
 \label{subsub:signup}
 
-Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even\footnote{see \verb+problem2_almost/src/q4a_newsletter_signup/newsletter_signup.pdf+}.
+Before I compute the newsletter signup rate for each experiment I double-check the assumption that users see experiments independently by verifying that the distribution of experiments in the data is even.
 
 I used the per visit aggregated web log data and computed in R the newsletter signup rate per experiment using the again the ddply function.
+
+\bigskip
+The knitr/LaTeX generated pdf can be found at:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q4_newsletter_signup/newsletter_signup.pdf+
+\end{itemize}
+
 % subsubsection signup (end)
 
 
@@ -193,6 +233,12 @@ I would interpret the results as follows:
 	\item With a p-value of $p_{12}=xx$ experiments 1 and 2 are indistinguishable - it doesn't matter for the newsletter signup whether the color scheme of the page is blue or green.
 	\item With a p-value of $p_{34}=xx$ there is a statistically significant difference between experiment 3 and 4 - based on the number of newsletter signups the promotional blurb by Josh Willis performs better.	 
 \end{itemize}
+
+\bigskip
+I used the same script as for the newsletter signup rate analysis:
+\begin{itemize}
+	\item \verb+problem2_famous/src/q4_newsletter_signup/newsletter_signup.pdf+
+\end{itemize}
 % subsubsection performance (end)
 
 
@@ -203,14 +249,9 @@ I would interpret the results as follows:
 How many full days of data, starting from the first day, are required to determine that the newsletter signup rate for experiment one is better than experiment two at the 99\% confidence level?
 \end{quote}
 
+I did not finish the computation.
+
 % subsubsection performance (end)
-
-
-% \subsubsection{Possible Improvements} % (fold)
-% \label{subsub:improvements}
-
-% I wrote a separate Spark Python script for each of the metrics I computed with Spark, where I loaded the data from the file system in each script. This could be improved by calculating all metrics within one Spark session for which I would load the data only once from the file system (but need to refactor the code to make it reusable). 
-% % subsubsection improvements (end)
 
 
 % subsection compute_metrics (end)
@@ -233,11 +274,12 @@ In general I developed on a Macbook Pro with a 2.3 GHz Intel Core i7 Processor a
 \section{Time Spent}
 \begin{itemize}
 	\item 24h for data cleaning, preparing for and running the spam classification
-	\item 12h for computing CTR and metrics for campaign-query combinations
-	\item 1h for solution abstract
+	\item 16h for computing CTR and metrics for campaign-query combinations
+	\item 2h for second attempt of (different) cloud server setup (but too close to submission deadline)
+	\item 2h for solution abstract
 \end{itemize}
 
-Summing up I spend \textcolor{red}{xx hours} on this problem.
+Summing up I spend \textcolor{black}{44 hours} on this problem.
 
 
 \end{document}

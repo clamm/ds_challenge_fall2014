@@ -198,7 +198,7 @@ jsonString
 write(jsonString, file="../q4_newsletter_signup/out/overall_signup_rate.json")
 @
 
-\section{Performance Of Experiments}
+\section{Performance of Experiments}
 
 \begin{quote}
 Use a G-test to compare the performance of experiment one vs. experiment two and experiment three vs. experiment four overall.
@@ -261,7 +261,7 @@ write(test34$p.value, file="../q4_newsletter_signup/out/performance_of_experimen
 @
 
 
-\section{Required Days for $99\%$ Confidence in G-Test Result}
+\section{Required Days for 99\% Confidence in G-Test Result}
 
 \begin{quote}
 How many full days of data, starting from the first day, are required to determine that the newsletter signup rate for experiment one is better than experiment two at the 99\% confidence level?
@@ -299,14 +299,14 @@ newPvalue <- getPValue(overallSignupRates[1:2], visitAggExp12$nb_uids)
 newPvalue == test12$p.value
 @
 
-<<define-day>>=
 
-@
+Next steps would be to 
+\begin{itemize}
+  \item group visit data per day and count daily number of users per experiment
+  \item take care of doing a one sided G-Test (since experiment 1 should perform better than experiment 2)
+  \item run the G-Test for each day starting with the first day in the logs and up to the day at which the p-value is th first time smaller than 0.01
+\end{itemize}
 
-
-<<get-aggregated-statistics-per-day>>=
-
-@
-
+However I didn't have time for that anymore...
 
 \end{document}

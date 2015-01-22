@@ -21,7 +21,7 @@
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
 # set global chunk options
-opts_chunk$set(fig.path='figure/venn-', fig.align='center', fig.show='hold')
+opts_chunk$set(fig.path='figure/', fig.align='center', fig.show='hold')
 options(formatR.arrow=TRUE,width=90)
 @
 
@@ -82,14 +82,16 @@ source("Venn3.R")
 
 
 Plot Venn diagram:
-<<plot-venn-diagram, echo=FALSE, fig.width=11, fig.height=8, out.width='.45\\linewidth'>>=>=
+<<plot-venn-diagram, echo=FALSE, fig.width=11, fig.height=8, out.width='.45\\linewidth'>>=
 vc <- Venn3(prediction$uid, spamIds$uid, webIds$uid, c("predicted", "spam", "web"), "uid")
 @
 
 Something is off - the counts don't add up!!!
 <<checkout-venn-counts>>=
-vc
+print(vc)
 @
+
+$\rightarrow$ abort here and continue with metrics...
 
 
 \end{document}
